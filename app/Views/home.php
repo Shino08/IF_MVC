@@ -201,38 +201,38 @@
 </section>
 
 <!-- ── Footer ───────────────────────────────────────────────────────── -->
-<footer class="bg-gray-900 text-white py-12">
+<footer class="bg-white text-gray-900 py-12">
     <div class="max-w-7xl mx-auto px-4">
         <div class="grid grid-cols-4 gap-8 mb-10">
             <div class="col-span-2">
                 <img src="<?= $base_url ?>/img/Photoroom-20251106_165742.png"
-                     alt="InstalFuego Logo" class="h-10 object-contain mb-4 brightness-0 invert">
+                     alt="InstalFuego Logo" class="h-10 object-contain mb-4">
                 <p class="text-gray-400 text-sm leading-relaxed max-w-xs">
                     Especialistas en sistemas de seguridad contra incendios. Protegemos lo que más valoras.
                 </p>
             </div>
             <div>
-                <h4 class="text-sm font-semibold uppercase tracking-wider text-gray-300 mb-4">Productos</h4>
+                <h4 class="text-sm font-semibold uppercase tracking-wider text-gray-900 mb-4">Productos</h4>
                 <ul class="space-y-2 text-sm text-gray-400">
-                    <li><a href="#" class="hover:text-white transition-colors">Extintores</a></li>
-                    <li><a href="#" class="hover:text-white transition-colors">Detectores de Humo</a></li>
-                    <li><a href="#" class="hover:text-white transition-colors">Sistemas de Riego</a></li>
-                    <li><a href="#" class="hover:text-white transition-colors">EPP</a></li>
+                    <li><a href="#" class="hover:text-gray-600 transition-colors">Extintores</a></li>
+                    <li><a href="#" class="hover:text-gray-600 transition-colors">Detectores de Humo</a></li>
+                    <li><a href="#" class="hover:text-gray-600 transition-colors">Sistemas de Riego</a></li>
+                    <li><a href="#" class="hover:text-gray-600 transition-colors">EPP</a></li>
                 </ul>
             </div>
             <div>
-                <h4 class="text-sm font-semibold uppercase tracking-wider text-gray-300 mb-4">Empresa</h4>
+                <h4 class="text-sm font-semibold uppercase tracking-wider text-gray-900 mb-4">Empresa</h4>
                 <ul class="space-y-2 text-sm text-gray-400">
-                    <li><a href="#" class="hover:text-white transition-colors">Acerca de</a></li>
-                    <li><a href="#" class="hover:text-white transition-colors">Servicios</a></li>
-                    <li><a href="<?= $base_url ?>/login" class="hover:text-white transition-colors">Acceder</a></li>
+                    <li><a href="#" class="hover:text-gray-600 transition-colors">Acerca de</a></li>
+                    <li><a href="#" class="hover:text-gray-600 transition-colors">Servicios</a></li>
+                    <li><a href="<?= $base_url ?>/login" class="hover:text-gray-600 transition-colors">Acceder</a></li>
                 </ul>
             </div>
         </div>
-        <div class="border-t border-gray-800 pt-8 flex justify-between items-center text-xs text-gray-500">
+        <div class="border-t border-gray-800 pt-8 flex justify-between items-center text-xs text-gray-900">
             <div class="flex space-x-6">
-                <a href="#" class="hover:text-gray-300 transition-colors">Términos y Condiciones</a>
-                <a href="#" class="hover:text-gray-300 transition-colors">Aviso de Privacidad</a>
+                <a href="#" class="hover:text-gray-600 transition-colors">Términos y Condiciones</a>
+                <a href="#" class="hover:text-gray-600 transition-colors">Aviso de Privacidad</a>
             </div>
             <p>© 2026 InstalFuego. Todos los derechos reservados.</p>
         </div>
