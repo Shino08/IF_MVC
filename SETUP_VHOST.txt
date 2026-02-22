@@ -1,0 +1,45 @@
+# ============================================================
+# INSTRUCCIONES PARA ACTIVAR VIRTUALHOST EN XAMPP
+# ============================================================
+# Esto elimina el "/public" de la URL, dejando rutas limpias:
+#   http://localhost/login   (en lugar de /IF_MVC/public/login)
+# o con dominio personalizado:
+#   http://instalfuego.local/login
+# ============================================================
+
+# PASO 1: Descomentar la inclusión de vhosts en httpd.conf
+# Editar: /opt/lampp/etc/httpd.conf
+# Cambiar línea 488 de:
+#   #Include etc/extra/httpd-vhosts.conf
+# A:
+#   Include etc/extra/httpd-vhosts.conf
+
+# PASO 2: Añadir el VirtualHost al archivo httpd-vhosts.conf
+# Editar: /opt/lampp/etc/extra/httpd-vhosts.conf
+# Añadir al final:
+
+# <VirtualHost *:80>
+#     DocumentRoot "/opt/lampp/htdocs/IF_MVC/public"
+#     ServerName instalfuego.local
+#     ServerAlias www.instalfuego.local
+#
+#     <Directory "/opt/lampp/htdocs/IF_MVC/public">
+#         Options FollowSymLinks
+#         AllowOverride All
+#         Require all granted
+#     </Directory>
+#
+#     ErrorLog "logs/instalfuego-error_log"
+#     CustomLog "logs/instalfuego-access_log" common
+# </VirtualHost>
+
+# PASO 3: Añadir el dominio al /etc/hosts
+# Ejecutar:
+#   sudo sh -c 'echo "127.0.0.1 instalfuego.local" >> /etc/hosts'
+
+# PASO 4: Reiniciar XAMPP
+#   sudo /opt/lampp/lampp restart
+
+# PASO 5: Actualizar public/.htaccess
+# Cambiar: RewriteBase /IF_MVC/public/
+# Por:     RewriteBase /

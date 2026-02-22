@@ -1,0 +1,18 @@
+# ── IF_MVC/.htaccess ──────────────────────────────────────────────────────────
+# Redirige todo el tráfico de la raíz del proyecto hacia la carpeta public/
+# Esto evita exponer app/, autoload.php y otros archivos sensibles.
+# ──────────────────────────────────────────────────────────────────────────────
+
+Options -Indexes
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /IF_MVC/
+
+    # Excluir la carpeta public/ para no entrar en bucle
+    RewriteCond %{REQUEST_URI} !^/IF_MVC/public/
+    # Excluir archivos que existan físicamente en la raíz (package.json, etc.)
+    RewriteCond %{REQUEST_FILENAME} !-f
+    # Redirigir todo a public/
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>
