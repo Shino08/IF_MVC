@@ -15,6 +15,7 @@ require_once dirname(__DIR__) . '/autoload.php';
 use App\Core\Router;
 use App\Controllers\HomeController;
 use App\Controllers\AuthController;
+use App\Controllers\DashboardController;
 
 // ─── Rutas de Autenticación ───────────────────────────────────────────────────
 Router::get('/login',    [AuthController::class, 'showLogin']);
@@ -23,16 +24,18 @@ Router::get('/logout',   [AuthController::class, 'logout']);
 Router::get('/register', [AuthController::class, 'showRegister']);
 Router::post('/register',[AuthController::class, 'register']);
 
-// ─── Rutas Principales ────────────────────────────────────────────────────────
+// ─── Rutas del Panel Admin (Dashboard) ───────────────────────────────────────
+Router::get('/dashboard',                      [DashboardController::class, 'index']);
+Router::get('/dashboard/productos',            [DashboardController::class, 'productos']);
+Router::get('/dashboard/productos/agregar',    [DashboardController::class, 'agregarProducto']);
+Router::get('/dashboard/productos/editar/{id}',[DashboardController::class, 'editarProducto']);
+Router::get('/dashboard/categorias',           [DashboardController::class, 'categorias']);
+Router::get('/dashboard/cotizaciones',         [DashboardController::class, 'cotizaciones']);
+Router::get('/dashboard/servicios',            [DashboardController::class, 'servicios']);
+Router::get('/dashboard/reportes',             [DashboardController::class, 'reportes']);
+
+// ─── Rutas Públicas ───────────────────────────────────────────────────────────
 Router::get('/', [HomeController::class, 'index']);
-
-Router::get('/hola/{nombre}', function (string $nombre): void {
-    echo 'Hola ' . htmlspecialchars(ucfirst($nombre));
-});
-
-Router::get('/contacto', function (): void {
-    echo 'Página de contacto';
-});
 
 // ─── Despachar la petición ───────────────────────────────────────────────────
 Router::dispatch();
