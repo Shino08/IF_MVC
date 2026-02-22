@@ -1,0 +1,14 @@
+{
+  "name": "if-mvc",
+  "version": "1.0.0",
+  "description": "Mini-framework MVC PHP con integración de Tailwind CSS",
+  "private": true,
+  "scripts": {
+    "build": "tailwindcss -i ./public/css/input.css -o ./public/css/output.css --minify",
+    "dev": "tailwindcss -i ./public/css/input.css -o ./public/css/output.css --watch"
+  },
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.0.0",
+    "tailwindcss": "^4.0.0"
+  }
+}
