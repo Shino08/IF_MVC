@@ -3,9 +3,9 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
-use App\Core\Controller;
+use App\Core\Router;
 
-class DashboardController extends Controller
+class DashboardController extends Router
 {
     // ── Middleware: verificar sesión ──────────────────────────────────
     private function requireAuth(): void

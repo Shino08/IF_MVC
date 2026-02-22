@@ -85,4 +85,29 @@ class Router
         http_response_code(404);
         echo '404 - Página no encontrada';
     }
+
+    public function view(string $view, array $data = []): void
+    {
+        $scriptName = $_SERVER['SCRIPT_NAME'];
+        $baseUrl    = rtrim(str_replace('/index.php', '', $scriptName), '/');
+        $data['base_url'] = $baseUrl;
+
+        extract($data);
+
+        $viewPath = dirname(__DIR__) . '/Views/' . $view . '.php';
+
+        if (file_exists($viewPath)) {
+            require_once $viewPath;
+        } else {
+            die("Error: La vista '$view' no existe en 'app/Views/'.");
+        }
+    }
+
+    public function json(mixed $data, int $status = 200): void
+    {
+        header('Content-Type: application/json');
+        http_response_code($status);
+        echo json_encode($data);
+        exit;
+    }
 }

@@ -3,10 +3,10 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
-use App\Core\Controller;
+use App\Core\Router;
 use App\Models\Usuario;
 
-class HomeController extends Controller
+class HomeController extends Router
 {
     public function index(): void
     {

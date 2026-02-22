@@ -3,10 +3,10 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
-use App\Core\Controller;
+use App\Core\Router;
 use App\Models\Usuario;
 
-class AuthController extends Controller
+class AuthController extends Router
 {
     // Mostrar formulario de login
     public function showLogin(): void
