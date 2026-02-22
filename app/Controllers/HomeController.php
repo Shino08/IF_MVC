@@ -10,6 +10,7 @@ class HomeController extends Controller
 {
     public function index(): void
     {
+        // session_destroy();
         $isLoggedIn = isset($_SESSION['user_id']);
         $userName   = $_SESSION['user_name'] ?? 'Visitante';
 

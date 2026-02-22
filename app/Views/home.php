@@ -10,10 +10,8 @@
 </head>
 <body class="bg-white">
 
-<!-- ── Header / Navegación ───────────────────────────────────────────── -->
 <header class="bg-white border-b border-gray-200 sticky top-0 z-50">
     <div class="max-w-7xl mx-auto px-4">
-        <!-- Top bar -->
         <div class="flex items-center justify-between py-3">
             <a href="<?= $base_url ?>/">
                 <img src="<?= $base_url ?>/img/Photoroom-20251106_165742.png" alt="InstalFuego Logo" class="h-12 object-contain">
@@ -62,7 +60,6 @@
     </div>
 </header>
 
-<!-- ── Hero ─────────────────────────────────────────────────────────── -->
 <section class="bg-gray-50 py-16">
     <div class="max-w-7xl mx-auto px-4">
         <div class="grid grid-cols-2 gap-12 items-center">
@@ -97,7 +94,6 @@
     </div>
 </section>
 
-<!-- ── Explorar Productos ────────────────────────────────────────────── -->
 <section id="productos" class="py-16 bg-white">
     <div class="max-w-7xl mx-auto px-4">
         <div class="mb-10">
@@ -130,7 +126,6 @@
     </div>
 </section>
 
-<!-- ── Detectores de Humo ───────────────────────────────────────────── -->
 <section class="py-16 bg-gray-50">
     <div class="max-w-7xl mx-auto px-4">
         <div class="flex justify-between items-end mb-8">
@@ -170,7 +165,6 @@
     </div>
 </section>
 
-<!-- ── Últimos productos ─────────────────────────────────────────────── -->
 <section class="py-16 bg-white">
     <div class="max-w-7xl mx-auto px-4">
         <h2 class="text-3xl font-bold text-gray-900 mb-8">Últimos Productos Agregados</h2>
@@ -200,7 +194,6 @@
     </div>
 </section>
 
-<!-- ── Footer ───────────────────────────────────────────────────────── -->
 <footer class="bg-white text-gray-900 py-12">
     <div class="max-w-7xl mx-auto px-4">
         <div class="grid grid-cols-4 gap-8 mb-10">
