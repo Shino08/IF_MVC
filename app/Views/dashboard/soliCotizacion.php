@@ -14,65 +14,191 @@
             </div>
         </header>
 
-        <div class="p-8 space-y-6">
-            <!-- Filtros de estado -->
-            <div class="flex items-center space-x-2">
-                <?php $estados = ['Todas' => '', 'Pendientes' => 'pendiente', 'Aprobadas' => 'aprobada', 'Enviadas' => 'enviada']; ?>
-                <?php foreach ($estados as $label => $val): ?>
-                <button class="px-4 py-2 text-sm font-medium rounded-full border
-                               <?= ($filtro ?? '') === $val
-                                   ? 'bg-red-700 text-white border-red-700'
-                                   : 'bg-white text-gray-600 border-gray-300 hover:border-red-400' ?>">
-                    <?= $label ?>
-                </button>
-                <?php endforeach; ?>
-            </div>
+    <div class="p-8">
 
-            <!-- Tabla -->
-            <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-                <table class="w-full text-sm">
-                    <thead class="bg-gray-50 border-b border-gray-200">
-                        <tr>
-                            <th class="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">#</th>
-                            <th class="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Cliente</th>
-                            <th class="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Producto / Servicio</th>
-                            <th class="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Fecha</th>
-                            <th class="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Estado</th>
-                            <th class="text-right px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-100">
-                        <?php
-                        $cotizaciones = $cotizaciones ?? [
-                            ['id' => 'COT-001', 'cliente' => 'Juan Pérez',     'producto' => 'Extintor CO2 5Kg',           'fecha' => '22 Feb 2026', 'estado' => 'pendiente'],
-                            ['id' => 'COT-002', 'cliente' => 'María González', 'producto' => 'Sistema de Riego Automático', 'fecha' => '21 Feb 2026', 'estado' => 'aprobada'],
-                            ['id' => 'COT-003', 'cliente' => 'Carlos Ruiz',    'producto' => 'Detector de Humo Kidde',      'fecha' => '20 Feb 2026', 'estado' => 'enviada'],
-                            ['id' => 'COT-004', 'cliente' => 'Ana Torres',     'producto' => 'Panel de Alarma 8 Zonas',     'fecha' => '19 Feb 2026', 'estado' => 'pendiente'],
-                        ];
-                        $badge = ['pendiente' => 'bg-yellow-100 text-yellow-700', 'aprobada' => 'bg-green-100 text-green-700', 'enviada' => 'bg-blue-100 text-blue-700'];
-                        foreach ($cotizaciones as $cot): ?>
-                        <tr class="hover:bg-gray-50 transition-colors">
-                            <td class="px-6 py-4 font-mono text-gray-500 text-xs"><?= $cot['id'] ?></td>
-                            <td class="px-6 py-4 font-medium text-gray-900"><?= htmlspecialchars($cot['cliente']) ?></td>
-                            <td class="px-6 py-4 text-gray-600"><?= htmlspecialchars($cot['producto']) ?></td>
-                            <td class="px-6 py-4 text-gray-500"><?= $cot['fecha'] ?></td>
-                            <td class="px-6 py-4">
-                                <span class="px-2.5 py-1 rounded-full text-xs font-semibold <?= $badge[$cot['estado']] ?>">
-                                    <?= ucfirst($cot['estado']) ?>
-                                </span>
-                            </td>
-                            <td class="px-6 py-4 text-right">
-                                <a href="<?= $base_url ?>/dashboard/cotizaciones/detalle/<?= $cot['id'] ?>"
-                                   class="inline-flex items-center px-3 py-1.5 border border-gray-300 text-xs font-medium rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
-                                    Ver Detalle
-                                </a>
-                            </td>
-                        </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
-            </div>
+      <!-- Filters Section -->
+<div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+  <div class="flex items-center gap-4">
+    
+    <div class="flex-1">
+      <input type="text" placeholder="Buscar por cliente o ID..." class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500">
+    </div>
+
+    <button class="px-4 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center text-gray-700">
+      <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+        <path fill-rule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z" clip-rule="evenodd"/>
+      </svg>
+      Estado de Solicitud
+    </button>
+
+    <button class="px-4 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center text-gray-700">
+      <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11.707 4.707a1 1 0 00-1.414-1.414L10 9.586 8.707 8.293a1 1 0 00-1.414 0l-2 2a1 1 0 101.414 1.414L8 10.414l1.293 1.293a1 1 0 001.414 0l4-4z"/>
+      </svg>
+      Prioridad
+    </button>
+
+    <button class="px-4 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center text-gray-700">
+      <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+        <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/>
+      </svg>
+      dd/mm/yyyy
+    </button>
+
+    <button class="btn text-white px-6 py-2.5 rounded-lg font-semibold transition-colors flex items-center hover:scale-102 ease-in-out">
+      <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+        <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"/>
+      </svg>
+      Actualizar Lista
+    </button>
+
+  </div>
+</div>
+
+
+      <!-- Table Section -->
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        
+        <!-- Table Header -->
+        <div class="overflow-x-auto">
+          <table class="w-full">
+            <thead class="bg-gray-50 border-b border-gray-200">
+              <tr>
+                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">ID Solicitud</th>
+                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Cliente (Email)</th>
+                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Teléfono</th>
+                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Fecha Solicitud</th>
+                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Prioridad</th>
+                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Estado</th>
+                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Acciones</th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+              
+              <!-- Row 1 -->
+              <tr class="hover:bg-gray-50 transition-colors">
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span class="text-sm font-semibold text-gray-900">#COT202601</span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span class="text-sm text-gray-700">correo@gmail.com</span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span class="text-sm text-gray-700">04224572397</span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span class="text-sm text-gray-700">2026-01-15</span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-800">
+                    Alta
+                  </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800">
+                    Pendiente
+                  </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <button class="text-blue-600 hover:text-blue-800 font-medium text-sm flex items-center">
+                    <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/><path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/>
+                    </svg>
+                    Ver
+                  </button>
+                </td>
+              </tr>
+
+              <!-- Row 2 -->
+              <tr class="hover:bg-gray-50 transition-colors">
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span class="text-sm font-semibold text-gray-900">#COT202602</span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span class="text-sm text-gray-700">otro@correo.com</span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span class="text-sm text-gray-700">04214185913</span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span class="text-sm text-gray-700">2026-01-10</span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800">
+                    Media
+                  </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-800">
+                    Procesada
+                  </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <button class="text-blue-600 hover:text-blue-800 font-medium text-sm flex items-center">
+                    <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/><path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/>
+                    </svg>
+                    Ver
+                  </button>
+                </td>
+              </tr>
+
+              <!-- Row 3 -->
+              <tr class="hover:bg-gray-50 transition-colors">
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span class="text-sm font-semibold text-gray-900">#COT202603</span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span class="text-sm text-gray-700">ultimo@correo.com</span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span class="text-sm text-gray-700">04129038667</span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span class="text-sm text-gray-700">2026-01-03</span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-800">
+                    Baja
+                  </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-800">
+                    Rechazada
+                  </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <button class="text-blue-600 hover:text-blue-800 font-medium text-sm flex items-center">
+                    <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/><path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/>
+                    </svg>
+                    Ver
+                  </button>
+                </td>
+              </tr>
+
+            </tbody>
+          </table>
         </div>
+
+        <!-- Pagination -->
+        <div class="bg-gray-50 px-6 py-4 border-t border-gray-200 flex items-center justify-between">
+          <div class="text-sm text-gray-700">
+            Mostrando <span class="font-semibold">1</span> a <span class="font-semibold">10</span> de <span class="font-semibold">15</span> solicitudes
+          </div>
+          <div class="flex space-x-2">
+            <button class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors">
+              Anterior
+            </button>
+            <button class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors">
+              Siguiente
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
     </main>
 </div>
 </body>
