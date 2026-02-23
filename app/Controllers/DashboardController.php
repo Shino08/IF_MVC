@@ -64,9 +64,11 @@ class DashboardController extends Router
     // ── Categorías ────────────────────────────────────────────────────
     public function categorias(): void
     {
+        $categorias = (new CategoriasModel())->getAll();
         $this->requireAuth();
         $this->view('dashboard/categoria', [
             'title' => 'Gestión de Categorías',
+            'categorias' => $categorias
         ]);
     }
 

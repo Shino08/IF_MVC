@@ -12,6 +12,7 @@ use App\Controllers\HomeController;
 use App\Controllers\AuthController;
 use App\Controllers\DashboardController;
 use App\Controllers\ProductoController;
+use App\Controllers\CategoriasController;
 
 // ─── Rutas de Autenticación ───────────────────────────────────────────────────
 Router::get('/login',    [AuthController::class, 'showLogin']);
@@ -29,6 +30,9 @@ Router::post('/dashboard/productos/store',     [ProductoController::class, 'stor
 Router::get('/dashboard/productos/editar/{id}',[DashboardController::class, 'editarProducto']);
 
 Router::get('/dashboard/categorias',           [DashboardController::class, 'categorias']);
+Router::post('/dashboard/categorias/store',    [App\Controllers\CategoriasController::class, 'store']);
+Router::post('/dashboard/categorias/delete',   [App\Controllers\CategoriasController::class, 'delete']);
+
 Router::get('/dashboard/cotizaciones',         [DashboardController::class, 'cotizaciones']);
 
 Router::get('/dashboard/servicios',            [DashboardController::class, 'servicios']);
