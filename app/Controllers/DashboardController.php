@@ -4,6 +4,8 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\Core\Router;
+use App\Models\CategoriasModel;
+use App\Models\ProductsModel;
 
 class DashboardController extends Router
 {
@@ -28,17 +30,24 @@ class DashboardController extends Router
     // ── Productos ─────────────────────────────────────────────────────
     public function productos(): void
     {
+
+        $productos = (new ProductsModel())->getAllProductsWithCategory();
         $this->requireAuth();
         $this->view('dashboard/productos', [
             'title' => 'Gestión de Productos',
+            'productos' => $productos
         ]);
+
+
     }
 
     public function agregarProducto(): void
     {
         $this->requireAuth();
+        $categorias = (new CategoriasModel())->getAll();
         $this->view('dashboard/agregarProducto', [
             'title' => 'Agregar Producto',
+            'categorias' => $categorias // <-- Aquí inyectamos los datos
         ]);
     }
 
