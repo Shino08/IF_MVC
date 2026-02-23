@@ -12,7 +12,7 @@ class Database
 
     // ─── Configuración ───────────────────────────────────────────────────────
     private static string $host   = 'localhost';
-    private static string $dbname = 'framework_mvc';
+    private static string $dbname = 'instal_fuego';
     private static string $user   = 'root';
     private static string $pass   = '';
     private static string $charset = 'utf8mb4';

@@ -27,7 +27,7 @@
 
                 <!-- Título -->
                 <div class="text-center mb-8">
-                    <h1 class="text-2xl font-bold text-gray-800 mb-2">Crear Cuenta B2B</h1>
+                    <h1 class="text-2xl font-bold text-gray-800 mb-2">Crear Cuenta</h1>
                     <p class="text-gray-500 text-sm">Ingresa tus datos corporativos para acceder al catálogo técnico y solicitar cotizaciones.</p>
                 </div>
 
@@ -147,7 +147,7 @@
                 <!-- Footer -->
                 <div class="text-center mt-6">
                     <p class="text-sm font-extrabold text-footer">
-                        © 2025 InstalFuego.
+                        © 2026 InstalFuego.
                     </p>
                 </div>
 
