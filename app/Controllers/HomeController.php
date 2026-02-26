@@ -4,7 +4,7 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\Core\Router;
-use App\Models\Usuario;
+use App\Models\UsersModel;
 
 class HomeController extends Router
 {

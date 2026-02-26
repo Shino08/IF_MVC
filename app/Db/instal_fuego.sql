@@ -41,8 +41,10 @@ CREATE TABLE `etiquetas` (
 CREATE TABLE `usuarios` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `nombre` varchar(255) NOT NULL,
+  `apellido` varchar(255) DEFAULT NULL,
   `empresa` varchar(255) DEFAULT NULL,
   `telefono` varchar(20) DEFAULT NULL,
+  `cedula` varchar(20) DEFAULT NULL,
   `email` varchar(255) NOT NULL,
   `contrasena` varchar(255) NOT NULL,
   `rol_id` int(11) DEFAULT NULL,
@@ -70,12 +72,21 @@ CREATE TABLE `productos` (
   `info_envio` text DEFAULT NULL,
   `estado_disponibilidad` varchar(100) DEFAULT NULL,
   `cantidad_minima_pedido` int(11) DEFAULT NULL,
+  `imagen_principal` varchar(255) DEFAULT NULL COMMENT 'Nombre del archivo de imagen principal',
   PRIMARY KEY (`id`),
   UNIQUE KEY `sku` (`sku`),
   CONSTRAINT `fk_productos_categoria` FOREIGN KEY (`categoria_id`) REFERENCES `categorias` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 3. TABLAS DE RELACIÓN Y PROCESOS
+
+CREATE TABLE `producto_imagenes` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `producto_id` int(11) NOT NULL,
+  `ruta_imagen` varchar(255) NOT NULL,
+  PRIMARY KEY (`id`),
+  CONSTRAINT `fk_prod_imagenes_producto` FOREIGN KEY (`producto_id`) REFERENCES `productos` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `producto_etiquetas` (
   `producto_id` int(11) NOT NULL,
