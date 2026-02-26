@@ -15,10 +15,10 @@ class HomeController extends Router
         $userName   = $_SESSION['user_name'] ?? 'Visitante';
 
         $data = [
-            'title'     => 'Bienvenido a FrameworkMVC',
+            'title'     => 'InstalFuego — Sistemas de Seguridad Contra Incendios',
             'message'   => $isLoggedIn
                 ? "¡Hola, $userName! Has iniciado sesión correctamente."
-                : 'Este es un ejemplo de plantilla usando MVC. Inicia sesión para probar.',
+                : 'Bienvenido a InstalFuego, tu proveedor de sistemas de seguridad contra incendios.',
             'logged_in' => $isLoggedIn,
         ];
 

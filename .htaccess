@@ -1,6 +1,6 @@
 # ── IF_MVC/.htaccess ──────────────────────────────────────────────────────────
-# Redirige todo el tráfico de la raíz del proyecto hacia la carpeta public/
-# Esto evita exponer app/, autoload.php y otros archivos sensibles.
+# Archivo de configuración único para Apache.
+# Enruta todo el tráfico hacia public/ y actúa como Front Controller.
 # ──────────────────────────────────────────────────────────────────────────────
 
 Options -Indexes
@@ -9,10 +9,26 @@ Options -Indexes
     RewriteEngine On
     RewriteBase /IF_MVC/
 
-    # Excluir la carpeta public/ para no entrar en bucle
-    RewriteCond %{REQUEST_URI} !^/IF_MVC/public/
-    # Excluir archivos que existan físicamente en la raíz (package.json, etc.)
+    # Si se pide algo que ya está dentro de public/
+    RewriteCond %{REQUEST_URI} ^/IF_MVC/public/ [NC]
+    # Y ese archivo o directorio existe físicamente, servirlo y detener.
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+
+    # Si se pide algo dentro de public/ pero no es un archivo (ej: public/login), enviarlo al index
+    RewriteCond %{REQUEST_URI} ^/IF_MVC/public/ [NC]
     RewriteCond %{REQUEST_FILENAME} !-f
-    # Redirigir todo a public/
-    RewriteRule ^(.*)$ public/$1 [L]
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^(.*)$ public/index.php [QSA,L]
+
+    # Si NO estamos en public/ (ej: /IF_MVC/login), también enviarlo al index.php
+    RewriteCond %{REQUEST_URI} !^/IF_MVC/public/ [NC]
+    RewriteRule ^(.*)$ public/index.php [QSA,L]
+
 </IfModule>
+
+# Seguridad: bloquear acceso a archivos sensibles y de configuración
+<FilesMatch "(^#.*#|\.(bak|env|config|sql|sh|log|json|lock|gitid|git))$">
+    Require all denied
+</FilesMatch>

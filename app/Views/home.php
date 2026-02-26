@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>InstalFuego — Sistemas de Seguridad Contra Incendios</title>
-    <meta name="description" content="InstalFuego: sistemas avanzados.">
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title><?= htmlspecialchars($title ?? 'InstalFuego — Sistemas de Seguridad Contra Incendios') ?></title>
+    <meta name="description" content="<?= htmlspecialchars($meta_desc ?? 'InstalFuego: sistemas avanzados diseñados para detectar y extinguir incendios rápidamente.') ?>">
+    
+    <link rel="stylesheet" href="<?= $base_url ?? '' ?>/css/output.css">
     <link rel="stylesheet" href="<?= $base_url ?? '' ?>/css/styles.css">
 </head>
 <body class="bg-white">

@@ -21,12 +21,16 @@ class Router
 
     public static function dispatch(): void
     {
-        $uri = $_SERVER['REQUEST_URI'];
+        $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 
-        // Detectar si estamos en una subcarpeta (ej: /FrameworkMVC/public/)
-        $scriptPath = dirname($_SERVER['SCRIPT_NAME']);
-        if ($scriptPath !== '/' && strpos($uri, $scriptPath) === 0) {
-            $uri = substr($uri, strlen($scriptPath));
+        // Detectar si estamos en una subcarpeta
+        $scriptDir = dirname($_SERVER['SCRIPT_NAME']); // ej: /IF_MVC/public
+        $rootDir = dirname($scriptDir); // ej: /IF_MVC
+
+        if ($scriptDir !== '/' && $scriptDir !== '\\' && strpos($uri, $scriptDir) === 0) {
+            $uri = substr($uri, strlen($scriptDir));
+        } elseif ($rootDir !== '/' && $rootDir !== '\\' && strpos($uri, $rootDir) === 0) {
+            $uri = substr($uri, strlen($rootDir));
         }
 
         // Limpiar query strings (?foo=bar)
