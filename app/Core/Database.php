@@ -10,17 +10,12 @@ class Database
 {
     private static ?PDO $instance = null;
 
-    // ─── Configuración ───────────────────────────────────────────────────────
     private static string $host   = 'localhost';
     private static string $dbname = 'instal_fuego';
     private static string $user   = 'root';
     private static string $pass   = '';
     private static string $charset = 'utf8mb4';
-    // ─────────────────────────────────────────────────────────────────────────
 
-    /**
-     * Devuelve la única instancia PDO (patrón Singleton).
-     */
     public static function getInstance(): PDO
     {
         if (self::$instance === null) {
@@ -38,7 +33,6 @@ class Database
                     PDO::ATTR_EMULATE_PREPARES   => false,
                 ]);
             } catch (PDOException $e) {
-                // En producción no se debería exponer el mensaje real
                 die('Error de conexión a la base de datos: ' . $e->getMessage());
             }
         }

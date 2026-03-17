@@ -44,10 +44,6 @@ class AuthController extends Router
             $_SESSION['user_name'] = $user['nombre'];
             $_SESSION['rol_id']    = $user['rol_id']; 
 
-            // ────────────────────────────────────────────────────────
-            // VALIDACIÓN DE ROLES PARA LA REDIRECCIÓN
-            // rol_id == 1 es Admin, los demás van al catálogo (raíz)
-            // ────────────────────────────────────────────────────────
             $redirectUrl = ($user['rol_id'] == 1) ? $this->baseUrl() . '/dashboard' : $this->baseUrl() . '/';
 
             if ($isAjax) {
@@ -82,10 +78,9 @@ class AuthController extends Router
 
 public function register(): void
     {
-        // 1. Captura y saneamiento
         $nombre           = strip_tags(trim($_POST['nombre'] ?? ''));
         $apellido         = strip_tags(trim($_POST['apellido'] ?? ''));
-        $cedula           = strtoupper(strip_tags(trim($_POST['cedula'] ?? ''))); // Pasamos a mayúsculas para evitar errores
+        $cedula           = strtoupper(strip_tags(trim($_POST['cedula'] ?? '')));
         $telefono         = strip_tags(trim($_POST['telefono'] ?? ''));
         $empresa          = strip_tags(trim($_POST['empresa'] ?? '')); 
         $email            = filter_var(trim($_POST['email'] ?? ''), FILTER_SANITIZE_EMAIL);
@@ -104,9 +99,6 @@ public function register(): void
             return;
         }
 
-        // ────────────────────────────────────────────────────────
-        // NUEVA VALIDACIÓN: PATRÓN DE CÉDULA / RIF (Venezuela)
-        // ────────────────────────────────────────────────────────
         $patronCedulaRif = '/^([VE]-\d{6,8}|[JVEGPC]-\d{8}-\d)$/';
         if (!preg_match($patronCedulaRif, $cedula)) {
             $this->renderRegisterError('El formato de Cédula/RIF es inválido. Usa formatos como V-12345678 o J-12345678-9.', $formData);
@@ -142,8 +134,6 @@ public function register(): void
 
         $this->renderRegisterError('El correo electrónico o la cédula ya están registrados, o hubo un error.', $formData);
     }
-
-    // ── Helpers privados ──────────────────────────────────────────────────────
 
     private function renderLoginError(string $error, string $email): void
     {

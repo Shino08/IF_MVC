@@ -11,15 +11,15 @@ class HomeController extends Router
     public function index(): void
     {
         // session_destroy();
-        $isLoggedIn = isset($_SESSION['user_id']);
-        $userName   = $_SESSION['user_name'] ?? 'Visitante';
+        $sesionIniciada = isset($_SESSION['user_id']);
+        $nombreUsuario   = $_SESSION['user_name'] ?? 'Visitante';
 
         $data = [
             'title'     => 'InstalFuego — Sistemas de Seguridad Contra Incendios',
-            'message'   => $isLoggedIn
-                ? "¡Hola, $userName! Has iniciado sesión correctamente."
+            'message'   => $sesionIniciada
+                ? "¡Hola, $nombreUsuario! Has iniciado sesión correctamente."
                 : 'Bienvenido a InstalFuego, tu proveedor de sistemas de seguridad contra incendios.',
-            'logged_in' => $isLoggedIn,
+            'logged_in' => $sesionIniciada,
         ];
 
         $this->view('home', $data);

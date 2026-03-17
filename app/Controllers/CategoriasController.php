@@ -8,7 +8,7 @@ use App\Models\CategoriasModel;
 
 class CategoriasController extends Router
 {
-    // Procesa Crear y Editar
+
     public function store(): void
     {
         header('Content-Type: application/json');
