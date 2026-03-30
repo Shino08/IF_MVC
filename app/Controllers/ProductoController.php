@@ -125,6 +125,7 @@ class ProductoController extends Router
 
         $imagenesSubidas = $this->processUploads($sku);
 
+
         $exito = $productModel->saveFullProduct(
             $nombre, $sku, $categoria_id, $precio, $marca, $modelo_prod,
             $existencia, $descripcion, $imagenesSubidas

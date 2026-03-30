@@ -3,10 +3,8 @@ declare(strict_types=1);
 
 session_start();
 
-// 1. Cargar el autocargador de clases (ubicado en la raíz del proyecto)
 require_once dirname(__DIR__) . '/autoload.php';
 
-// 2. Importar el Router y los controladores
 use App\Core\Router;
 use App\Controllers\HomeController;
 use App\Controllers\AuthController;
@@ -15,14 +13,12 @@ use App\Controllers\ProductoController;
 use App\Controllers\CategoriasController;
 use App\Controllers\ServicioController;
 
-// ─── Rutas de Autenticación ───────────────────────────────────────────────────
 Router::get('/login',    [AuthController::class, 'showLogin']);
 Router::post('/login',   [AuthController::class, 'processLogin']);
 Router::get('/logout',   [AuthController::class, 'logout']);
 Router::get('/register', [AuthController::class, 'showRegister']);
 Router::post('/register',[AuthController::class, 'register']);
 
-// ─── Rutas del Panel Admin (Dashboard) ───────────────────────────────────────
 Router::get('/dashboard',                      [DashboardController::class, 'index']);
 
 Router::get('/dashboard/productos',                    [DashboardController::class, 'productos']);
@@ -51,8 +47,6 @@ Router::post('/dashboard/servicios/imagen/reemplazar',   [ServicioController::cl
 
 Router::get('/dashboard/reportes',             [DashboardController::class, 'reportes']);
 
-// ─── Rutas Públicas ───────────────────────────────────────────────────────────
 Router::get('/', [HomeController::class, 'index']);
 
-// ─── Despachar la petición ───────────────────────────────────────────────────
 Router::dispatch();

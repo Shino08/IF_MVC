@@ -23,9 +23,8 @@ class Router
     {
         $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 
-        // Detectar si estamos en una subcarpeta
-        $scriptDir = dirname($_SERVER['SCRIPT_NAME']); // ej: /IF_MVC/public
-        $rootDir = dirname($scriptDir); // ej: /IF_MVC
+        $scriptDir = dirname($_SERVER['SCRIPT_NAME']);
+        $rootDir = dirname($scriptDir);
 
         if ($scriptDir !== '/' && $scriptDir !== '\\' && strpos($uri, $scriptDir) === 0) {
             $uri = substr($uri, strlen($scriptDir));
@@ -33,12 +32,9 @@ class Router
             $uri = substr($uri, strlen($rootDir));
         }
 
-        // Limpiar query strings (?foo=bar)
         if (strpos($uri, '?') !== false) {
             $uri = substr($uri, 0, strpos($uri, '?'));
         }
-
-        // Normalizar: la raíz siempre es string vacío ''
         $uri = trim($uri, '/');
 
         $method = $_SERVER['REQUEST_METHOD'];
@@ -50,24 +46,19 @@ class Router
         }
 
         foreach (self::$routes[$method] as $route => $callback) {
-            // Normalizar la ruta registrada igual que la URI
             $route = trim($route, '/');
 
-            // Construir patrón regex:
-            // Ruta raíz ('') → patrón #^$#  |  Otras rutas → #^ruta$#
             $pattern = preg_replace('/\{[a-zA-Z0-9_]+\}/', '([a-zA-Z0-9_-]+)', $route);
             $pattern = '#^' . $pattern . '$#';
 
             if (preg_match($pattern, $uri, $matches)) {
-                array_shift($matches); // Quitar la coincidencia completa
+                array_shift($matches);
 
-                // Ejecutar Closure
                 if (is_callable($callback)) {
                     call_user_func_array($callback, $matches);
                     return;
                 }
 
-                // Ejecutar [ControllerName::class, 'method']
                 if (is_array($callback)) {
                     [$controllerName, $action] = $callback;
 

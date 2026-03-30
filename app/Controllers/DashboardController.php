@@ -10,7 +10,6 @@ use App\Models\ServiciosModel;
 
 class DashboardController extends Router
 {
-    // ── Middleware: verificar sesión ──────────────────────────────────
     private function requireAuth(): void
     {
         if (!isset($_SESSION['user_id'])) {
@@ -19,7 +18,6 @@ class DashboardController extends Router
         }
     }
 
-    // ── Dashboard principal ───────────────────────────────────────────
     public function index(): void
     {
         $this->requireAuth();
@@ -65,7 +63,6 @@ class DashboardController extends Router
         ]);
     }
 
-    // ── Productos ─────────────────────────────────────────────────────
     public function productos(): void
     {
 
@@ -85,7 +82,7 @@ class DashboardController extends Router
         $categorias = (new CategoriasModel())->getAll();
         $this->view('dashboard/agregarProducto', [
             'title' => 'Agregar Producto',
-            'categorias' => $categorias // <-- Aquí inyectamos los datos
+            'categorias' => $categorias
         ]);
     }
 
@@ -112,7 +109,6 @@ class DashboardController extends Router
         ]);
     }
 
-    // ── Categorías ────────────────────────────────────────────────────
     public function categorias(): void
     {
         $categorias = (new CategoriasModel())->getAll();
@@ -123,7 +119,6 @@ class DashboardController extends Router
         ]);
     }
 
-    // ── Cotizaciones ──────────────────────────────────────────────────
     public function cotizaciones(): void
     {
         $this->requireAuth();
@@ -132,7 +127,6 @@ class DashboardController extends Router
         ]);
     }
 
-    // ── Servicios ─────────────────────────────────────────────────────
     public function servicios(): void
     {
         $this->requireAuth();
@@ -175,7 +169,6 @@ class DashboardController extends Router
         ]);
     }
 
-    // ── Reportes ──────────────────────────────────────────────────────
     public function reportes(): void
     {
         $this->requireAuth();
@@ -184,7 +177,6 @@ class DashboardController extends Router
         ]);
     }
 
-    // ── Helper privado ────────────────────────────────────────────────
     private function baseUrl(): string
     {
         return rtrim(str_replace('/index.php', '', $_SERVER['SCRIPT_NAME']), '/');
