@@ -54,7 +54,7 @@
 
                 <div class="grid grid-cols-5 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
                     <?php foreach ($productos as $p): ?>
-                        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-lg transition-all flex flex-col relative group">
+                        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-lg transition-all flex flex-col relative group" data-card>
 
                             <?php $enStock = (int)$p['existencia'] > 0; ?>
                             <span class="absolute top-0 right-0 z-10 px-3 py-1.5 text-xs font-bold rounded-bl-xl shadow-sm
@@ -63,8 +63,7 @@
                             </span>
 
                             <div class="aspect-square bg-white flex items-center justify-center p-6 border-b border-gray-100 relative overflow-hidden">
-                                <?php 
-                                    // 🚨 RUTA CORREGIDA: Apuntando a /img/productos/ 🚨
+                                <?php
                                     if (!empty($p['imagen_principal'])) {
                                         $imgSrc = $base_url . '/img/productos/' . htmlspecialchars($p['imagen_principal']);
                                     } else {
@@ -84,7 +83,7 @@
                                     <?= htmlspecialchars($p['nombre']) ?>
                                 </h3>
                                 <p class="text-xs text-gray-500 mb-3 font-mono">SKU: <?= htmlspecialchars($p['sku']) ?></p>
-                                
+
                                 <p class="text-xl font-black text-gray-900 mb-5 mt-auto">
                                     $<?= number_format((float)$p['precio'], 2) ?>
                                 </p>
@@ -99,7 +98,7 @@
                                     </a>
 
                                     <button type="button"
-                                            onclick="confirmarEliminar(<?= $p['id'] ?>, '<?= htmlspecialchars(addslashes($p['nombre'])) ?>')"
+                                            onclick="confirmarEliminar(<?= $p['id'] ?>, '<?= htmlspecialchars(addslashes($p['nombre'])) ?>', this.closest('[data-card]'))"
                                             class="flex-1 bg-white border border-gray-200 hover:bg-red-50 hover:border-red-200 hover:text-red-700 text-gray-700 px-3 py-2 rounded-xl text-sm font-bold transition-colors flex items-center justify-center shadow-sm">
                                         <svg class="w-4 h-4 mr-1.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                                             <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/>
@@ -119,5 +118,39 @@
     </main>
 </div>
 
+<!-- ── MODAL ELIMINAR PRODUCTO ─────────────────────────────────────── -->
+<div id="modal-eliminar" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 backdrop-blur-sm">
+    <div class="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-sm mx-4 transform transition-all">
+        <!-- <div class="flex items-center justify-center w-14 h-14 bg-red-100 rounded-full mx-auto mb-4">
+            <svg class="w-7 h-7 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+            </svg>
+        </div> -->
+        <h3 class="text-lg font-bold text-gray-900 text-center mb-1">Eliminar producto</h3>
+        <p class="text-gray-500 text-sm text-center mb-6">
+            ¿Eliminar <span id="modal-nombre-producto" class="font-semibold text-gray-800"></span>?
+            Esta acción no se puede deshacer.
+        </p>
+        <div id="modal-error" class="hidden bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-2 rounded-lg mb-4"></div>
+        <div class="flex gap-3">
+            <button id="btn-cancelar-eliminar"
+                    class="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors">
+                Cancelar
+            </button>
+            <button id="btn-confirmar-eliminar"
+                    class="flex-1 px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl text-sm font-semibold transition-colors flex items-center justify-center gap-2">
+                <span id="btn-eliminar-text">Eliminar</span>
+                <svg id="btn-eliminar-spinner" class="hidden animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>const BASE_URL = "<?= $base_url ?? '' ?>";</script>
+<script src="<?= $base_url ?? '' ?>/js/productos.js"></script>
 </body>
 </html>

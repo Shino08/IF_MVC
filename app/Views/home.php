@@ -51,7 +51,7 @@
                     
                     <?php else: ?>
                         <div class="flex items-center space-x-6">
-                            <a href="<?= $base_url ?? '' ?>/mis-cotizaciones" class="relative hover:text-red-600 transition-colors">
+                            <a href="<?= $base_url ?? '' ?>/#" class="relative hover:text-red-600 transition-colors">
                                 <svg class="w-6 h-6 text-gray-600 hover:text-red-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                                 </svg>
@@ -68,7 +68,7 @@
                                         <p class="text-sm font-bold text-gray-900 truncate"><?= htmlspecialchars($_SESSION['user_name'] ?? 'Usuario') ?></p>
                                         <p class="text-xs text-gray-500 truncate">Mi cuenta B2B</p>
                                     </div>
-                                    <a href="<?= $base_url ?? '' ?>/perfil" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-red-600 transition-colors">Mi Perfil</a>
+                                    <a href="<?= $base_url ?? '' ?>/#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-red-600 transition-colors">Mi Perfil</a>
                                     <a href="<?= $base_url ?? '' ?>/logout" class="block px-4 py-2 text-sm text-red-600 hover:bg-red-50 font-medium transition-colors border-t border-gray-50 mt-1">Cerrar Sesión</a>
                                 </div>
                             </div>

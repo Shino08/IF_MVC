@@ -65,7 +65,7 @@ class UsersModel
     }
 
     // Actualizamos la firma del método para recibir todos los nuevos campos
-    public function register(string $nombre, string $apellido, string $cedula, string $empresa, string $telefono, string $email, string $contrasena_hash, int $rol_id = 1): ?array
+    public function register(string $nombre, string $apellido, string $cedula, string $empresa, string $telefono, string $email, string $contrasena_hash, int $rol_id = 2): ?array
     {
         // Verificamos si el correo o la cédula ya existen en la base de datos
         if ($this->findByEmail($email) || $this->findByCedula($cedula)) {

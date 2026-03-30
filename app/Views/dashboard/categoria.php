@@ -73,7 +73,6 @@
                             <table class="w-full text-left border-collapse" id="tabla-categorias">
                                 <thead>
                                     <tr class="bg-white border-b border-gray-200">
-                                        <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider w-16 text-center">ID</th>
                                         <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Nombre de Categoría</th>
                                         <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-right">Acciones</th>
                                     </tr>
@@ -90,9 +89,6 @@
                                     <?php else: ?>
                                         <?php foreach ($categorias as $cat): ?>
                                             <tr class="hover:bg-gray-50/80 transition-colors group">
-                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-400 text-center">
-                                                    #<?= htmlspecialchars((string)$cat['id']) ?>
-                                                </td>
                                                 <td class="px-6 py-4 whitespace-nowrap">
                                                     <span class="text-sm font-bold text-gray-900 cat-nombre-td">
                                                         <?= htmlspecialchars($cat['nombre']) ?>

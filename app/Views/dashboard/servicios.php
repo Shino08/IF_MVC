@@ -1,4 +1,4 @@
-<?php $title = 'Servicios'; $active_nav = 'servicios'; ?>
+<?php $active_nav = 'servicios'; ?>
 <?php require_once __DIR__ . '/../layouts/_head.php'; ?>
 <body class="bg-gray-50">
 <div class="flex h-screen overflow-hidden">
@@ -8,191 +8,151 @@
         <header class="bg-white border-b border-gray-200 px-8 py-5 flex-shrink-0">
             <div class="flex justify-between items-center">
                 <div>
-                    <h1 class="text-2xl font-bold text-gray-900">Servicios</h1>
-                    <p class="text-gray-500 text-sm mt-0.5">Administra los servicios disponibles</p>
+                    <h1 class="text-2xl font-bold text-gray-900">Gestión de Servicios</h1>
+                    <p class="text-gray-500 text-sm mt-0.5">Administra el catálogo de servicios InstalFuego</p>
                 </div>
-                <button class="inline-flex items-center px-4 py-2 bg-red-700 text-white text-sm font-semibold rounded-lg hover:bg-red-800 transition-colors">
+                <a href="<?= $base_url ?? '' ?>/dashboard/servicios/agregar"
+                   class="inline-flex items-center px-4 py-2 bg-red-700 text-white text-sm font-semibold rounded-lg hover:bg-red-800 transition-colors shadow-sm">
                     <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"/>
                     </svg>
-                    Nuevo Servicio
-                </button>
+                    Agregar Servicio
+                </a>
             </div>
         </header>
 
-    <div class="p-8">
+        <div class="p-8">
 
-      <div class="grid grid-cols-3 gap-6">
-
-        <!-- Left Column - Add/Edit Service Form -->
-        <div class="col-span-1">
-          <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h2 class="text-xl font-bold text-gray-900 mb-6">Agregar Servicio</h2>
-
-            <form>
-              <!-- Service Name -->
-              <div class="mb-6">
-                <label class="block text-sm font-semibold text-gray-900 mb-2">
-                  Nombre del Servicio <span class="text-red-600">*</span>
-                </label>
-                <input type="text" placeholder="Ingrese el nombre del servicio" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500">
-              </div>
-
-              <!-- Description -->
-              <div class="mb-6">
-                <label class="block text-sm font-semibold text-gray-900 mb-2">
-                  Descripción
-                </label>
-                <textarea rows="4" placeholder="Descripción detallada del servicio..." class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 resize-none"></textarea>
-              </div>
-
-              <!-- Base Price -->
-              <div class="mb-6">
-                <label class="block text-sm font-semibold text-gray-900 mb-2">
-                  Precio <span class="text-red-600">*</span>
-                </label>
-                <input type="text" placeholder="Ingrese el precio" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500">
-              </div>
-
-              <!-- Submit Button -->
-              <button type="submit" class="w-full btn text-white py-3 rounded-lg font-semibold transition-all hover:shadow-lg flex items-center justify-center">
-                <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                  <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                </svg>
-                Guardar Servicio
-              </button>
-
-            </form>
-
-          </div>
-        </div>
-
-        <!-- Right Column - Services List -->
-        <div class="col-span-2">
-          <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            
-            <!-- Header with Search -->
-            <div class="flex justify-between items-center mb-6">
-              <h2 class="text-xl font-bold text-gray-900">Listado de Servicios</h2>
-              <input type="text" placeholder="Buscar servicio..." class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500">
+            <!-- Barra de búsqueda -->
+            <div class="bg-white rounded-xl border border-gray-200 p-4 mb-6 flex items-center gap-4 shadow-sm">
+                <div class="flex-1 relative">
+                    <svg class="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                    <input type="text" id="buscador-servicios" placeholder="Buscar por código o nombre..."
+                           class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500 transition-all">
+                </div>
+                <select id="filtro-categoria" class="border border-gray-200 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 bg-white">
+                    <option value="">Todas las categorías</option>
+                    <?php foreach ($categorias as $cat): ?>
+                        <option value="<?= htmlspecialchars($cat['nombre']) ?>">
+                            <?= htmlspecialchars($cat['nombre']) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
             </div>
 
-            <!-- Table -->
-            <div class="overflow-x-auto">
-              <table class="w-full">
-                <thead class="bg-gray-50 border-b border-gray-200">
-                  <tr>
-                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Nombre del Servicio</th>
-                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Descripción</th>
-                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Precio Base</th>
-                    <th class="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Acciones</th>
-                  </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
-                  
-                  <!-- Row 1 -->
-                  <tr class="hover:bg-gray-50 transition-colors">
-                    <td class="px-6 py-4">
-                      <span class="text-sm font-semibold text-gray-900">Instalación de Sistemas</span>
-                    </td>
-                    <td class="px-6 py-4">
-                      <span class="text-sm text-gray-600">Instalación completa de sistemas de detección y exti...</span>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                      <span class="text-sm font-semibold text-gray-900">$500.00</span>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                      <div class="flex justify-center space-x-3">
-                        <button class="text-blue-600 hover:text-blue-800 transition-colors">
-                          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/>
-                          </svg>
-                        </button>
-                        <button class="text-red-600 hover:text-red-800 transition-colors">
-                          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/>
-                          </svg>
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
+            <?php if (empty($servicios)): ?>
+                <div class="flex flex-col items-center justify-center py-24 text-center bg-white rounded-2xl border border-dashed border-gray-300">
+                    <div class="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-4">
+                        <svg class="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                        </svg>
+                    </div>
+                    <p class="text-gray-900 font-bold text-lg mb-1">No hay servicios registrados</p>
+                    <p class="text-gray-500 text-sm mb-6 max-w-sm">Comienza agregando tu primer servicio para incluirlo en las cotizaciones.</p>
+                    <a href="<?= $base_url ?? '' ?>/dashboard/servicios/agregar"
+                       class="inline-flex items-center px-6 py-2.5 bg-red-700 text-white text-sm font-bold rounded-xl hover:bg-red-800 transition-colors shadow-md hover:shadow-lg">
+                        Agregar mi primer servicio
+                    </a>
+                </div>
+            <?php else: ?>
 
-                  <!-- Row 2 -->
-                  <tr class="hover:bg-gray-50 transition-colors">
-                    <td class="px-6 py-4">
-                      <span class="text-sm font-semibold text-gray-900">Mantenimiento Anual</span>
-                    </td>
-                    <td class="px-6 py-4">
-                      <span class="text-sm text-gray-600">Revisión y mantenimiento preventivo anual de equi...</span>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                      <span class="text-sm font-semibold text-gray-900">$250.00</span>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                      <div class="flex justify-center space-x-3">
-                        <button class="text-blue-600 hover:text-blue-800 transition-colors">
-                          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/>
-                          </svg>
-                        </button>
-                        <button class="text-red-600 hover:text-red-800 transition-colors">
-                          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/>
-                          </svg>
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
+                <div id="grid-servicios" class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
+                    <?php foreach ($servicios as $s): ?>
+                        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-lg transition-all flex flex-col relative group"
+                             data-card
+                             data-nombre="<?= htmlspecialchars(strtolower($s['nombre'])) ?>"
+                             data-codigo="<?= htmlspecialchars(strtolower($s['codigo'])) ?>"
+                             data-categoria="<?= htmlspecialchars($s['categoria_nombre'] ?? '') ?>">
 
-                  <!-- Row 3 -->
-                  <tr class="hover:bg-gray-50 transition-colors">
-                    <td class="px-6 py-4">
-                      <span class="text-sm font-semibold text-gray-900">Recarga de Extintores</span>
-                    </td>
-                    <td class="px-6 py-4">
-                      <span class="text-sm text-gray-600">Servicio de recarga y certificación de extintores de t...</span>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                      <span class="text-sm font-semibold text-gray-900">$80.00</span>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                      <div class="flex justify-center space-x-3">
-                        <button class="text-blue-600 hover:text-blue-800 transition-colors">
-                          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/>
-                          </svg>
-                        </button>
-                        <button class="text-red-600 hover:text-red-800 transition-colors">
-                          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/>
-                          </svg>
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
+                            <!-- Badge tipo de cobro -->
+                            <span class="absolute top-0 right-0 z-10 px-3 py-1.5 text-xs font-bold rounded-bl-xl shadow-sm bg-blue-100 text-blue-700">
+                                <?= htmlspecialchars($s['tipo_cobro_nombre'] ?? 'Sin tipo') ?>
+                            </span>
 
-                </tbody>
-              </table>
-            </div>
+                            <!-- Imagen -->
+                            <div class="aspect-square bg-white flex items-center justify-center p-6 border-b border-gray-100 relative overflow-hidden">
+                                <?php
+                                    $imgSrc = !empty($s['imagen_principal'])
+                                        ? ($base_url . '/img/servicios/' . htmlspecialchars($s['imagen_principal']))
+                                        : ('https://ui-avatars.com/api/?name=' . urlencode($s['nombre']) . '&background=eff6ff&color=3b82f6&size=256&font-size=0.33');
+                                ?>
+                                <img src="<?= $imgSrc ?>"
+                                     alt="<?= htmlspecialchars($s['nombre']) ?>"
+                                     class="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300">
+                            </div>
 
-            <!-- Pagination -->
-            <div class="mt-6 flex items-center justify-between border-t border-gray-200 pt-4">
-              <div class="text-sm text-gray-700">
-                Mostrando <span class="font-semibold">1</span> a <span class="font-semibold">5</span> de <span class="font-semibold">8</span> servicios
-              </div>
-              <div class="flex space-x-2">
-                <button class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors">
-                  Anterior
-                </button>
-                <button class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors">
-                  Siguiente
-                </button>
-              </div>
-            </div>
+                            <!-- Contenido -->
+                            <div class="p-5 flex flex-col flex-1 bg-gray-50/50">
+                                <p class="text-xs font-semibold text-blue-600 mb-1 uppercase tracking-wide">
+                                    <?= htmlspecialchars($s['categoria_nombre'] ?? 'Sin Categoría') ?>
+                                </p>
+                                <h3 class="text-sm font-bold text-gray-900 mb-1 line-clamp-2 leading-tight">
+                                    <?= htmlspecialchars($s['nombre']) ?>
+                                </h3>
+                                <p class="text-xs text-gray-500 mb-3 font-mono">COD: <?= htmlspecialchars($s['codigo']) ?></p>
 
-          </div>
+                                <p class="text-xl font-black text-gray-900 mb-5 mt-auto">
+                                    $<?= number_format((float)$s['precio_referencial'], 2) ?>
+                                </p>
+
+                                <div class="flex gap-2 mt-auto">
+                                    <a href="<?= $base_url ?? '' ?>/dashboard/servicios/editar/<?= $s['id'] ?>"
+                                       class="flex-1 bg-white border border-gray-200 hover:border-blue-300 hover:text-blue-700 text-gray-700 px-3 py-2 rounded-xl text-sm font-bold transition-colors flex items-center justify-center shadow-sm">
+                                        <svg class="w-4 h-4 mr-1.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                            <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/>
+                                        </svg>
+                                        Editar
+                                    </a>
+
+                                    <button type="button"
+                                            onclick="confirmarEliminar(<?= $s['id'] ?>, '<?= htmlspecialchars(addslashes($s['nombre'])) ?>', this.closest('[data-card]'))"
+                                            class="flex-1 bg-white border border-gray-200 hover:bg-red-50 hover:border-red-200 hover:text-red-700 text-gray-700 px-3 py-2 rounded-xl text-sm font-bold transition-colors flex items-center justify-center shadow-sm">
+                                        <svg class="w-4 h-4 mr-1.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                                        </svg>
+                                        Eliminar
+                                    </button>
+                                </div>
+                            </div>
+
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+
+            <?php endif; ?>
         </div>
     </main>
 </div>
+
+<!-- ── MODAL ELIMINAR SERVICIO ─────────────────────────────────────── -->
+<div id="modal-eliminar" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 backdrop-blur-sm">
+    <div class="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-sm mx-4">
+        <h3 class="text-lg font-bold text-gray-900 text-center mb-1">Eliminar servicio</h3>
+        <p class="text-gray-500 text-sm text-center mb-6">
+            ¿Eliminar <span id="modal-nombre-servicio" class="font-semibold text-gray-800"></span>?
+            Esta acción no se puede deshacer.
+        </p>
+        <div id="modal-error" class="hidden bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-2 rounded-lg mb-4"></div>
+        <div class="flex gap-3">
+            <button id="btn-cancelar-eliminar"
+                    class="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors">
+                Cancelar
+            </button>
+            <button id="btn-confirmar-eliminar"
+                    class="flex-1 px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl text-sm font-semibold transition-colors flex items-center justify-center gap-2">
+                <span id="btn-eliminar-text">Eliminar</span>
+                <svg id="btn-eliminar-spinner" class="hidden animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>const BASE_URL = "<?= $base_url ?? '' ?>";</script>
+<script src="<?= $base_url ?? '' ?>/js/servicios.js"></script>
 </body>
 </html>

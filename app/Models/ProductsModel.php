@@ -16,17 +16,51 @@ class ProductsModel
         $this->db = Database::getInstance();
     }
 
-    // 1. VALIDACIÓN: Verificamos si el SKU ya existe
-    public function findBySku(string $sku): ?array
+    // 1. Buscar producto por ID
+    public function findById(int $id): ?array
     {
         try {
-            $stmt = $this->db->prepare('SELECT id FROM productos WHERE sku = :sku LIMIT 1');
-            $stmt->execute([':sku' => $sku]);
+            $stmt = $this->db->prepare('SELECT * FROM productos WHERE id = :id LIMIT 1');
+            $stmt->execute([':id' => $id]);
+            $res = $stmt->fetch(PDO::FETCH_ASSOC);
+            return $res ?: null;
+        } catch (PDOException $e) {
+            error_log("Error en ProductsModel::findById - " . $e->getMessage());
+            return null;
+        }
+    }
+
+    // 2. VALIDACIÓN: Verificamos si el SKU ya existe (excluye un ID al editar)
+    public function findBySku(string $sku, ?int $excludeId = null): ?array
+    {
+        try {
+            $sql = 'SELECT id FROM productos WHERE sku = :sku';
+            $params = [':sku' => $sku];
+            if ($excludeId !== null) {
+                $sql .= ' AND id != :id';
+                $params[':id'] = $excludeId;
+            }
+            $sql .= ' LIMIT 1';
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute($params);
             $res = $stmt->fetch(PDO::FETCH_ASSOC);
             return $res ?: null;
         } catch (PDOException $e) {
             error_log("Error en ProductsModel::findBySku - " . $e->getMessage());
             return null;
+        }
+    }
+
+    // 3. Imágenes de galería de un producto
+    public function getImages(int $productoId): array
+    {
+        try {
+            $stmt = $this->db->prepare('SELECT * FROM producto_imagenes WHERE producto_id = :pid ORDER BY id ASC');
+            $stmt->execute([':pid' => $productoId]);
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log("Error en ProductsModel::getImages - " . $e->getMessage());
+            return [];
         }
     }
 
@@ -89,6 +123,142 @@ class ProductsModel
         }
     }
 
+    // Actualizar datos de un producto
+    public function update(
+        int $id, string $nombre, string $sku, int $cat_id, float $precio,
+        string $marca, string $modelo, int $stock, string $desc, array $nuevasImagenes
+    ): bool {
+        try {
+            $this->db->beginTransaction();
+
+            $sql = "UPDATE productos SET nombre=:nom, sku=:sku, categoria_id=:cat, precio=:pre,
+                    marca=:mar, modelo=:mod, existencia=:ext, descripcion=:desc
+                    WHERE id=:id";
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute([
+                ':nom'  => $nombre,
+                ':sku'  => $sku,
+                ':cat'  => $cat_id,
+                ':pre'  => $precio,
+                ':mar'  => $marca,
+                ':mod'  => $modelo,
+                ':ext'  => $stock,
+                ':desc' => $desc,
+                ':id'   => $id,
+            ]);
+
+            // Si se pasan nuevas imágenes, la primera reemplaza la principal
+            if (!empty($nuevasImagenes)) {
+                $stmtPrincipal = $this->db->prepare("UPDATE productos SET imagen_principal=:img WHERE id=:id");
+                $stmtPrincipal->execute([':img' => $nuevasImagenes[0], ':id' => $id]);
+
+                // El resto van a galería
+                if (count($nuevasImagenes) > 1) {
+                    $stmtImg = $this->db->prepare("INSERT INTO producto_imagenes (producto_id, ruta_imagen) VALUES (:pid, :ruta)");
+                    for ($i = 1; $i < count($nuevasImagenes); $i++) {
+                        $stmtImg->execute([':pid' => $id, ':ruta' => $nuevasImagenes[$i]]);
+                    }
+                }
+            }
+
+            $this->db->commit();
+            return true;
+        } catch (PDOException $e) {
+            $this->db->rollBack();
+            error_log("Error en ProductsModel::update - " . $e->getMessage());
+            return false;
+        }
+    }
+
+    // Eliminar una imagen de galería por ID
+    public function deleteImage(int $imageId, int $productoId): ?string
+    {
+        try {
+            $stmt = $this->db->prepare('SELECT ruta_imagen FROM producto_imagenes WHERE id=:id AND producto_id=:pid');
+            $stmt->execute([':id' => $imageId, ':pid' => $productoId]);
+            $img = $stmt->fetch(PDO::FETCH_ASSOC);
+            if (!$img) return null;
+
+            $this->db->prepare('DELETE FROM producto_imagenes WHERE id=:id')->execute([':id' => $imageId]);
+            return $img['ruta_imagen'];
+        } catch (PDOException $e) {
+            error_log("Error en ProductsModel::deleteImage - " . $e->getMessage());
+            return null;
+        }
+    }
+
+    // Reemplazar imagen de galería por ID
+    public function replaceImage(int $imageId, int $productoId, string $nuevaRuta): ?string
+    {
+        try {
+            $stmt = $this->db->prepare('SELECT ruta_imagen FROM producto_imagenes WHERE id=:id AND producto_id=:pid');
+            $stmt->execute([':id' => $imageId, ':pid' => $productoId]);
+            $img = $stmt->fetch(PDO::FETCH_ASSOC);
+            if (!$img) return null;
+
+            $old = $img['ruta_imagen'];
+            $this->db->prepare('UPDATE producto_imagenes SET ruta_imagen=:ruta WHERE id=:id')
+                ->execute([':ruta' => $nuevaRuta, ':id' => $imageId]);
+            return $old;
+        } catch (PDOException $e) {
+            error_log("Error en ProductsModel::replaceImage - " . $e->getMessage());
+            return null;
+        }
+    }
+
+    // Reemplazar imagen principal
+    public function replacePrincipal(int $productoId, string $nuevaRuta): ?string
+    {
+        try {
+            $stmt = $this->db->prepare('SELECT imagen_principal FROM productos WHERE id=:id');
+            $stmt->execute([':id' => $productoId]);
+            $prod = $stmt->fetch(PDO::FETCH_ASSOC);
+            if (!$prod) return null;
+
+            $old = $prod['imagen_principal'];
+            $this->db->prepare('UPDATE productos SET imagen_principal=:img WHERE id=:id')
+                ->execute([':img' => $nuevaRuta, ':id' => $productoId]);
+            return $old;
+        } catch (PDOException $e) {
+            error_log("Error en ProductsModel::replacePrincipal - " . $e->getMessage());
+            return null;
+        }
+    }
+
+    // Eliminar imagen principal (deja en null)
+    public function deletePrincipal(int $productoId): ?string
+    {
+        try {
+            $stmt = $this->db->prepare('SELECT imagen_principal FROM productos WHERE id=:id');
+            $stmt->execute([':id' => $productoId]);
+            $prod = $stmt->fetch(PDO::FETCH_ASSOC);
+            if (!$prod || !$prod['imagen_principal']) return null;
+
+            $old = $prod['imagen_principal'];
+            $this->db->prepare('UPDATE productos SET imagen_principal=NULL WHERE id=:id')->execute([':id' => $productoId]);
+            return $old;
+        } catch (PDOException $e) {
+            error_log("Error en ProductsModel::deletePrincipal - " . $e->getMessage());
+            return null;
+        }
+    }
+
+    // Eliminar producto completo
+    public function delete(int $id): bool
+    {
+        try {
+            $this->db->beginTransaction();
+            // Las imágenes de galería se eliminan en cascada por FK
+            $this->db->prepare('DELETE FROM productos WHERE id=:id')->execute([':id' => $id]);
+            $this->db->commit();
+            return true;
+        } catch (PDOException $e) {
+            $this->db->rollBack();
+            error_log("Error en ProductsModel::delete - " . $e->getMessage());
+            return false;
+        }
+    }
+
     // Obtener todos los productos con el nombre de su categoría
     public function getAllProductsWithCategory(): array
     {
@@ -96,11 +266,9 @@ class ProductsModel
             $sql = "SELECT p.*, c.nombre as categoria_nombre 
                     FROM productos p 
                     LEFT JOIN categorias c ON p.categoria_id = c.id 
-                    ORDER BY p.id DESC"; // DESC para que los recién agregados salgan primero
-            
+                    ORDER BY p.id DESC";
             $stmt = $this->db->query($sql);
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
-
         } catch (PDOException $e) {
             error_log("Error en ProductsModel::getAllProductsWithCategory - " . $e->getMessage());
             return [];

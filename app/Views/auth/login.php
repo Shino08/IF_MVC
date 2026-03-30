@@ -59,14 +59,6 @@
                     </div>
 
                     <div>
-                        <div class="flex justify-between items-center mb-2">
-                            <label for="password" class="block text-sm font-medium text-gray-700">
-                                Contraseña
-                            </label>
-                            <a href="#" class="text-sm font-medium text-primary hover:text-primary-dark transition">
-                                ¿Olvidaste tu contraseña?
-                            </a>
-                        </div>
                         <input type="password" id="password" name="password"
                                placeholder="Ingrese su contraseña"
                                class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg outline-none transition duration-200 focus:ring-2 focus:ring-primary focus:border-transparent focus:bg-white"

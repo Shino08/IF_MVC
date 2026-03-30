@@ -6,6 +6,7 @@ namespace App\Controllers;
 use App\Core\Router;
 use App\Models\CategoriasModel;
 use App\Models\ProductsModel;
+use App\Models\ServiciosModel;
 
 class DashboardController extends Router
 {
@@ -22,8 +23,45 @@ class DashboardController extends Router
     public function index(): void
     {
         $this->requireAuth();
+
+        $productModel  = new ProductsModel();
+        $servicioModel = new ServiciosModel();
+        $catModel      = new CategoriasModel();
+
+        // ── Datos reales ─────────────────────────────────────────────
+        $todosProductos  = $productModel->getAllProductsWithCategory();
+        $todosServicios  = $servicioModel->getAll();
+        $todasCategorias = $catModel->getAll();
+
+        // KPIs
+        $totalProductos  = count($todosProductos);
+        $totalServicios  = count($todosServicios);
+        $totalCategorias = count($todasCategorias);
+        $sinStock        = count(array_filter($todosProductos, fn($p) => (int)$p['existencia'] === 0));
+
+        // Productos agrupados por categoría
+        $catMap = [];
+        foreach ($todosProductos as $p) {
+            $catNom = $p['categoria_nombre'] ?? 'Sin Categoría';
+            $catMap[$catNom] = ($catMap[$catNom] ?? 0) + 1;
+        }
+        arsort($catMap); // mayor a menor
+
+        // Últimos 5 productos agregados
+        $ultimosProductos = array_slice($todosProductos, 0, 5);
+
+        // Últimos 5 servicios agregados
+        $ultimosServicios = array_slice($todosServicios, 0, 5);
+
         $this->view('dashboard/index', [
-            'title' => 'Dashboard',
+            'title'            => 'Dashboard',
+            'totalProductos'   => $totalProductos,
+            'totalServicios'   => $totalServicios,
+            'totalCategorias'  => $totalCategorias,
+            'sinStock'         => $sinStock,
+            'catMap'           => $catMap,
+            'ultimosProductos' => $ultimosProductos,
+            'ultimosServicios' => $ultimosServicios,
         ]);
     }
 
@@ -54,10 +92,23 @@ class DashboardController extends Router
     public function editarProducto(int $id): void
     {
         $this->requireAuth();
-        // En el futuro: $producto = (new Producto())->find($id);
-        $this->view('dashboard/editarProducto', [
-            'title'    => 'Editar Producto',
-            'producto' => ['id' => $id, 'nombre' => '', 'categoria_id' => 1, 'descripcion' => '', 'imagen' => ''],
+        $productModel = new ProductsModel();
+        $producto     = $productModel->findById($id);
+
+        if (!$producto) {
+            header('Location: ' . $this->baseUrl() . '/dashboard/productos');
+            exit;
+        }
+
+        $categorias = (new CategoriasModel())->getAll();
+        $imagenes   = $productModel->getImages($id);
+
+        $this->view('dashboard/agregarProducto', [
+            'title'      => 'Editar Producto',
+            'modo'       => 'editar',
+            'producto'   => $producto,
+            'imagenes'   => $imagenes,
+            'categorias' => $categorias,
         ]);
     }
 
@@ -85,8 +136,42 @@ class DashboardController extends Router
     public function servicios(): void
     {
         $this->requireAuth();
+        $model = new ServiciosModel();
         $this->view('dashboard/servicios', [
-            'title' => 'Servicios',
+            'title'      => 'Gestión de Servicios',
+            'servicios'  => $model->getAll(),
+            'categorias' => (new CategoriasModel())->getAll(),
+        ]);
+    }
+
+    public function agregarServicio(): void
+    {
+        $this->requireAuth();
+        $model = new ServiciosModel();
+        $this->view('dashboard/agregarServicio', [
+            'title'      => 'Agregar Servicio',
+            'categorias' => (new CategoriasModel())->getAll(),
+            'tiposCobro' => $model->getTiposCobro(),
+        ]);
+    }
+
+    public function editarServicio(int $id): void
+    {
+        $this->requireAuth();
+        $model    = new ServiciosModel();
+        $servicio = $model->findById($id);
+
+        if (!$servicio) {
+            header('Location: ' . $this->baseUrl() . '/dashboard/servicios');
+            exit;
+        }
+
+        $this->view('dashboard/agregarServicio', [
+            'title'      => 'Editar Servicio',
+            'modo'       => 'editar',
+            'servicio'   => $servicio,
+            'categorias' => (new CategoriasModel())->getAll(),
+            'tiposCobro' => $model->getTiposCobro(),
         ]);
     }
 
