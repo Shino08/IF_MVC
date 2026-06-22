@@ -50,7 +50,8 @@ $fecha = date('d/m/Y', strtotime($cotizacion['fecha_solicitud']));
 $logoFile = dirname(__DIR__, 3) . '/public/img/Photoroom-20251106_165742.png';
 $logoSrc = '';
 if (file_exists($logoFile)) {
-    $logoSrc = 'file://' . $logoFile;
+    $imgData = base64_encode(file_get_contents($logoFile));
+    $logoSrc = 'data:image/png;base64,' . $imgData;
 }
 ?>
 
@@ -146,21 +147,31 @@ if (file_exists($logoFile)) {
         </tr>
     </table>
 </div>
-<div class="clear"></div>
+<div class="clear"></div>    <?php if (!empty($cotizacion['tasabcv'])): ?>
+    <div style="margin-top: 20px; padding: 10px; background: #fef9e7; border: 1px solid #f9e79f; border-radius: 4px; font-size: 10px;">
+        <strong>Tasa de Cambio Referencial:</strong>
+        Bs. <?= number_format((float)$cotizacion['tasabcv'], 4, ',', '.') ?> / $1 USD
+        (al <?= date('d/m/Y', strtotime($cotizacion['fecha_solicitud'])) ?>)<br>
+        <?php if (!empty($cotizacion['montousd'])): ?>
+        <span style="color: #666;">Equivalente: <strong>$<?= number_format((float)$cotizacion['montousd'], 2) ?> USD</strong></span>
+        <?php endif; ?>
+    </div>
+    <?php endif; ?>
 
-<div class="notes">
-    <h4>Notas Técnicas y Comerciales</h4>
-    <p><?= nl2br(htmlspecialchars($cotizacion['notas_tecnicas'] ?? 'No se especificaron notas adicionales.')) ?></p>
+    <div class="notes">
+        <h4>Notas Técnicas y Comerciales</h4>
+        <p><?= nl2br(htmlspecialchars($cotizacion['notas_tecnicas'] ?? 'No se especificaron notas adicionales.')) ?></p>
 
-    <h4>Términos y Condiciones</h4>
-    <ul>
-        <li>Los precios están expresados en dólares americanos (USD).</li>
-        <li>La validez de esta cotización es de 15 días hábiles a partir de su emisión.</li>
-        <li>Formas de pago aceptadas: Transferencia bancaria, Zelle, efectivo.</li>
-        <li>La entrega se realizará en los plazos acordados tras la confirmación de pago.</li>
-        <li>Garantía aplicable según especificaciones del fabricante.</li>
-    </ul>
-</div>
+        <h4>Términos y Condiciones</h4>
+        <ul>
+            <li>Los precios están expresados en dólares americanos (USD).</li>
+            <li>La validez de esta cotización es de 15 días hábiles a partir de su emisión.</li>
+            <li>Formas de pago aceptadas: Transferencia bancaria, Zelle, efectivo, divisas.</li>
+            <li>La entrega se realizará en los plazos acordados tras la confirmación de pago.</li>
+            <li>Garantía aplicable según especificaciones del fabricante.</li>
+            <li>Para coordinar el pago, contáctenos vía WhatsApp: <?= \App\Core\Config::WHATSAPP_DISPLAY ?></li>
+        </ul>
+    </div>
 
 </body>
 </html>

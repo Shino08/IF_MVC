@@ -39,7 +39,8 @@ if ($esPdf):
             $logoFile = dirname(__DIR__,3) . '/public/img/Photoroom-20251106_165742.png';
             $logoSrcPdf = '';
             if (file_exists($logoFile)) {
-                $logoSrcPdf = 'file://' . $logoFile;
+                $imgData = base64_encode(file_get_contents($logoFile));
+                $logoSrcPdf = 'data:image/png;base64,' . $imgData;
             }
             if (!empty($logoSrcPdf)):
             ?>

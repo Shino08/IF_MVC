@@ -9,6 +9,7 @@ use App\Models\ProductsModel;
 use App\Models\ServiciosModel;
 use Dompdf\Dompdf;
 use Dompdf\Options;
+use App\Core\TasaBCV;
 
 class DashboardController extends Router
 {
@@ -60,6 +61,21 @@ class DashboardController extends Router
         // Últimos 5 servicios agregados
         $ultimosServicios = array_slice($todosServicios, 0, 5);
 
+        // ── Cotizaciones stats ─────────────────────────────────────
+        $db = \App\Core\Database::getInstance();
+        $cotTotal = 0; $cotPendientes = 0; $cotEnviadas = 0;
+        try {
+            $stmt = $db->query("SELECT estado_id FROM cotizaciones WHERE estado_id != 1");
+            $all = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+            $cotTotal = count($all);
+            foreach ($all as $r) {
+                if ($r['estado_id'] == 2) $cotPendientes++;
+                if ($r['estado_id'] == 3) $cotEnviadas++;
+            }
+        } catch (\Exception $e) {
+            error_log('Dashboard cotizaciones stats: ' . $e->getMessage());
+        }
+
         $this->view('dashboard/index', [
             'title'            => 'Dashboard',
             'totalProductos'   => $totalProductos,
@@ -69,6 +85,9 @@ class DashboardController extends Router
             'catMap'           => $catMap,
             'ultimosProductos' => $ultimosProductos,
             'ultimosServicios' => $ultimosServicios,
+            'cotTotal'         => $cotTotal,
+            'cotPendientes'    => $cotPendientes,
+            'cotEnviadas'      => $cotEnviadas,
         ]);
     }
 
@@ -323,8 +342,22 @@ class DashboardController extends Router
             exit;
         }
 
+        // Obtener tasa BCV del momento
+        $tasaData = TasaBCV::getTasa();
+        $tasabcv  = $tasaData['tasa'];
+
+        // Calcular monto en USD a partir del total en Bs
+        $db = \App\Core\Database::getInstance();
+        $stmt = $db->prepare('SELECT total FROM cotizaciones WHERE id = :id');
+        $stmt->execute([':id' => $cotizacionId]);
+        $totalUsd = (float)$stmt->fetchColumn();
+        $montoBs = null;
+        if ($tasabcv > 0 && $totalUsd > 0) {
+            $montoBs = round($totalUsd * $tasabcv, 2);
+        }
+
         $model = new \App\Models\CotizacionesModel();
-        $res = $model->emitirCotizacion($cotizacionId, $notasCliente);
+        $res = $model->emitirCotizacion($cotizacionId, $notasCliente, $tasabcv, $montoBs);
 
         if ($res) {
             $_SESSION['success_msg'] = 'Cotización emitida exitosamente. Estado cambiado a "Enviada".';

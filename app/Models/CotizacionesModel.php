@@ -212,14 +212,18 @@ class CotizacionesModel
         }
     }
 
-    public function emitirCotizacion(int $cotizacionId, string $notasCliente = ''): bool
+    public function emitirCotizacion(int $cotizacionId, string $notasCliente = '', ?float $tasabcv = null, ?float $montousd = null): bool
     {
         try {
             // estado 3 = enviada (solo desde pendiente_revision)
-            $sql = 'UPDATE cotizaciones SET estado_id = 3, notas_tecnicas = COALESCE(:notas, notas_tecnicas) WHERE id = :id AND estado_id = 2';
+            // Guardar tasa BCV del momento
+            $sql = 'UPDATE cotizaciones SET estado_id = 3, notas_tecnicas = COALESCE(:notas, notas_tecnicas), 
+                    tasabcv = :tasa, montousd = :usd WHERE id = :id AND estado_id = 2';
             $stmt = $this->db->prepare($sql);
             return $stmt->execute([
                 ':notas' => !empty($notasCliente) ? $notasCliente : null,
+                ':tasa'  => $tasabcv,
+                ':usd'   => $montousd,
                 ':id'    => $cotizacionId
             ]);
         } catch (PDOException $e) {
@@ -360,6 +364,20 @@ class CotizacionesModel
         } catch (PDOException $e) {
             error_log("Error en CotizacionesModel::getByIdAdmin - " . $e->getMessage());
             return null;
+        }
+    }
+
+    public function confirmarCotizacionCliente(int $cotizacionId, int $userId): bool
+    {
+        try {
+            // Estado 4 = Aprobada por el cliente (solo desde Enviada = estado 3)
+            $sql = 'UPDATE cotizaciones SET estado_id = 4 WHERE id = :id AND usuario_id = :userId AND estado_id = 3';
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute([':id' => $cotizacionId, ':userId' => $userId]);
+            return $stmt->rowCount() > 0;
+        } catch (PDOException $e) {
+            error_log("Error en CotizacionesModel::confirmarCotizacionCliente - " . $e->getMessage());
+            return false;
         }
     }
 }

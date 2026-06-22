@@ -257,6 +257,23 @@ class CotizacionClienteController extends Router
         exit;
     }
 
+    public function confirmarCotizacion(string $id): void
+    {
+        $userId = (int)$_SESSION['user_id'];
+        $cotizacionId = (int)$id;
+
+        $res = $this->cotizacionesModel->confirmarCotizacionCliente($cotizacionId, $userId);
+
+        if ($res) {
+            $_SESSION['success_msg'] = '¡Cotización confirmada exitosamente! Nos pondremos en contacto para coordinar los siguientes pasos.';
+        } else {
+            $_SESSION['error_msg'] = 'No se pudo confirmar la cotización. Verifica que esté en estado "Enviada" y que te pertenezca.';
+        }
+
+        header('Location: ' . $this->baseUrl() . '/mis-cotizaciones/' . $cotizacionId);
+        exit;
+    }
+
     public function enviarCorreo(string $id): void
     {
         $userId = (int)$_SESSION['user_id'];

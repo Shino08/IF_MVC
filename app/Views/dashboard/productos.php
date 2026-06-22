@@ -28,11 +28,17 @@
                     <svg class="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                     </svg>
-                    <input type="text" placeholder="Buscar por SKU o nombre..."
+                    <input type="text" id="buscador-productos" placeholder="Buscar por SKU o nombre..."
                            class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500 transition-all">
                 </div>
-                <select class="border border-gray-200 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 bg-white">
+                <select id="filtro-categoria-productos" class="border border-gray-200 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 bg-white">
                     <option value="">Todas las categorías</option>
+                    <?php
+                    $cats = array_unique(array_map(fn($p) => $p['categoria_nombre'] ?? 'Sin Categoría', $productos));
+                    sort($cats);
+                    foreach ($cats as $cat): ?>
+                        <option value="<?= htmlspecialchars($cat) ?>"><?= htmlspecialchars($cat) ?></option>
+                    <?php endforeach; ?>
                 </select>
             </div>
 
@@ -54,7 +60,10 @@
 
                 <div class="grid grid-cols-5 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
                     <?php foreach ($productos as $p): ?>
-                        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-lg transition-all flex flex-col relative group" data-card>
+                        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-lg transition-all flex flex-col relative group" data-card
+                             data-nombre="<?= htmlspecialchars(strtolower($p['nombre'])) ?>"
+                             data-sku="<?= htmlspecialchars(strtolower($p['sku'])) ?>"
+                             data-categoria="<?= htmlspecialchars($p['categoria_nombre'] ?? 'Sin Categoría') ?>">
 
                             <?php $enStock = (int)$p['existencia'] > 0; ?>
                             <span class="absolute top-0 right-0 z-10 px-3 py-1.5 text-xs font-bold rounded-bl-xl shadow-sm
@@ -152,5 +161,32 @@
 
 <script>const BASE_URL = "<?= $base_url ?? '' ?>";</script>
 <script src="<?= $base_url ?? '' ?>/js/productos.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const buscador = document.getElementById('buscador-productos');
+    const filtroCat = document.getElementById('filtro-categoria-productos');
+    const cards = document.querySelectorAll('[data-card]');
+
+    function filtrar() {
+        const texto = (buscador?.value ?? '').toLowerCase().trim();
+        const cat = (filtroCat?.value ?? '').toLowerCase().trim();
+
+        cards.forEach(card => {
+            const nombre = (card.dataset.nombre ?? '').toLowerCase();
+            const sku = (card.dataset.sku ?? '').toLowerCase();
+            const catCard = (card.dataset.categoria ?? '').toLowerCase().trim();
+
+            const matchTexto = !texto || nombre.includes(texto) || sku.includes(texto);
+            const matchCat = !cat || catCard === cat;
+
+            card.style.display = (matchTexto && matchCat) ? '' : 'none';
+        });
+    }
+
+    buscador?.addEventListener('input', filtrar);
+    filtroCat?.addEventListener('change', filtrar);
+    filtrar();
+});
+</script>
 </body>
 </html>

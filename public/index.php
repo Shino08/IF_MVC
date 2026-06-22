@@ -90,6 +90,7 @@ Router::get('/mis-cotizaciones/{id}',         [CotizacionClienteController::clas
 Router::get('/cotizacion/detalle/{id}',       [CotizacionClienteController::class, 'detalle']);
 Router::get('/cotizacion/pdf/{id}',           [CotizacionClienteController::class, 'pdf']);
 Router::post('/cotizacion/enviar_correo/{id}',[CotizacionClienteController::class, 'enviarCorreo']);
+Router::post('/cotizacion/confirmar/{id}', [CotizacionClienteController::class, 'confirmarCotizacion']);
 
 Router::get('/catalogo', [CatalogoController::class, 'index']);
 Router::get('/producto/{id}', [CatalogoController::class, 'producto']);

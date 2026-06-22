@@ -92,7 +92,7 @@
                     <p class="text-xs text-green-600 font-medium mt-2">Productos y servicios</p>
                 </a>
 
-                <!-- Cotizaciones (placeholder real) -->
+                <!-- Cotizaciones (datos reales) -->
                 <a href="<?= $base_url ?>/dashboard/cotizaciones"
                    class="bg-gradient-to-br from-red-700 to-red-900 rounded-2xl shadow-sm p-6 hover:shadow-md transition-shadow group text-white">
                     <div class="flex justify-between items-start mb-4">
@@ -102,11 +102,19 @@
                                 <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"/>
                             </svg>
                         </div>
-                        <span class="text-xs font-semibold text-white/80 bg-white/20 px-2 py-0.5 rounded-full">Próximamente</span>
+                        <span class="text-xs font-semibold text-white/80 bg-white/20 px-2 py-0.5 rounded-full">
+                            <?= $cotPendientes ?> pendientes
+                        </span>
                     </div>
-                    <p class="text-3xl font-black mb-1">—</p>
-                    <p class="text-sm text-white/80">Cotizaciones</p>
-                    <p class="text-xs text-white/60 font-medium mt-2">Módulo en desarrollo</p>
+                    <p class="text-3xl font-black mb-1"><?= $cotTotal ?></p>
+                    <p class="text-sm text-white/80">Solicitudes de Cotización</p>
+                    <p class="text-xs text-white/60 font-medium mt-2">
+                        <?php if ($cotEnviadas > 0): ?>
+                            <?= $cotEnviadas ?> enviada<?= $cotEnviadas > 1 ? 's' : '' ?> — <?= $cotPendientes ?> por revisar
+                        <?php else: ?>
+                            Sistema de cotizaciones activo
+                        <?php endif; ?>
+                    </p>
                 </a>
 
             </div>
