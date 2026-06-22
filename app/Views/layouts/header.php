@@ -18,8 +18,8 @@ if (isset($_SESSION['user_id']) && (!isset($_SESSION['rol_id']) || $_SESSION['ro
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= htmlspecialchars($title ?? 'InstalFuego — Sistemas de Seguridad Contra Incendios') ?></title>
     
-    <link rel="stylesheet" href="<?= $base_url ?? '' ?>/css/output.css">
-    <link rel="stylesheet" href="<?= $base_url ?? '' ?>/css/styles.css">
+    <link rel="stylesheet" href="<?= $base_url ?? '' ?>/css/output.css?v=<?= time() ?>">
+    <link rel="stylesheet" href="<?= $base_url ?? '' ?>/css/styles.css?v=<?= time() ?>">
 </head>
 <body class="bg-white text-gray-900 font-sans">
 
