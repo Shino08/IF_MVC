@@ -12,6 +12,7 @@ composer.lock
 .env
 .env.local
 .env.*.local
+repomix-output.xml
 
 # ─── IDEs y editores ───────────────────────────────────────────────
 .vscode/

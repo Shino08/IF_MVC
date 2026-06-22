@@ -12,6 +12,9 @@ use App\Controllers\DashboardController;
 use App\Controllers\ProductoController;
 use App\Controllers\CategoriasController;
 use App\Controllers\ServicioController;
+use App\Controllers\CuentaController;
+use App\Controllers\CotizacionClienteController;
+use App\Controllers\CatalogoController;
 
 Router::get('/login',    [AuthController::class, 'showLogin']);
 Router::post('/login',   [AuthController::class, 'processLogin']);
@@ -46,6 +49,25 @@ Router::post('/dashboard/servicios/imagen/borrar',       [ServicioController::cl
 Router::post('/dashboard/servicios/imagen/reemplazar',   [ServicioController::class,   'reemplazarImagen']);
 
 Router::get('/dashboard/reportes',             [DashboardController::class, 'reportes']);
+
+Router::get('/cuenta',                   [CuentaController::class, 'index']);
+Router::get('/cuenta/perfil',            [CuentaController::class, 'perfil']);
+Router::post('/cuenta/perfil',           [CuentaController::class, 'updatePerfil']);
+Router::get('/cuenta/seguridad',         [CuentaController::class, 'seguridad']);
+Router::post('/cuenta/seguridad',        [CuentaController::class, 'updateSeguridad']);
+
+Router::get('/cotizacion/actual',             [CotizacionClienteController::class, 'actual']);
+Router::post('/cotizacion/agregar',           [CotizacionClienteController::class, 'agregar']);
+Router::post('/cotizacion/item/actualizar',   [CotizacionClienteController::class, 'actualizarItem']);
+Router::post('/cotizacion/item/eliminar',     [CotizacionClienteController::class, 'eliminarItem']);
+Router::post('/cotizacion/enviar',            [CotizacionClienteController::class, 'enviar']);
+Router::get('/cotizacion/exito',              [CotizacionClienteController::class, 'exito']);
+Router::get('/mis-cotizaciones',              [CotizacionClienteController::class, 'historial']);
+Router::get('/mis-cotizaciones/{id}',         [CotizacionClienteController::class, 'detalle']);
+
+Router::get('/catalogo', [CatalogoController::class, 'index']);
+Router::get('/producto/{id}', [CatalogoController::class, 'producto']);
+Router::get('/servicio/{id}', [CatalogoController::class, 'servicio']);
 
 Router::get('/', [HomeController::class, 'index']);
 

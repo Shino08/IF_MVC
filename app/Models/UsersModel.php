@@ -110,4 +110,59 @@ class UsersModel
             return null;
         }
     }
+
+    public function findById(int $id): ?array
+    {
+        try {
+            $stmt = $this->db->prepare('SELECT * FROM usuarios WHERE id = :id LIMIT 1');
+            $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+            $stmt->execute();
+            
+            $user = $stmt->fetch(PDO::FETCH_ASSOC);
+            return $user ?: null;
+        } catch (PDOException $e) {
+            error_log("Error en Usuario::findById - " . $e->getMessage());
+            return null;
+        }
+    }
+
+    public function updateProfile(int $id, string $nombre, string $apellido, string $cedula, string $empresa, string $telefono, string $email): bool
+    {
+        try {
+            $sql = 'UPDATE usuarios 
+                    SET nombre = :nombre, apellido = :apellido, cedula = :cedula, empresa = :empresa, telefono = :telefono, email = :email 
+                    WHERE id = :id';
+            $stmt = $this->db->prepare($sql);
+            
+            $empresa_limpia = empty(trim($empresa)) ? null : trim($empresa);
+            
+            return $stmt->execute([
+                ':id'       => $id,
+                ':nombre'   => trim($nombre),
+                ':apellido' => trim($apellido),
+                ':cedula'   => trim($cedula),
+                ':empresa'  => $empresa_limpia,
+                ':telefono' => trim($telefono),
+                ':email'    => trim($email)
+            ]);
+        } catch (PDOException $e) {
+            error_log("Error en Usuario::updateProfile - " . $e->getMessage());
+            return false;
+        }
+    }
+
+    public function updatePassword(int $id, string $hashedPassword): bool
+    {
+        try {
+            $sql = 'UPDATE usuarios SET contrasena = :contrasena WHERE id = :id';
+            $stmt = $this->db->prepare($sql);
+            return $stmt->execute([
+                ':id'         => $id,
+                ':contrasena' => $hashedPassword
+            ]);
+        } catch (PDOException $e) {
+            error_log("Error en Usuario::updatePassword - " . $e->getMessage());
+            return false;
+        }
+    }
 }
