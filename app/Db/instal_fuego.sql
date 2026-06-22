@@ -217,4 +217,14 @@ CREATE TABLE `reportes` (
   CONSTRAINT `fk_reportes_usuario` FOREIGN KEY (`generado_por_usuario_id`) REFERENCES `usuarios` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE `password_resets` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `usuarioid` INT NOT NULL,
+  `token_hash` VARCHAR(255) NOT NULL,
+  `expiracion` DATETIME NOT NULL,
+  `usado` TINYINT(1) NOT NULL DEFAULT 0,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT `fk_password_resets_usuario` FOREIGN KEY (`usuarioid`) REFERENCES `usuarios`(`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 COMMIT;

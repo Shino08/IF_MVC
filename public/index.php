@@ -21,6 +21,10 @@ Router::post('/login',   [AuthController::class, 'processLogin']);
 Router::get('/logout',   [AuthController::class, 'logout']);
 Router::get('/register', [AuthController::class, 'showRegister']);
 Router::post('/register',[AuthController::class, 'register']);
+Router::get('/olvide-password', [AuthController::class, 'showOlvidePassword']);
+Router::post('/olvide-password',[AuthController::class, 'processOlvidePassword']);
+Router::get('/reset-password',  [AuthController::class, 'showResetPassword']);
+Router::post('/reset-password', [AuthController::class, 'processResetPassword']);
 
 Router::get('/dashboard',                      [DashboardController::class, 'index']);
 

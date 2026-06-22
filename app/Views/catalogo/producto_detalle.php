@@ -31,9 +31,13 @@
                 
                 <!-- Product Image Gallery -->
                 <div class="flex flex-col items-center">
-                    <?php $img = !empty($producto['imagen_principal']) ? $producto['imagen_principal'] : 'placeholder.jpg'; ?>
+                    <?php 
+                        $img = !empty($producto['imagen_principal']) 
+                            ? ($base_url ?? '') . '/img/productos/' . htmlspecialchars($producto['imagen_principal'])
+                            : ($base_url ?? '') . '/img/user.png'; 
+                    ?>
                     <div class="w-full aspect-square bg-gray-50 rounded-xl p-8 flex items-center justify-center border border-gray-100 mb-4">
-                        <img src="<?= $base_url ?? '' ?>/img/<?= htmlspecialchars($img) ?>" alt="<?= htmlspecialchars($producto['nombre'] ?? '') ?>" class="max-w-full max-h-full object-contain">
+                        <img src="<?= $img ?>" alt="<?= htmlspecialchars($producto['nombre'] ?? '') ?>" class="max-w-full max-h-full object-contain">
                     </div>
                 </div>
 

@@ -165,4 +165,91 @@ class UsersModel
             return false;
         }
     }
+
+    public function createPasswordResetToken(int $userId, string $token): bool
+    {
+        try {
+            // Invalidar tokens anteriores no usados
+            $sqlInvalidate = 'UPDATE password_resets SET usado = 1 WHERE usuarioid = :usuarioid AND usado = 0';
+            $stmtInvalidate = $this->db->prepare($sqlInvalidate);
+            $stmtInvalidate->execute([':usuarioid'  => $userId]);
+
+            $sql = 'INSERT INTO password_resets (usuarioid, token_hash, expiracion) 
+                    VALUES (:usuarioid, :token_hash, DATE_ADD(NOW(), INTERVAL 60 MINUTE))';
+            $stmt = $this->db->prepare($sql);
+            return $stmt->execute([
+                ':usuarioid'  => $userId,
+                ':token_hash' => hash('sha256', $token)
+            ]);
+        } catch (PDOException $e) {
+            error_log("Error en Usuario::createPasswordResetToken - " . $e->getMessage());
+            return false;
+        }
+    }
+
+    public function canRequestPasswordReset(int $userId): bool
+    {
+        try {
+            // Verificar si hay demasiados tokens recientes (creados en los últimos 15 min -> expiracion > NOW() + 45 MIN)
+            $sql = 'SELECT COUNT(id) FROM password_resets 
+                    WHERE usuarioid = :usuarioid 
+                      AND expiracion > DATE_ADD(NOW(), INTERVAL 45 MINUTE)';
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute([':usuarioid' => $userId]);
+            
+            // Límite: 3 intentos en 15 minutos
+            return (int)$stmt->fetchColumn() < 3;
+        } catch (PDOException $e) {
+            error_log("Error en Usuario::canRequestPasswordReset - " . $e->getMessage());
+            return false;
+        }
+    }
+
+    public function verifyPasswordResetToken(int $userId, string $token): bool
+    {
+        try {
+            $sql = 'SELECT id FROM password_resets 
+                    WHERE usuarioid = :usuarioid 
+                      AND token_hash = :token_hash 
+                      AND usado = 0 
+                      AND expiracion > NOW() 
+                    LIMIT 1';
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute([
+                ':usuarioid'  => $userId,
+                ':token_hash' => hash('sha256', $token)
+            ]);
+            
+            return (bool)$stmt->fetchColumn();
+        } catch (PDOException $e) {
+            error_log("Error en Usuario::verifyPasswordResetToken - " . $e->getMessage());
+            return false;
+        }
+    }
+
+    public function resetPassword(int $userId, string $hashedPassword, string $token): bool
+    {
+        try {
+            $this->db->beginTransaction();
+
+            $this->updatePassword($userId, $hashedPassword);
+
+            $sql = 'UPDATE password_resets SET usado = 1 
+                    WHERE usuarioid = :usuarioid AND token_hash = :token_hash';
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute([
+                ':usuarioid'  => $userId,
+                ':token_hash' => hash('sha256', $token)
+            ]);
+
+            $this->db->commit();
+            return true;
+        } catch (PDOException $e) {
+            if ($this->db->inTransaction()) {
+                $this->db->rollBack();
+            }
+            error_log("Error en Usuario::resetPassword - " . $e->getMessage());
+            return false;
+        }
+    }
 }

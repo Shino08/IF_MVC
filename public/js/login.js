@@ -61,3 +61,25 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
         btnSpinner.classList.add('hidden');
     }
 });
+
+// Toggle Password Visibility
+const passwordInput = document.getElementById('password');
+const togglePasswordBtn = document.getElementById('togglePassword');
+const eyeIcon = document.getElementById('eyeIcon');
+const eyeOffIcon = document.getElementById('eyeOffIcon');
+
+if (passwordInput && togglePasswordBtn) {
+    togglePasswordBtn.addEventListener('click', () => {
+        const isHidden = passwordInput.type === 'password';
+        passwordInput.type = isHidden ? 'text' : 'password';
+        togglePasswordBtn.setAttribute('aria-label', isHidden ? 'Ocultar contraseña' : 'Mostrar contraseña');
+        
+        if (isHidden) {
+            eyeIcon.classList.add('hidden');
+            eyeOffIcon.classList.remove('hidden');
+        } else {
+            eyeIcon.classList.remove('hidden');
+            eyeOffIcon.classList.add('hidden');
+        }
+    });
+}

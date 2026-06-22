@@ -19,6 +19,7 @@ spl_autoload_register(function (string $class): void {
         'App\\Core\\'        => $baseDir . 'app/Core/',
         'App\\Controllers\\' => $baseDir . 'app/Controllers/',
         'App\\Models\\'      => $baseDir . 'app/Models/',
+        'PHPMailer\\PHPMailer\\' => $baseDir . 'app/Core/PHPMailer/',
     ];
 
     foreach ($prefixes as $prefix => $dir) {

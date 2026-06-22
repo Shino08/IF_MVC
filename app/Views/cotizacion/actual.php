@@ -38,18 +38,37 @@
                             <?php foreach ($detalles as $item): ?>
                                 <li class="p-6 flex flex-col sm:flex-row items-center gap-6">
                                     
-                                    <div class="flex-1 w-full text-center sm:text-left">
-                                        <div class="flex items-center justify-center sm:justify-start gap-2 mb-1">
-                                            <span class="px-2.5 py-0.5 rounded-full text-xs font-medium <?= $item['producto_id'] ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800' ?>">
-                                                <?= $item['producto_id'] ? 'Producto' : 'Servicio' ?>
-                                            </span>
+                                    <div class="flex items-center gap-4 flex-1 w-full text-center sm:text-left">
+                                        <?php
+                                            if (!empty($item['producto_id'])) {
+                                                $imgFile = $item['producto_imagen'] ?? '';
+                                                $imgDir = '/img/productos/';
+                                            } else {
+                                                $imgFile = $item['servicio_imagen'] ?? '';
+                                                $imgDir = '/img/servicios/';
+                                            }
+                                            $publicDir = dirname(__DIR__, 3) . '/public';
+                                            $imgPathFs = !empty($imgFile) ? $publicDir . $imgDir . $imgFile : '';
+                                            $imgUrl = (!empty($imgFile) && file_exists($imgPathFs)) 
+                                                ? ($base_url ?? '') . $imgDir . htmlspecialchars($imgFile)
+                                                : ($base_url ?? '') . '/img/user.png';
+                                        ?>
+                                        <div class="hidden sm:block flex-shrink-0 w-20 h-20 bg-gray-50 rounded-lg p-2 border border-gray-100">
+                                            <img src="<?= $imgUrl ?>" alt="<?= htmlspecialchars(!empty($item['producto_id']) ? $item['producto_nombre'] : $item['servicio_nombre']) ?>" class="w-full h-full object-contain mix-blend-multiply">
                                         </div>
-                                        <h4 class="text-lg font-bold text-gray-900">
-                                            <?= htmlspecialchars($item['producto_id'] ? $item['producto_nombre'] : $item['servicio_nombre']) ?>
-                                        </h4>
-                                        <p class="text-sm text-gray-500">
-                                            <?= $item['producto_id'] ? 'SKU: ' . htmlspecialchars($item['sku']) : 'Código: ' . htmlspecialchars($item['codigo']) ?>
-                                        </p>
+                                        <div>
+                                            <div class="flex items-center justify-center sm:justify-start gap-2 mb-1">
+                                                <span class="px-2.5 py-0.5 rounded-full text-xs font-medium <?= !empty($item['producto_id']) ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800' ?>">
+                                                    <?= !empty($item['producto_id']) ? 'Producto' : 'Servicio' ?>
+                                                </span>
+                                            </div>
+                                            <h4 class="text-lg font-bold text-gray-900 line-clamp-2">
+                                                <?= htmlspecialchars(!empty($item['producto_id']) ? $item['producto_nombre'] : $item['servicio_nombre']) ?>
+                                            </h4>
+                                            <p class="text-sm text-gray-500 font-mono mt-1">
+                                                <?= !empty($item['producto_id']) ? 'SKU: ' . htmlspecialchars($item['sku'] ?? 'N/A') : 'COD: ' . htmlspecialchars($item['codigo'] ?? 'N/A') ?>
+                                            </p>
+                                        </div>
                                     </div>
 
                                     <div class="flex items-center gap-4 w-full sm:w-auto justify-center sm:justify-end">

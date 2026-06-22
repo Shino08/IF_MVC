@@ -1,11 +1,26 @@
 <?php require_once dirname(__DIR__) . '/layouts/header.php'; ?>
 
 <?php
-// Extraer categorías únicas para los filtros
-$categorias = [];
+// Unificar productos y servicios
+$items = [];
 if (!empty($productos)) {
     foreach ($productos as $p) {
-        $cat = $p['categoria_nombre'] ?? 'Sin Categoría';
+        $p['tipo_item'] = 'producto';
+        $items[] = $p;
+    }
+}
+if (!empty($servicios)) {
+    foreach ($servicios as $s) {
+        $s['tipo_item'] = 'servicio';
+        $items[] = $s;
+    }
+}
+
+// Extraer categorías únicas para los filtros
+$categorias = [];
+if (!empty($items)) {
+    foreach ($items as $item) {
+        $cat = $item['categoria_nombre'] ?? 'Sin Categoría';
         if (!in_array($cat, $categorias)) {
             $categorias[] = $cat;
         }
@@ -14,7 +29,8 @@ if (!empty($productos)) {
 }
 
 // Obtener detalles del borrador actual para saber qué items ya están agregados
-$agregados = [];
+$agregadosProductos = [];
+$agregadosServicios = [];
 if (isset($_SESSION['user_id']) && (!isset($_SESSION['rol_id']) || $_SESSION['rol_id'] != 1)) {
     if (class_exists('\App\Models\CotizacionesModel')) {
         $cotModel = new \App\Models\CotizacionesModel();
@@ -22,8 +38,11 @@ if (isset($_SESSION['user_id']) && (!isset($_SESSION['rol_id']) || $_SESSION['ro
         if ($borrador) {
             $detalles = $cotModel->getDetalles((int)$borrador['id']);
             foreach ($detalles as $d) {
-                if ($d['producto_id']) {
-                    $agregados[] = $d['producto_id'];
+                if (!empty($d['producto_id'])) {
+                    $agregadosProductos[] = $d['producto_id'];
+                }
+                if (!empty($d['servicio_id'])) {
+                    $agregadosServicios[] = $d['servicio_id'];
                 }
             }
         }
@@ -66,87 +85,181 @@ if (isset($_SESSION['user_id']) && (!isset($_SESSION['rol_id']) || $_SESSION['ro
             </div>
 
             <!-- Franja de filtros reales -->
-            <div class="flex flex-wrap items-center gap-2 border-b border-gray-200 pb-6">
-                <button class="catalog-filter catalog-filter--active" data-filter="all">Todos los equipos</button>
+            <div class="flex flex-wrap items-center gap-3 border-b border-gray-200 pb-6">
+                <button class="catalog-filter catalog-filter--active group px-5 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 shadow-sm border border-transparent" data-filter="all">
+                    Todos los equipos
+                </button>
                 <?php foreach ($categorias as $cat): ?>
-                    <button class="catalog-filter" data-filter="<?= htmlspecialchars($cat) ?>"><?= htmlspecialchars($cat) ?></button>
+                    <button class="catalog-filter group px-5 py-2.5 rounded-full text-sm font-semibold text-gray-600 bg-white border border-gray-200 hover:border-red-300 hover:text-red-700 hover:shadow-md transition-all duration-300" data-filter="<?= htmlspecialchars($cat) ?>">
+                        <?= htmlspecialchars($cat) ?>
+                    </button>
                 <?php endforeach; ?>
                 
                 <!-- Separador -->
-                <div class="w-px h-6 bg-gray-300 mx-2 hidden sm:block"></div>
+                <div class="w-px h-8 bg-gray-200 mx-2 hidden sm:block"></div>
                 
-                <button class="catalog-filter flex items-center gap-1" data-filter="added">
-                    <svg class="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <button class="catalog-filter flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold text-gray-600 bg-white border border-gray-200 hover:border-red-300 hover:text-red-700 hover:bg-red-50 hover:shadow-md transition-all duration-300" data-filter="added">
+                    <svg class="w-4 h-4 text-red-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd"/></svg>
                     En mi solicitud
                 </button>
             </div>
         </div>
 
-        <!-- Products Grid -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12" id="catalogGrid">
-            <?php if (!empty($productos)): ?>
-                <?php foreach ($productos as $producto): ?>
+        <style>
+            .catalog-filter--active {
+                background-color: #b91c1c; /* red-700 */
+                color: #ffffff !important;
+                border-color: #b91c1c !important;
+                box-shadow: 0 4px 6px -1px rgba(185, 28, 28, 0.3), 0 2px 4px -1px rgba(185, 28, 28, 0.2);
+            }
+            .product-card-premium {
+                background: #ffffff;
+                border-radius: 1.25rem;
+                overflow: hidden;
+                border: 1px solid rgba(229, 231, 235, 0.8);
+                transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+                display: flex;
+                flex-direction: column;
+            }
+            .product-card-premium:hover {
+                transform: translateY(-8px);
+                box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+                border-color: rgba(254, 202, 202, 0.5);
+            }
+            .product-card-premium .img-container {
+                position: relative;
+                padding-top: 100%; /* 1:1 Aspect Ratio */
+                background: linear-gradient(to bottom, #f9fafb, #ffffff);
+                overflow: hidden;
+            }
+            .product-card-premium img {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                object-fit: contain;
+                padding: 1.5rem;
+                transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+            .product-card-premium:hover img {
+                transform: scale(1.08);
+            }
+            .btn-quote-premium {
+                position: relative;
+                overflow: hidden;
+                background: linear-gradient(135deg, #b91c1c, #991b1b);
+            }
+            .btn-quote-premium::after {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: -100%;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+                transition: all 0.6s ease;
+            }
+            .btn-quote-premium:hover::after {
+                left: 100%;
+            }
+        </style>
+
+        <!-- Items Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-12" id="catalogGrid">
+            <?php if (!empty($items)): ?>
+                <?php foreach ($items as $item): ?>
                     <?php 
-                        $isAdded = in_array($producto['id'], $agregados);
-                        $catName = htmlspecialchars($producto['categoria_nombre'] ?? 'Sin Categoría');
-                        $img = !empty($producto['imagen_url']) ? $producto['imagen_url'] : 'placeholder.jpg';
-                        $nombre = htmlspecialchars($producto['nombre'] ?? 'Producto Sin Nombre');
-                        $sku = htmlspecialchars($producto['sku'] ?? 'N/A');
-                        $prodId = (int)$producto['id'];
+                        $tipo = $item['tipo_item'];
+                        $isProduct = ($tipo === 'producto');
+                        
+                        $isAdded = $isProduct 
+                            ? in_array($item['id'], $agregadosProductos) 
+                            : in_array($item['id'], $agregadosServicios);
+                            
+                        $catName = htmlspecialchars($item['categoria_nombre'] ?? 'Sin Categoría');
+                        $nombre = htmlspecialchars($item['nombre'] ?? 'Item Sin Nombre');
+                        $itemId = (int)$item['id'];
+                        $detalleUrl = ($base_url ?? '') . '/' . $tipo . '/' . $itemId;
+                        
+                        if ($isProduct) {
+                            $sku = htmlspecialchars($item['sku'] ?? 'N/A');
+                            $imgDir = '/img/productos/';
+                        } else {
+                            $sku = htmlspecialchars($item['codigo'] ?? 'N/A');
+                            $imgDir = '/img/servicios/';
+                        }
+
+                        $publicDir = dirname(__DIR__, 3) . '/public';
+                        $imgPathFs = !empty($item['imagen_principal']) ? $publicDir . $imgDir . $item['imagen_principal'] : '';
+                        
+                        // Usar file_exists para evitar que se rompa si el archivo físico no existe (aunque esté en la BD)
+                        $img = (!empty($item['imagen_principal']) && file_exists($imgPathFs))
+                            ? ($base_url ?? '') . $imgDir . htmlspecialchars($item['imagen_principal']) 
+                            : ($base_url ?? '') . '/img/user.png';
                     ?>
                     
-                    <div class="product-card js-product-item" 
+                    <div class="product-card-premium js-product-item group" 
                          data-categoria="<?= $catName ?>" 
                          data-nombre="<?= strtolower($nombre) ?>" 
                          data-sku="<?= strtolower($sku) ?>" 
                          data-added="<?= $isAdded ? 'true' : 'false' ?>">
                         
-                        <!-- Badges Superiores -->
-                        <div class="absolute top-4 left-4 right-4 flex justify-between items-start z-10 pointer-events-none">
-                            <span class="bg-gray-900/80 backdrop-blur-sm text-white text-[10px] font-bold px-2.5 py-1 rounded-md uppercase tracking-wider">
-                                <?= $catName ?>
-                            </span>
-                            
-                            <!-- Indicador de Agregado -->
-                            <div class="js-added-badge transition-opacity duration-300 <?= $isAdded ? 'opacity-100' : 'opacity-0' ?>">
-                                <span class="bg-red-600 text-white text-[10px] font-bold px-2 py-1 rounded-md flex items-center gap-1 shadow-sm">
-                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
-                                    En solicitud
-                                </span>
+                        <div class="img-container">
+                            <!-- Badges Superiores -->
+                            <div class="absolute top-4 left-4 right-4 flex justify-between items-start z-10 pointer-events-none">
+                                <div class="flex flex-col gap-1.5">
+                                    <span class="bg-gray-900/85 backdrop-blur-md text-white text-[10px] font-bold px-3 py-1.5 rounded-lg uppercase tracking-wider shadow-sm">
+                                        <?= $catName ?>
+                                    </span>
+                                    <?php if (!$isProduct): ?>
+                                    <span class="bg-blue-600/90 text-white text-[10px] font-bold px-3 py-1.5 rounded-lg uppercase tracking-wider self-start shadow-sm">
+                                        Servicio
+                                    </span>
+                                    <?php endif; ?>
+                                </div>
+                                
+                                <!-- Indicador de Agregado -->
+                                <div class="js-added-badge transition-all duration-500 <?= $isAdded ? 'opacity-100 transform scale-100' : 'opacity-0 transform scale-90' ?>">
+                                    <div class="bg-red-50 text-red-700 border border-red-200 text-xs font-extrabold px-3 py-1.5 rounded-lg flex items-center gap-1.5 shadow-sm">
+                                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
 
-                        <div>
-                            <div class="product-card__media">
-                                <a href="<?= $base_url ?? '' ?>/producto/<?= $prodId ?>" class="block w-full h-full flex items-center justify-center">
-                                    <img src="<?= $base_url ?? '' ?>/img/<?= htmlspecialchars($img) ?>" alt="<?= $nombre ?>">
-                                </a>
-                            </div>
-                            
-                            <p class="text-[11px] text-gray-500 mb-1.5 font-mono font-medium uppercase tracking-wider">SKU: <?= $sku ?></p>
-                            <a href="<?= $base_url ?? '' ?>/producto/<?= $prodId ?>">
-                                <h3 class="text-sm font-bold text-gray-900 mb-6 line-clamp-2 leading-snug hover:text-red-600 transition-colors">
-                                    <?= $nombre ?>
-                                </h3>
+                            <a href="<?= $detalleUrl ?>" class="absolute inset-0 z-0">
+                                <img src="<?= $img ?>" alt="<?= $nombre ?>">
                             </a>
                         </div>
                         
-                        <!-- Acciones Dobles -->
-                        <div class="mt-auto flex flex-col gap-2">
-                            <?php if (isset($_SESSION['user_id']) && (!isset($_SESSION['rol_id']) || $_SESSION['rol_id'] != 1)): ?>
-                                <button type="button" 
-                                        class="btn-primary w-full js-add-to-quote <?= $isAdded ? 'opacity-50 cursor-not-allowed' : '' ?>" 
-                                        data-id="<?= $prodId ?>" 
-                                        <?= $isAdded ? 'disabled' : '' ?>>
-                                    <?= $isAdded ? 'Ya agregado' : 'Agregar a Solicitud' ?>
-                                </button>
-                            <?php else: ?>
-                                <a href="<?= $base_url ?? '' ?>/login" class="btn-primary w-full text-center">Inicia sesión para cotizar</a>
-                            <?php endif; ?>
-                            
-                            <a href="<?= $base_url ?? '' ?>/producto/<?= $prodId ?>" class="btn-secondary w-full">
-                                Ver Ficha Técnica
+                        <div class="p-6 flex flex-col flex-grow">
+                            <a href="<?= $detalleUrl ?>" class="group-hover:text-red-700 transition-colors duration-300">
+                                <h3 class="text-base font-bold text-gray-900 mb-4 line-clamp-2 leading-tight">
+                                    <?= $nombre ?>
+                                </h3>
                             </a>
+                            
+                            <div class="mt-auto pt-4 border-t border-gray-100 flex items-center justify-between gap-3 opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all duration-300">
+                                <?php if (isset($_SESSION['user_id']) && (!isset($_SESSION['rol_id']) || $_SESSION['rol_id'] != 1)): ?>
+                                    <button type="button" 
+                                            class="btn-quote-premium js-add-to-quote flex-1 text-white text-sm font-bold py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 <?= $isAdded ? 'opacity-60 cursor-not-allowed bg-gray-500' : '' ?>" 
+                                            data-id="<?= $itemId ?>" 
+                                            data-tipo="<?= $tipo ?>"
+                                            <?= $isAdded ? 'disabled' : '' ?>
+                                            title="<?= $isAdded ? 'Ya está en tu solicitud' : 'Añadir a solicitud de cotización' ?>">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+                                        <span class="btn-text"><?= $isAdded ? 'Añadido' : 'Cotizar' ?></span>
+                                    </button>
+                                <?php else: ?>
+                                    <a href="<?= $base_url ?? '' ?>/login" class="flex-1 bg-gray-900 text-white hover:bg-gray-800 transition-colors text-sm font-bold py-2.5 px-4 rounded-xl flex items-center justify-center text-center">
+                                        Ingresar
+                                    </a>
+                                <?php endif; ?>
+                                
+                                <a href="<?= $detalleUrl ?>" class="w-10 h-10 flex items-center justify-center rounded-xl bg-gray-50 text-gray-600 hover:bg-red-50 hover:text-red-700 transition-colors" title="Ver Detalles">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+                                </a>
+                            </div>
                         </div>
                     </div>
                 <?php endforeach; ?>
@@ -155,32 +268,24 @@ if (isset($_SESSION['user_id']) && (!isset($_SESSION['rol_id']) || $_SESSION['ro
                     <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-50 mb-4">
                         <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path></svg>
                     </div>
-                    <h3 class="text-lg font-medium text-gray-900">No hay productos disponibles</h3>
-                    <p class="mt-1 text-sm text-gray-500">Pronto agregaremos más equipos a nuestro catálogo técnico.</p>
+                    <h3 class="text-lg font-medium text-gray-900">No hay elementos disponibles</h3>
+                    <p class="mt-1 text-sm text-gray-500">Pronto agregaremos más equipos y servicios a nuestro catálogo.</p>
                 </div>
             <?php endif; ?>
             
             <!-- Elemento oculto para mostrar cuando el filtro no arroja resultados -->
             <div id="noResultsMsg" class="hidden col-span-full py-16 text-center">
-                <p class="text-gray-500 font-medium">No se encontraron productos con estos filtros.</p>
+                <p class="text-gray-500 font-medium">No se encontraron resultados con estos filtros.</p>
             </div>
         </div>
 
         <!-- Paginación Centrada -->
         <?php if (!empty($productos)): ?>
         <div class="flex flex-col items-center border-t border-gray-200 pt-8 mt-4">
-            <nav class="flex items-center gap-2" aria-label="Pagination">
-                <a href="#" class="pagination-pill pagination-pill--disabled">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
-                </a>
-                <a href="#" class="pagination-pill pagination-pill--active">1</a>
-                <a href="#" class="pagination-pill">2</a>
-                <a href="#" class="pagination-pill">3</a>
-                <a href="#" class="pagination-pill">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                </a>
+            <nav id="paginationContainer" class="flex items-center gap-2" aria-label="Pagination">
+                <!-- Se llenará vía JS -->
             </nav>
-            <p class="text-xs text-gray-400 mt-4 font-medium uppercase tracking-wider">Mostrando catálogo completo</p>
+            <p id="paginationInfo" class="text-xs text-gray-400 mt-4 font-medium uppercase tracking-wider"></p>
         </div>
         <?php endif; ?>
 
@@ -202,22 +307,30 @@ if (isset($_SESSION['user_id']) && (!isset($_SESSION['rol_id']) || $_SESSION['ro
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const filters = document.querySelectorAll('.catalog-filter');
-    const products = document.querySelectorAll('.js-product-item');
+    const products = Array.from(document.querySelectorAll('.js-product-item'));
     const searchInput = document.getElementById('searchInput');
     const noResults = document.getElementById('noResultsMsg');
     const toast = document.getElementById('toast');
+    const paginationContainer = document.getElementById('paginationContainer');
+    const paginationInfo = document.getElementById('paginationInfo');
+    
     let currentFilter = 'all';
+    let searchTerm = '';
+    
+    // Configuración de Paginación
+    const itemsPerPage = 8;
+    let currentPage = 1;
+    let filteredProducts = [...products];
 
-    // Función para aplicar filtros
+    // Función principal para aplicar filtros y paginar
     function applyFilters() {
-        const searchTerm = searchInput.value.toLowerCase().trim();
-        let visibleCount = 0;
-
-        products.forEach(product => {
+        searchTerm = searchInput ? searchInput.value.toLowerCase().trim() : '';
+        
+        filteredProducts = products.filter(product => {
             const cat = product.getAttribute('data-categoria');
             const added = product.getAttribute('data-added') === 'true';
-            const nombre = product.getAttribute('data-nombre');
-            const sku = product.getAttribute('data-sku');
+            const nombre = product.getAttribute('data-nombre') || '';
+            const sku = product.getAttribute('data-sku') || '';
             
             // Lógica de categoría
             let showByCategory = false;
@@ -231,27 +344,97 @@ document.addEventListener('DOMContentLoaded', function() {
                 showBySearch = nombre.includes(searchTerm) || sku.includes(searchTerm);
             }
 
-            if (showByCategory && showBySearch) {
-                product.style.display = '';
-                // Animación suave de entrada
-                product.style.opacity = '0';
-                product.style.transform = 'scale(0.98)';
-                setTimeout(() => {
-                    product.style.transition = 'all 0.3s ease';
-                    product.style.opacity = '1';
-                    product.style.transform = 'scale(1)';
-                }, 10);
-                visibleCount++;
-            } else {
-                product.style.display = 'none';
-            }
+            return showByCategory && showBySearch;
         });
 
-        if (visibleCount === 0 && products.length > 0) {
-            noResults.classList.remove('hidden');
+        // Reiniciar a primera página al filtrar
+        currentPage = 1;
+        renderPagination();
+        renderProducts();
+    }
+
+    function renderProducts() {
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+
+        // Ocultar todos primero
+        products.forEach(p => p.style.display = 'none');
+
+        // Mostrar solo los de la página actual
+        const currentProducts = filteredProducts.slice(startIndex, endIndex);
+        
+        currentProducts.forEach(product => {
+            product.style.display = '';
+            product.style.opacity = '0';
+            product.style.transform = 'scale(0.98)';
+            setTimeout(() => {
+                product.style.transition = 'all 0.3s ease';
+                product.style.opacity = '1';
+                product.style.transform = 'scale(1)';
+            }, 10);
+        });
+
+        if (filteredProducts.length === 0 && products.length > 0) {
+            if(noResults) noResults.classList.remove('hidden');
         } else {
-            noResults.classList.add('hidden');
+            if(noResults) noResults.classList.add('hidden');
         }
+    }
+
+    function renderPagination() {
+        if (!paginationContainer) return;
+        
+        const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+        paginationContainer.innerHTML = '';
+        
+        if (totalPages <= 1) {
+            if (paginationInfo) paginationInfo.innerText = `Mostrando ${filteredProducts.length} resultado(s)`;
+            return;
+        }
+
+        if (paginationInfo) {
+            const start = (currentPage - 1) * itemsPerPage + 1;
+            const end = Math.min(currentPage * itemsPerPage, filteredProducts.length);
+            paginationInfo.innerText = `Mostrando ${start} - ${end} de ${filteredProducts.length} resultados`;
+        }
+
+        // Botón Prev
+        const prevBtn = document.createElement('a');
+        prevBtn.href = '#';
+        prevBtn.className = `pagination-pill ${currentPage === 1 ? 'pagination-pill--disabled' : ''}`;
+        prevBtn.innerHTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>`;
+        prevBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (currentPage > 1) { currentPage--; renderProducts(); renderPagination(); window.scrollTo({top: 0, behavior: 'smooth'}); }
+        });
+        paginationContainer.appendChild(prevBtn);
+
+        // Páginas
+        for (let i = 1; i <= totalPages; i++) {
+            const pageBtn = document.createElement('a');
+            pageBtn.href = '#';
+            pageBtn.className = `pagination-pill ${currentPage === i ? 'pagination-pill--active' : ''}`;
+            pageBtn.innerText = i;
+            pageBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                currentPage = i;
+                renderProducts();
+                renderPagination();
+                window.scrollTo({top: 0, behavior: 'smooth'});
+            });
+            paginationContainer.appendChild(pageBtn);
+        }
+
+        // Botón Next
+        const nextBtn = document.createElement('a');
+        nextBtn.href = '#';
+        nextBtn.className = `pagination-pill ${currentPage === totalPages ? 'pagination-pill--disabled' : ''}`;
+        nextBtn.innerHTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>`;
+        nextBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (currentPage < totalPages) { currentPage++; renderProducts(); renderPagination(); window.scrollTo({top: 0, behavior: 'smooth'}); }
+        });
+        paginationContainer.appendChild(nextBtn);
     }
 
     // Eventos de botones de filtro
@@ -272,13 +455,17 @@ document.addEventListener('DOMContentLoaded', function() {
             searchTimeout = setTimeout(applyFilters, 300);
         });
     }
+    
+    // Inicializar vista
+    applyFilters();
 
     // Agregar a cotización vía AJAX
     document.querySelectorAll('.js-add-to-quote').forEach(btn => {
         btn.addEventListener('click', function() {
             if(this.disabled) return;
             
-            const prodId = this.getAttribute('data-id');
+            const itemId = this.getAttribute('data-id');
+            const itemTipo = this.getAttribute('data-tipo');
             const card = this.closest('.js-product-item');
             
             // Estado visual de carga
@@ -287,7 +474,11 @@ document.addEventListener('DOMContentLoaded', function() {
             this.disabled = true;
 
             const formData = new FormData();
-            formData.append('producto_id', prodId);
+            if (itemTipo === 'producto') {
+                formData.append('producto_id', itemId);
+            } else {
+                formData.append('servicio_id', itemId);
+            }
             formData.append('cantidad', 1);
 
             fetch('<?= $base_url ?? '' ?>/cotizacion/agregar', {
@@ -300,8 +491,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 // We should ideally change the backend to respond with JSON if fetch, but for now we just assume success.
                 
                 // Actualizar estado visual de la card
-                this.innerHTML = 'Ya agregado';
-                this.classList.add('opacity-50', 'cursor-not-allowed');
+                this.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg><span class="btn-text">Añadido</span>';
+                this.classList.add('opacity-60', 'cursor-not-allowed', 'bg-gray-500');
                 card.setAttribute('data-added', 'true');
                 
                 const badge = card.querySelector('.js-added-badge');

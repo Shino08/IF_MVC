@@ -31,9 +31,13 @@
                 
                 <!-- Service Image Gallery -->
                 <div class="flex flex-col items-center">
-                    <?php $img = !empty($servicio['imagen_principal']) ? $servicio['imagen_principal'] : 'placeholder.jpg'; ?>
+                    <?php 
+                        $img = !empty($servicio['imagen_principal']) 
+                            ? ($base_url ?? '') . '/img/servicios/' . htmlspecialchars($servicio['imagen_principal'])
+                            : ($base_url ?? '') . '/img/user.png'; 
+                    ?>
                     <div class="w-full aspect-square bg-gray-50 rounded-xl p-8 flex items-center justify-center border border-gray-100 mb-4 relative overflow-hidden">
-                        <img src="<?= $base_url ?? '' ?>/img/<?= htmlspecialchars($img) ?>" alt="<?= htmlspecialchars($servicio['nombre'] ?? '') ?>" class="max-w-full max-h-full object-cover">
+                        <img src="<?= $img ?>" alt="<?= htmlspecialchars($servicio['nombre'] ?? '') ?>" class="max-w-full max-h-full object-cover">
                         <div class="absolute top-4 left-4 bg-indigo-600 text-white text-xs font-bold px-3 py-1.5 rounded-full uppercase tracking-wider shadow-sm">
                             Servicio Especializado
                         </div>

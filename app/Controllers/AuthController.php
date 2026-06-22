@@ -165,6 +165,139 @@ public function register(): void
         $this->view('auth/register', array_merge(['title' => 'Registro', 'error' => $error], $data));
     }
 
+    public function showOlvidePassword(): void
+    {
+        $this->view('auth/olvide-password', ['title' => 'Recuperar Contraseña']);
+    }
+
+    public function processOlvidePassword(): void
+    {
+        $email = filter_var(trim($_POST['email'] ?? ''), FILTER_SANITIZE_EMAIL);
+        
+        if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $this->view('auth/olvide-password', ['title' => 'Recuperar Contraseña', 'error' => 'Ingresa un correo electrónico válido.']);
+            return;
+        }
+
+        $userModel = new UsersModel();
+        $user = $userModel->findByEmail($email);
+
+        if ($user) {
+            // Rate limiting check
+            if (!$userModel->canRequestPasswordReset((int)$user['id'])) {
+                $this->view('auth/olvide-password', [
+                    'title' => 'Recuperar Contraseña',
+                    'error' => 'Has solicitado demasiados cambios de contraseña recientemente. Por favor, espera 15 minutos.'
+                ]);
+                return;
+            }
+
+            $token = bin2hex(random_bytes(32));
+            $userModel->createPasswordResetToken((int)$user['id'], $token);
+
+            $resetLink = $this->baseUrl() . '/reset-password?token=' . $token . '&email=' . urlencode($email);
+            
+            // Send email using PHPMailer
+            try {
+                $mail = new \PHPMailer\PHPMailer\PHPMailer(true);
+                
+                // Configuración de SMTP (Por ejemplo: Mailtrap o SMTP de producción)
+                $mail->isSMTP();
+                $mail->Host       = 'sandbox.smtp.mailtrap.io'; // Cambiar en producción
+                $mail->SMTPAuth   = true;
+                $mail->Username   = 'TU_USUARIO_AQUI';          // Reemplazar con credenciales reales
+                $mail->Password   = 'TU_CONTRASEÑA_AQUI';       // Reemplazar con credenciales reales
+                $mail->SMTPSecure = \PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_STARTTLS;
+                $mail->Port       = 2525;                       // Puerto SMTP
+                
+                $mail->CharSet = 'UTF-8';
+                $mail->setFrom('no-reply@instalfuego.com', 'InstalFuego Soporte');
+                $mail->addAddress($email, htmlspecialchars($user['nombre']));
+                
+                $mail->isHTML(true);
+                $mail->Subject = 'Recuperación de Contraseña - InstalFuego';
+                $mail->Body    = "
+                    <h2>Recuperación de Contraseña</h2>
+                    <p>Hola {$user['nombre']},</p>
+                    <p>Recibimos una solicitud para restablecer tu contraseña. Haz clic en el siguiente enlace para continuar:</p>
+                    <p><a href='{$resetLink}' style='background-color:#cc0000;color:white;padding:10px 15px;text-decoration:none;border-radius:5px;'>Restablecer mi contraseña</a></p>
+                    <p>Si no solicitaste este cambio, puedes ignorar este mensaje.</p>
+                ";
+                $mail->AltBody = "Hola {$user['nombre']},\nPara restablecer tu contraseña, copia y pega el siguiente enlace en tu navegador:\n{$resetLink}";
+
+                $mail->send();
+            } catch (\Exception $e) {
+                error_log("Error al enviar correo de recuperación: {$mail->ErrorInfo}");
+            }
+        }
+
+        $this->view('auth/olvide-password', [
+            'title' => 'Recuperar Contraseña', 
+            'success' => 'Si tu correo está registrado, te hemos enviado las instrucciones para restablecer tu contraseña.'
+        ]);
+    }
+
+    public function showResetPassword(): void
+    {
+        $token = $_GET['token'] ?? '';
+        $email = $_GET['email'] ?? '';
+
+        if (empty($token) || empty($email)) {
+            header('Location: ' . $this->baseUrl() . '/login');
+            exit;
+        }
+
+        $userModel = new UsersModel();
+        $user = $userModel->findByEmail($email);
+
+        if (!$user || !$userModel->verifyPasswordResetToken((int)$user['id'], $token)) {
+            $this->view('auth/olvide-password', [
+                'title' => 'Recuperar Contraseña',
+                'error' => 'El enlace para restablecer la contraseña es inválido o ha expirado. Por favor, solicita uno nuevo.'
+            ]);
+            return;
+        }
+
+        $this->view('auth/reset-password', ['title' => 'Restablecer Contraseña', 'token' => $token, 'email' => $email]);
+    }
+
+    public function processResetPassword(): void
+    {
+        $token = $_POST['token'] ?? '';
+        $email = $_POST['email'] ?? '';
+        $password = $_POST['password'] ?? '';
+        $password_confirm = $_POST['password_confirm'] ?? '';
+
+        if (empty($password) || $password !== $password_confirm) {
+            $this->view('auth/reset-password', ['title' => 'Restablecer Contraseña', 'token' => $token, 'email' => $email, 'error' => 'Las contraseñas no coinciden.']);
+            return;
+        }
+
+        if (strlen($password) < 8) {
+            $this->view('auth/reset-password', ['title' => 'Restablecer Contraseña', 'token' => $token, 'email' => $email, 'error' => 'La contraseña debe tener al menos 8 caracteres.']);
+            return;
+        }
+
+        $userModel = new UsersModel();
+        $user = $userModel->findByEmail($email);
+
+        if (!$user) {
+            $this->view('auth/reset-password', ['title' => 'Restablecer Contraseña', 'token' => $token, 'email' => $email, 'error' => 'Enlace inválido o expirado.']);
+            return;
+        }
+
+        $isValid = $userModel->verifyPasswordResetToken((int)$user['id'], $token);
+
+        if (!$isValid) {
+            $this->view('auth/reset-password', ['title' => 'Restablecer Contraseña', 'token' => $token, 'email' => $email, 'error' => 'El enlace ha expirado o ya fue utilizado. Solicita uno nuevo.']);
+            return;
+        }
+
+        $userModel->resetPassword((int)$user['id'], password_hash($password, PASSWORD_DEFAULT), $token);
+
+        $this->view('auth/login', ['title' => 'Iniciar Sesión', 'success' => 'Tu contraseña ha sido actualizada correctamente. Ya puedes iniciar sesión.']);
+    }
+
     private function baseUrl(): string
     {
         $scriptName = $_SERVER['SCRIPT_NAME'];

@@ -39,12 +39,29 @@
                             <tr class="hover:bg-gray-50 transition-colors">
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="flex items-center">
+                                        <?php
+                                            if (!empty($item['producto_id'])) {
+                                                $imgFile = $item['producto_imagen'] ?? '';
+                                                $imgDir = '/img/productos/';
+                                            } else {
+                                                $imgFile = $item['servicio_imagen'] ?? '';
+                                                $imgDir = '/img/servicios/';
+                                            }
+                                            $publicDir = dirname(__DIR__, 3) . '/public';
+                                            $imgPathFs = !empty($imgFile) ? $publicDir . $imgDir . $imgFile : '';
+                                            $imgUrl = (!empty($imgFile) && file_exists($imgPathFs)) 
+                                                ? ($base_url ?? '') . $imgDir . htmlspecialchars($imgFile)
+                                                : ($base_url ?? '') . '/img/user.png';
+                                        ?>
+                                        <div class="flex-shrink-0 h-12 w-12 bg-gray-50 rounded-lg p-1 border border-gray-100">
+                                            <img class="h-full w-full object-contain mix-blend-multiply" src="<?= $imgUrl ?>" alt="">
+                                        </div>
                                         <div class="ml-4">
-                                            <div class="text-sm font-bold text-gray-900">
-                                                <?= htmlspecialchars($item['producto_id'] ? $item['producto_nombre'] : $item['servicio_nombre']) ?>
+                                            <div class="text-sm font-bold text-gray-900 line-clamp-1">
+                                                <?= htmlspecialchars(!empty($item['producto_id']) ? $item['producto_nombre'] : $item['servicio_nombre']) ?>
                                             </div>
-                                            <div class="text-sm text-gray-500">
-                                                <?= $item['producto_id'] ? 'SKU: ' . htmlspecialchars($item['sku']) : 'Código: ' . htmlspecialchars($item['codigo']) ?>
+                                            <div class="text-sm text-gray-500 font-mono mt-0.5">
+                                                <?= !empty($item['producto_id']) ? 'SKU: ' . htmlspecialchars($item['sku'] ?? 'N/A') : 'COD: ' . htmlspecialchars($item['codigo'] ?? 'N/A') ?>
                                             </div>
                                         </div>
                                     </div>

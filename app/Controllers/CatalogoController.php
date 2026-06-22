@@ -12,11 +12,15 @@ class CatalogoController extends Router
     public function index(): void
     {
         $productsModel = new ProductsModel();
+        $serviciosModel = new ServiciosModel();
+
         $productos = $productsModel->getAllProductsWithCategory();
+        $servicios = $serviciosModel->getAll();
 
         $data = [
-            'title' => 'Catálogo de Productos — InstalFuego',
-            'productos' => $productos
+            'title' => 'Catálogo de Productos y Servicios — InstalFuego',
+            'productos' => $productos,
+            'servicios' => $servicios
         ];
 
         $this->view('catalogo/index', $data);
