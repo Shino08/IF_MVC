@@ -5,6 +5,11 @@ namespace App\Controllers;
 
 use App\Core\Router;
 use App\Models\CotizacionesModel;
+use Dompdf\Dompdf;
+use Dompdf\Options;
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception as PHPMailerException;
+use App\Core\Config;
 
 class CotizacionClienteController extends Router
 {
@@ -198,6 +203,108 @@ class CotizacionClienteController extends Router
         }
         
         $_SESSION['error_msg'] = $message;
+        header('Location: ' . $_SERVER['HTTP_REFERER']);
+        exit;
+    }
+
+    private function generatePdfContent(int $cotizacionId, int $userId, int $userRol): ?string
+    {
+        if ($userRol === 1) {
+            $cotizacion = $this->cotizacionesModel->getByIdAdmin($cotizacionId);
+        } else {
+            $cotizacion = $this->cotizacionesModel->getById($cotizacionId, $userId);
+        }
+
+        if (!$cotizacion) {
+            return null;
+        }
+
+        $detalles = $this->cotizacionesModel->getDetalles($cotizacionId);
+
+        ob_start();
+        require dirname(__DIR__) . '/Views/cotizacion/pdf_template.php';
+        $html = ob_get_clean();
+
+        $options = new Options();
+        $options->set('isRemoteEnabled', true);
+        $dompdf = new Dompdf($options);
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+
+        return $dompdf->output();
+    }
+
+    public function pdf(string $id): void
+    {
+        $userId = (int)$_SESSION['user_id'];
+        $userRol = (int)($_SESSION['rol_id'] ?? 2);
+        $cotizacionId = (int)$id;
+
+        $pdfContent = $this->generatePdfContent($cotizacionId, $userId, $userRol);
+
+        if (!$pdfContent) {
+            $_SESSION['error_msg'] = 'Cotización no encontrada o no tiene permisos.';
+            header('Location: ' . $this->baseUrl() . '/mis-cotizaciones');
+            exit;
+        }
+
+        header('Content-Type: application/pdf');
+        header('Content-Disposition: inline; filename="Cotizacion_' . $cotizacionId . '.pdf"');
+        header('Cache-Control: private, max-age=0, must-revalidate');
+        header('Pragma: public');
+        echo $pdfContent;
+        exit;
+    }
+
+    public function enviarCorreo(string $id): void
+    {
+        $userId = (int)$_SESSION['user_id'];
+        $userRol = (int)($_SESSION['rol_id'] ?? 2);
+        $cotizacionId = (int)$id;
+
+        // Sólo admins
+        if ($userRol !== 1) {
+            $_SESSION['error_msg'] = 'No tiene permisos para enviar correos.';
+            header('Location: ' . $this->baseUrl() . '/mis-cotizaciones');
+            exit;
+        }
+
+        $cotizacion = $this->cotizacionesModel->getByIdAdmin($cotizacionId);
+        if (!$cotizacion) {
+            $_SESSION['error_msg'] = 'Cotización no encontrada.';
+            header('Location: ' . $this->baseUrl() . '/mis-cotizaciones');
+            exit;
+        }
+
+        $pdfContent = $this->generatePdfContent($cotizacionId, $userId, $userRol);
+
+        $mail = new PHPMailer(true);
+        try {
+            $mail->isSMTP();
+            $mail->Host       = Config::SMTP_HOST;
+            $mail->SMTPAuth   = true;
+            $mail->Username   = Config::SMTP_USER;
+            $mail->Password   = Config::SMTP_PASS;
+            $mail->Port       = Config::SMTP_PORT;
+
+            $mail->setFrom(Config::SMTP_USER, 'InstalFuego C.A.');
+            $mail->addAddress($cotizacion['cliente_email'], $cotizacion['cliente_nombre']);
+
+            $mail->isHTML(true);
+            $mail->Subject = 'Cotización InstalFuego #' . str_pad((string)$cotizacion['id'], 4, '0', STR_PAD_LEFT);
+            $mail->Body    = '<p>Estimado(a) ' . htmlspecialchars($cotizacion['cliente_nombre']) . ',</p>'
+                           . '<p>Adjunto a este correo encontrará la cotización solicitada.</p>'
+                           . '<p>Saludos cordiales,<br>El equipo de InstalFuego C.A.</p>';
+
+            $mail->addStringAttachment($pdfContent, 'Cotizacion_' . $cotizacionId . '.pdf');
+
+            $mail->send();
+            $_SESSION['success_msg'] = 'Cotización enviada por correo exitosamente.';
+        } catch (PHPMailerException $e) {
+            $_SESSION['error_msg'] = 'No se pudo enviar el correo. Error: ' . $mail->ErrorInfo;
+        }
+
         header('Location: ' . $_SERVER['HTTP_REFERER']);
         exit;
     }

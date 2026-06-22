@@ -20,11 +20,28 @@ class CategoriasModel
     public function getAll(): array
     {
         try {
-            // Ordenamos por nombre para que el select se vea ordenado A-Z
             $stmt = $this->db->query("SELECT id, nombre FROM categorias ORDER BY nombre ASC");
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
             error_log("Error en CategoriasModel::getAll - " . $e->getMessage());
+            return [];
+        }
+    }
+
+    // Trae SOLO categorías que tengan al menos 1 producto o servicio activo
+    public function getActive(): array
+    {
+        try {
+            $sql = "SELECT DISTINCT c.id, c.nombre
+                    FROM categorias c
+                    LEFT JOIN productos p  ON p.categoria_id = c.id
+                    LEFT JOIN servicios s ON s.categoria_id = c.id
+                    WHERE (p.id IS NOT NULL OR s.id IS NOT NULL)
+                    ORDER BY c.nombre ASC";
+            $stmt = $this->db->query($sql);
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log("Error en CategoriasModel::getActive - " . $e->getMessage());
             return [];
         }
     }

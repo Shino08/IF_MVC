@@ -64,11 +64,11 @@
 
                             <div class="aspect-square bg-white flex items-center justify-center p-6 border-b border-gray-100 relative overflow-hidden">
                                 <?php
-                                    if (!empty($p['imagen_principal'])) {
-                                        $imgSrc = $base_url . '/img/productos/' . htmlspecialchars($p['imagen_principal']);
-                                    } else {
-                                        $imgSrc = 'https://ui-avatars.com/api/?name=' . urlencode($p['nombre']) . '&background=f3f4f6&color=9ca3af&size=256&font-size=0.33';
-                                    }
+                                    $imgFile = $p['imagen_principal'] ?? '';
+                                    $imgPathFs = !empty($imgFile) ? (dirname(__DIR__, 3) . '/public/img/productos/' . $imgFile) : '';
+                                    $imgSrc = (!empty($imgFile) && file_exists($imgPathFs))
+                                        ? $base_url . '/img/productos/' . htmlspecialchars($imgFile)
+                                        : $base_url . '/img/user.png';
                                 ?>
                                 <img src="<?= $imgSrc ?>"
                                      alt="<?= htmlspecialchars($p['nombre']) ?>"

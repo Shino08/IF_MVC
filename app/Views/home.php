@@ -43,7 +43,13 @@
                     <button class="absolute top-4 right-4 text-gray-400 hover:text-red-600 transition-colors">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
                     </button>
-                    <img src="<?= $base_url ?? '' ?>/img/<?= htmlspecialchars($p['imagen_principal'] ?: 'width=500,height=500.png') ?>"
+                    <?php
+                        $pImgFile = $p['imagen_principal'] ?? '';
+                        $pImgPath = !empty($pImgFile) ? (dirname(__DIR__,2) . '/public/img/productos/' . $pImgFile) : '';
+                        $pExists = !empty($pImgFile) && file_exists($pImgPath);
+                        $pSrc = $pExists ? ($base_url ?? '') . '/img/productos/' . htmlspecialchars($pImgFile) : ($base_url ?? '') . '/img/width=500,height=500.png';
+                    ?>
+                    <img src="<?= $pSrc ?>"
                          alt="<?= htmlspecialchars($p['nombre']) ?>"
                          class="w-full h-40 md:h-48 object-contain mb-4 hover:scale-105 transition-transform duration-300">
                     <p class="text-xs text-gray-500 mb-1 uppercase tracking-wide font-medium"><?= htmlspecialchars($p['categoria_nombre'] ?? 'Producto') ?></p>
@@ -72,23 +78,33 @@
 
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             <?php
-            $detectores = [
-                ['img' => 'width=500,height=500.png',      'nombre' => 'Kidde PI2010'],
-                ['img' => '1828804-first-alert-sco5.webp', 'nombre' => 'First Alert SC0501B'],
-                ['img' => 'BRK-7010B-2.jpg',               'nombre' => 'Honeywell SA300'],
-                ['img' => 'BR-7010B_alt2.jpg',             'nombre' => 'BRK Electronics PA010'],
-            ];
-            foreach ($detectores as $d): ?>
+            // Filtrar productos de categorías de detección o mostrar primeros 4
+            $detectores = [];
+            foreach (($destacados ?? []) as $p) {
+                $cat = mb_strtolower($p['categoria_nombre'] ?? '');
+                if (strpos($cat, 'deteccion') !== false || strpos($cat, 'detección') !== false || strpos($cat, 'detector') !== false || strpos($cat, 'humo') !== false) {
+                    $detectores[] = $p;
+                }
+            }
+            if (empty($detectores)) {
+                $detectores = array_slice($destacados ?? [], 0, 4);
+            }
+            foreach ($detectores as $d): 
+                $dImgFile = $d['imagen_principal'] ?? '';
+                $dImgPath = !empty($dImgFile) ? (dirname(__DIR__,2) . '/public/img/productos/' . $dImgFile) : '';
+                $dExists = !empty($dImgFile) && file_exists($dImgPath);
+                $dSrc = $dExists ? ($base_url ?? '') . '/img/productos/' . htmlspecialchars($dImgFile) : ($base_url ?? '') . '/img/width=500,height=500.png';
+            ?>
             <div class="bg-white rounded-lg p-6 hover:shadow-xl transition-shadow flex flex-col justify-between border border-gray-100">
                 <div>
-                    <img src="<?= $base_url ?? '' ?>/img/<?= htmlspecialchars($d['img']) ?>"
+                    <img src="<?= $dSrc ?>"
                          alt="<?= htmlspecialchars($d['nombre']) ?>"
                          class="w-full h-32 object-contain mb-4 hover:scale-105 transition-transform duration-300">
                     <p class="text-sm font-bold text-gray-900 mb-4 text-center">
                         <?= htmlspecialchars($d['nombre']) ?>
                     </p>
                 </div>
-                <a href="<?= $base_url ?? '' ?>/catalogo" class="inline-block text-center border-2 border-gray-200 rounded-full px-6 py-2.5 text-sm font-bold text-gray-700 hover:bg-red-600 hover:text-white hover:border-red-600 transition-all w-full shadow-sm">
+                <a href="<?= $base_url ?? '' ?>/producto/<?= $d['id'] ?>" class="inline-block text-center border-2 border-gray-200 rounded-full px-6 py-2.5 text-sm font-bold text-gray-700 hover:bg-red-600 hover:text-white hover:border-red-600 transition-all w-full shadow-sm">
                     Ver Detalles
                 </a>
             </div>
@@ -113,24 +129,27 @@
 
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
             <?php
-            $ultimos = [
-                ['img' => '054-rociador-sprinkler.jpg',                                          'nombre' => 'Rociador Automático'],
-                ['img' => '3000432_-_REG_25-60-IGG-320_CO2-RGB.jpg',                            'nombre' => 'Rociador Gas Inerte'],
-                ['img' => 'istockphoto-536036697-612x612.jpg',                                   'nombre' => 'Manguera Extinción'],
-                ['img' => 'D_NQ_NP_2X_648498-MLV102079027440_122025-T.webp',                   'nombre' => 'Cinta Exterior'],
-                ['img' => 'Panel-de-Control-de-Alarma-de-Incendio-de-Zona-Convencional-8.webp', 'nombre' => 'Panel de Control'],
-            ];
-            foreach ($ultimos as $u): ?>
+            if (!empty($ultimos)):
+                foreach ($ultimos as $u):
+                    $uImgFile = $u['imagen_principal'] ?? '';
+                    $uImgDir = $u['tipo'] === 'producto' ? '/img/productos/' : '/img/servicios/';
+                    $uFsDir = $u['tipo'] === 'producto' ? '/public/img/productos/' : '/public/img/servicios/';
+                    $uImgPath = !empty($uImgFile) ? (dirname(__DIR__,2) . $uFsDir . $uImgFile) : '';
+                    $uExists = !empty($uImgFile) && file_exists($uImgPath);
+                    $uSrc = $uExists ? ($base_url ?? '') . $uImgDir . htmlspecialchars($uImgFile) : ($base_url ?? '') . '/img/width=500,height=500.png';
+                    $uLink = ($base_url ?? '') . '/' . $u['tipo'] . '/' . $u['id'];
+            ?>
             <div class="bg-white rounded-lg p-4 border border-gray-200 hover:shadow-lg transition-shadow group cursor-pointer">
-                <img src="<?= $base_url ?? '' ?>/img/<?= htmlspecialchars($u['img']) ?>"
+                <img src="<?= $uSrc ?>"
                      alt="<?= htmlspecialchars($u['nombre']) ?>"
                      class="w-full h-32 object-contain mb-3 group-hover:scale-105 transition-transform duration-300">
                 <p class="text-sm font-bold text-gray-900 mb-3 truncate"><?= htmlspecialchars($u['nombre']) ?></p>
-                <a href="<?= $base_url ?? '' ?>/catalogo" class="inline-block text-center border border-gray-300 rounded-full px-4 py-2 text-xs font-bold text-gray-700 hover:bg-red-600 hover:text-white hover:border-red-600 transition-colors w-full shadow-sm">
+                <a href="<?= $uLink ?>" class="inline-block text-center border border-gray-300 rounded-full px-4 py-2 text-xs font-bold text-gray-700 hover:bg-red-600 hover:text-white hover:border-red-600 transition-colors w-full shadow-sm">
                     Ver Detalles
                 </a>
             </div>
-            <?php endforeach; ?>
+            <?php endforeach;
+            endif; ?>
         </div>
     </div>
 </section>

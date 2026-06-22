@@ -180,8 +180,13 @@
                             <div class="flex items-center justify-between py-2.5 border-b border-gray-100 last:border-0">
                                 <div class="flex items-center gap-3 min-w-0">
                                     <div class="w-9 h-9 bg-blue-50 rounded-lg flex items-center justify-center flex-shrink-0">
-                                        <?php if (!empty($s['imagen_principal'])): ?>
-                                            <img src="<?= $base_url ?>/img/servicios/<?= htmlspecialchars($s['imagen_principal']) ?>"
+                                        <?php
+                                            $sImgFile = $s['imagen_principal'] ?? '';
+                                            $sImgPath = !empty($sImgFile) ? (dirname(__DIR__,3) . '/public/img/servicios/' . $sImgFile) : '';
+                                            $sExists = !empty($sImgFile) && file_exists($sImgPath);
+                                        ?>
+                                        <?php if ($sExists): ?>
+                                            <img src="<?= $base_url ?>/img/servicios/<?= htmlspecialchars($sImgFile) ?>"
                                                  class="w-9 h-9 object-contain rounded-lg" alt="">
                                         <?php else: ?>
                                             <svg class="w-4 h-4 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
@@ -242,9 +247,12 @@
                                     <td class="py-3">
                                         <div class="flex items-center gap-3">
                                             <?php
-                                            $src = !empty($p['imagen_principal'])
-                                                ? $base_url . '/img/productos/' . htmlspecialchars($p['imagen_principal'])
-                                                : 'https://ui-avatars.com/api/?name=' . urlencode($p['nombre']) . '&background=f3f4f6&color=9ca3af&size=64&font-size=0.33';
+                                            $pImgFile = $p['imagen_principal'] ?? '';
+                                            $pImgPath = !empty($pImgFile) ? (dirname(__DIR__,3) . '/public/img/productos/' . $pImgFile) : '';
+                                            $pExists = !empty($pImgFile) && file_exists($pImgPath);
+                                            $src = $pExists
+                                                ? $base_url . '/img/productos/' . htmlspecialchars($pImgFile)
+                                                : $base_url . '/img/user.png';
                                             ?>
                                             <img src="<?= $src ?>" class="w-10 h-10 rounded-lg object-contain bg-gray-50 border border-gray-100" alt="">
                                             <span class="font-semibold text-gray-900 truncate max-w-[180px]"><?= htmlspecialchars($p['nombre']) ?></span>

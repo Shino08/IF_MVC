@@ -50,9 +50,17 @@ Router::get('/dashboard/categorias',           [DashboardController::class, 'cat
 Router::post('/dashboard/categorias/store',    [App\Controllers\CategoriasController::class, 'store']);
 Router::post('/dashboard/categorias/delete',   [App\Controllers\CategoriasController::class, 'delete']);
 
-Router::get('/dashboard/cotizaciones',         [DashboardController::class, 'cotizaciones']);
-Router::get('/dashboard/detalle-solicitud/{id}', [DashboardController::class, 'detalleSolicitud']);
-Router::post('/dashboard/cotizaciones/procesar', [DashboardController::class, 'procesarCotizacion']);
+Router::get('/dashboard/cotizaciones',              [DashboardController::class, 'cotizaciones']);
+Router::get('/dashboard/detalle-solicitud/{id}',      [DashboardController::class, 'detalleSolicitud']);
+Router::post('/dashboard/cotizaciones/procesar',      [DashboardController::class, 'procesarCotizacion']);
+Router::post('/dashboard/cotizaciones/update-precio', [DashboardController::class, 'updateItemPrecio']);
+Router::post('/dashboard/cotizaciones/update-cantidad',[DashboardController::class, 'updateItemCantidad']);
+Router::post('/dashboard/cotizaciones/eliminar-item', [DashboardController::class, 'eliminarItemAdmin']);
+Router::post('/dashboard/cotizaciones/agregar-item',  [DashboardController::class, 'agregarItemAdmin']);
+Router::post('/dashboard/cotizaciones/actualizar-comercial', [DashboardController::class, 'actualizarComercial']);
+Router::post('/dashboard/cotizaciones/emitir',        [DashboardController::class, 'emitirCotizacionAdmin']);
+Router::post('/dashboard/cotizaciones/rechazar',      [DashboardController::class, 'rechazarCotizacionAdmin']);
+Router::post('/dashboard/cotizaciones/aprobar',       [DashboardController::class, 'aprobarCotizacionAdmin']);
 
 Router::get('/dashboard/servicios',                      [DashboardController::class,  'servicios']);
 Router::get('/dashboard/servicios/agregar',              [DashboardController::class,  'agregarServicio']);
@@ -80,6 +88,8 @@ Router::get('/cotizacion/exito',              [CotizacionClienteController::clas
 Router::get('/mis-cotizaciones',              [CotizacionClienteController::class, 'historial']);
 Router::get('/mis-cotizaciones/{id}',         [CotizacionClienteController::class, 'detalle']);
 Router::get('/cotizacion/detalle/{id}',       [CotizacionClienteController::class, 'detalle']);
+Router::get('/cotizacion/pdf/{id}',           [CotizacionClienteController::class, 'pdf']);
+Router::post('/cotizacion/enviar_correo/{id}',[CotizacionClienteController::class, 'enviarCorreo']);
 
 Router::get('/catalogo', [CatalogoController::class, 'index']);
 Router::get('/producto/{id}', [CatalogoController::class, 'producto']);

@@ -17,7 +17,7 @@ class CatalogoController extends Router
 
         $productos = $productsModel->getAllProductsWithCategory();
         $servicios = $serviciosModel->getAll();
-        $categorias = $categoriasModel->getAll();
+        $categorias = $categoriasModel->getActive();
 
         $data = [
             'title' => 'Catálogo de Productos y Servicios — InstalFuego',

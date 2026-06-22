@@ -74,9 +74,11 @@
                             <!-- Imagen -->
                             <div class="aspect-square bg-white flex items-center justify-center p-6 border-b border-gray-100 relative overflow-hidden">
                                 <?php
-                                    $imgSrc = !empty($s['imagen_principal'])
-                                        ? ($base_url . '/img/servicios/' . htmlspecialchars($s['imagen_principal']))
-                                        : ('https://ui-avatars.com/api/?name=' . urlencode($s['nombre']) . '&background=eff6ff&color=3b82f6&size=256&font-size=0.33');
+                                    $imgFile = $s['imagen_principal'] ?? '';
+                                    $imgPathFs = !empty($imgFile) ? (dirname(__DIR__, 3) . '/public/img/servicios/' . $imgFile) : '';
+                                    $imgSrc = (!empty($imgFile) && file_exists($imgPathFs))
+                                        ? $base_url . '/img/servicios/' . htmlspecialchars($imgFile)
+                                        : $base_url . '/img/user.png';
                                 ?>
                                 <img src="<?= $imgSrc ?>"
                                      alt="<?= htmlspecialchars($s['nombre']) ?>"

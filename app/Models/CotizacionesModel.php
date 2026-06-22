@@ -111,6 +111,28 @@ class CotizacionesModel
         }
     }
 
+    public function updateItemPrice(int $detalleId, float $precioUnitario): bool
+    {
+        try {
+            // Obtener el cotizacion_id antes de actualizar
+            $stmt = $this->db->prepare('SELECT cotizacion_id FROM cotizacion_detalles WHERE id = :id');
+            $stmt->execute([':id' => $detalleId]);
+            $cotizacionId = $stmt->fetchColumn();
+
+            if (!$cotizacionId) return false;
+
+            $sql = 'UPDATE cotizacion_detalles SET precio_unitario = :precio WHERE id = :id';
+            $stmtUpdate = $this->db->prepare($sql);
+            $res = $stmtUpdate->execute([':precio' => $precioUnitario, ':id' => $detalleId]);
+
+            $this->updateCotizacionTotals((int)$cotizacionId);
+            return $res;
+        } catch (PDOException $e) {
+            error_log("Error en CotizacionesModel::updateItemPrice - " . $e->getMessage());
+            return false;
+        }
+    }
+
     public function updateItemQuantity(int $detalleId, float $cantidad): bool
     {
         try {
@@ -153,19 +175,96 @@ class CotizacionesModel
         }
     }
 
+    public function updateComercialFields(int $cotizacionId, array $data): bool
+    {
+        try {
+            $fields = [];
+            $params = [':id' => $cotizacionId];
+            
+            $allowedFields = [
+                'fecha_vencimiento', 'impuestos', 'descuento', 'id_metodo_pago',
+                'condiciones_pago', 'notas_internas', 'notas_tecnicas',
+                'proyecto_referencia', 'direccion_envio', 'direccion_facturacion'
+            ];
+            
+            foreach ($allowedFields as $field) {
+                if (array_key_exists($field, $data)) {
+                    $fields[] = "`$field` = :$field";
+                    $params[":$field"] = $data[$field];
+                }
+            }
+            
+            if (empty($fields)) return false;
+            
+            $sql = 'UPDATE cotizaciones SET ' . implode(', ', $fields) . ' WHERE id = :id';
+            $stmt = $this->db->prepare($sql);
+            $res = $stmt->execute($params);
+            
+            // Recalcular total si cambió descuento o impuestos
+            if (array_key_exists('descuento', $data) || array_key_exists('impuestos', $data)) {
+                $this->updateCotizacionTotals($cotizacionId);
+            }
+            
+            return $res;
+        } catch (PDOException $e) {
+            error_log("Error en CotizacionesModel::updateComercialFields - " . $e->getMessage());
+            return false;
+        }
+    }
+
+    public function emitirCotizacion(int $cotizacionId, string $notasCliente = ''): bool
+    {
+        try {
+            // estado 3 = enviada (solo desde pendiente_revision)
+            $sql = 'UPDATE cotizaciones SET estado_id = 3, notas_tecnicas = COALESCE(:notas, notas_tecnicas) WHERE id = :id AND estado_id = 2';
+            $stmt = $this->db->prepare($sql);
+            return $stmt->execute([
+                ':notas' => !empty($notasCliente) ? $notasCliente : null,
+                ':id'    => $cotizacionId
+            ]);
+        } catch (PDOException $e) {
+            error_log("Error en CotizacionesModel::emitirCotizacion - " . $e->getMessage());
+            return false;
+        }
+    }
+
+    public function getMetodosPago(): array
+    {
+        try {
+            $stmt = $this->db->query('SELECT id, metodo FROM metodos_de_pagos ORDER BY metodo');
+            return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+        } catch (PDOException $e) {
+            error_log("Error en CotizacionesModel::getMetodosPago - " . $e->getMessage());
+            return [];
+        }
+    }
+
     private function updateCotizacionTotals(int $cotizacionId): void
     {
         try {
-            $sql = 'SELECT SUM(cantidad * precio_unitario) as total FROM cotizacion_detalles WHERE cotizacion_id = :id';
+            // Calcular subtotal desde detalles
+            $sql = 'SELECT SUM(cantidad * precio_unitario) as subtotal FROM cotizacion_detalles WHERE cotizacion_id = :id';
             $stmt = $this->db->prepare($sql);
             $stmt->execute([':id' => $cotizacionId]);
-            $total = $stmt->fetchColumn() ?: 0;
+            $subtotal = $stmt->fetchColumn() ?: 0;
 
-            // Simple total = subtotal for now
+            // Obtener descuento e impuestos actuales
+            $sqlC = 'SELECT descuento, impuestos FROM cotizaciones WHERE id = :id';
+            $stmtC = $this->db->prepare($sqlC);
+            $stmtC->execute([':id' => $cotizacionId]);
+            $cot = $stmtC->fetch(PDO::FETCH_ASSOC);
+            
+            $descuento = (float)($cot['descuento'] ?? 0);
+            $impuestos = (float)($cot['impuestos'] ?? 0);
+            
+            // Total = subtotal + impuestos - descuento
+            $total = $subtotal + $impuestos - $descuento;
+            if ($total < 0) $total = 0;
+
             $sqlUpdate = 'UPDATE cotizaciones SET subtotal = :sub, total = :tot WHERE id = :id';
             $stmtUpd = $this->db->prepare($sqlUpdate);
             $stmtUpd->execute([
-                ':sub' => $total,
+                ':sub' => $subtotal,
                 ':tot' => $total,
                 ':id'  => $cotizacionId
             ]);

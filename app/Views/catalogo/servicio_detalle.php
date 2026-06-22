@@ -32,8 +32,10 @@
                 <!-- Service Image Gallery -->
                 <div class="flex flex-col items-center">
                     <?php 
-                        $img = !empty($servicio['imagen_principal']) 
-                            ? ($base_url ?? '') . '/img/' . htmlspecialchars($servicio['imagen_principal'])
+                        $sFile = $servicio['imagen_principal'] ?? '';
+                        $sPath = !empty($sFile) ? (dirname(__DIR__, 3) . '/public/img/servicios/' . $sFile) : '';
+                        $img = (!empty($sFile) && file_exists($sPath))
+                            ? ($base_url ?? '') . '/img/servicios/' . htmlspecialchars($sFile)
                             : ($base_url ?? '') . '/img/user.png'; 
                     ?>
                     <div class="w-full aspect-square bg-gray-50 rounded-xl p-8 flex items-center justify-center border border-gray-100 mb-4 relative overflow-hidden">

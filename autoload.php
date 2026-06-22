@@ -11,6 +11,10 @@ declare(strict_types=1);
  *   App\Controllers\   → app/Controllers/
  *   App\Models\        → app/Models/
  */
+if (file_exists(__DIR__ . '/vendor/autoload.php')) {
+    require_once __DIR__ . '/vendor/autoload.php';
+}
+
 spl_autoload_register(function (string $class): void {
     // Directorio raíz del proyecto (donde se encuentra este archivo)
     $baseDir = __DIR__ . '/';

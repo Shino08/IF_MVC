@@ -117,14 +117,18 @@ class ProductoController extends Router
             exit;
         }
 
+        // Debug: log de archivos recibidos
+        error_log('[ProductoController::store] POST: ' . json_encode($_POST));
+        error_log('[ProductoController::store] FILES: ' . json_encode($_FILES));
+
         // Validar máximo 5 imágenes
-        if (isset($_FILES['imagenes']) && count($_FILES['imagenes']['name']) > 5) {
+        if (isset($_FILES['imagenes']) && is_array($_FILES['imagenes']['name']) && count($_FILES['imagenes']['name']) > 5) {
             echo json_encode(['success' => false, 'error' => 'No puedes subir más de 5 imágenes.']);
             exit;
         }
 
         $imagenesSubidas = $this->processUploads($sku);
-
+        error_log('[ProductoController::store] Imagenes subidas: ' . json_encode($imagenesSubidas));
 
         $exito = $productModel->saveFullProduct(
             $nombre, $sku, $categoria_id, $precio, $marca, $modelo_prod,
