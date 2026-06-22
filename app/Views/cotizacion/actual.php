@@ -84,10 +84,10 @@
                         <form action="<?= $base_url ?? '' ?>/cotizacion/enviar" method="POST">
                             <div class="mb-6">
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Notas Técnicas / Observaciones (Opcional)</label>
-                                <textarea name="notas_tecnicas" rows="4" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm resize-none bg-gray-50 focus:bg-white transition-colors" placeholder="Ingresa especificaciones adicionales, dimensiones, o detalles del proyecto..."></textarea>
+                                <textarea name="notas_tecnicas" rows="4" class="input-elegant resize-none" placeholder="Ingresa especificaciones adicionales, dimensiones, o detalles del proyecto..."></textarea>
                             </div>
                             
-                            <button type="submit" class="w-full flex justify-center items-center py-3.5 px-4 border border-transparent rounded-lg shadow-sm text-sm font-bold text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors">
+                            <button type="submit" class="w-full btn-primary h-[50px]">
                                 Enviar Solicitud de Cotización
                             </button>
                             <p class="text-xs text-center text-gray-500 mt-4">Un asesor se pondrá en contacto contigo a la brevedad.</p>

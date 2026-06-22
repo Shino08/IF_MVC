@@ -1,1 +1,73 @@
 @import "tailwindcss";
+
+/* Base Design System for InstalFuego */
+
+/* Catalog Filters */
+@layer components {
+  .catalog-filter {
+    @apply px-5 py-2 rounded-full text-sm font-medium bg-white text-gray-600 border border-gray-200 hover:bg-gray-50 hover:border-gray-300 transition-all duration-200 cursor-pointer shadow-sm;
+  }
+
+  .catalog-filter--active {
+    @apply bg-red-700 text-white border-red-700 hover:bg-red-800 shadow-md transform scale-105;
+  }
+
+  /* Product Cards */
+  .product-card {
+    @apply bg-white rounded-2xl p-5 border border-gray-100 flex flex-col justify-between relative overflow-hidden transition-all duration-300;
+  }
+  .product-card:hover {
+    @apply shadow-xl border-gray-200;
+    transform: translateY(-4px);
+  }
+
+  .product-card__media {
+    @apply w-full h-48 bg-gray-50 rounded-xl mb-5 p-4 flex items-center justify-center overflow-hidden;
+  }
+
+  .product-card__media img {
+    @apply max-w-full max-h-full object-contain transition-transform duration-500;
+  }
+  .product-card:hover .product-card__media img {
+    transform: scale(1.08);
+  }
+
+  /* Buttons */
+  .btn-primary {
+    @apply inline-flex items-center justify-center px-6 py-3 border border-transparent text-sm font-bold rounded-xl text-white bg-red-600 hover:bg-red-700 transition-all shadow-sm hover:shadow-md active:scale-95 duration-200 cursor-pointer;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center px-6 py-3 border-2 border-gray-200 text-sm font-bold rounded-xl text-gray-700 bg-white hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 transition-all shadow-sm hover:shadow-md active:scale-95 duration-200 cursor-pointer;
+  }
+
+  /* Inputs */
+  .input-elegant {
+    @apply w-full px-4 py-3 bg-gray-50 border border-transparent rounded-xl text-sm text-gray-900 placeholder-gray-400 focus:bg-white focus:border-red-300 focus:ring-4 focus:ring-red-100 transition-all outline-none;
+  }
+
+  /* Pagination */
+  .pagination-pill {
+    @apply relative inline-flex items-center justify-center w-10 h-10 rounded-full text-sm font-medium text-gray-600 bg-white border border-gray-200 hover:bg-gray-50 hover:text-gray-900 transition-colors shadow-sm cursor-pointer;
+  }
+  .pagination-pill--active {
+    @apply bg-red-600 text-white border-red-600 hover:bg-red-700 hover:text-white shadow-md cursor-default;
+  }
+  .pagination-pill--disabled {
+    @apply opacity-50 cursor-not-allowed hover:bg-white hover:text-gray-600;
+  }
+}
+
+/* Toast (Utility styles without apply since they use specific positioning) */
+.toast-notification {
+  position: fixed;
+  bottom: -100px;
+  right: 20px;
+  opacity: 0;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  z-index: 9999;
+}
+.toast-notification.show {
+  bottom: 20px;
+  opacity: 1;
+}

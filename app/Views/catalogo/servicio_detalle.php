@@ -61,10 +61,10 @@
                             <div class="flex items-end gap-4">
                                 <div class="w-24">
                                     <label for="cantidad" class="block text-sm font-semibold text-gray-700 mb-2">Cantidad</label>
-                                    <input type="number" id="cantidad" name="cantidad" value="1" min="1" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 text-center font-bold text-gray-900">
+                                    <input type="number" id="cantidad" name="cantidad" value="1" min="1" class="input-elegant text-center font-bold px-2 py-3">
                                 </div>
                                 <div class="flex-1">
-                                    <button type="submit" class="w-full bg-red-700 text-white rounded-xl px-8 py-3 text-base font-bold hover:bg-red-800 transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5 flex items-center justify-center gap-2">
+                                    <button type="submit" class="w-full btn-primary flex items-center justify-center gap-2 h-[46px]">
                                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
                                         Agregar a Solicitud de Cotización
                                     </button>
