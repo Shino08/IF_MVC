@@ -36,11 +36,11 @@
                         <svg class="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
                         <span><?= htmlspecialchars($success) ?></span>
                     </div>
-                    <?php if (!empty($_SESSION['reset_link_demo'])): ?>
-                        <div class="mt-2 p-3 bg-white border border-green-200 rounded-lg text-xs break-all">
-                            <p class="font-bold mb-1 text-gray-700">Link simulado (Solo Desarrollo):</p>
-                            <a href="<?= $_SESSION['reset_link_demo'] ?>" class="text-blue-600 hover:underline"><?= $_SESSION['reset_link_demo'] ?></a>
-                            <?php unset($_SESSION['reset_link_demo']); ?>
+                    <?php if (!empty($_SESSION['resetlinkdemo'])): ?>
+                        <div class="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-xl text-sm break-all">
+                            <p class="font-bold mb-2 text-yellow-800">Modo Dev Local: Haz clic aquí para restablecer tu contraseña</p>
+                            <a href="<?= $_SESSION['resetlinkdemo'] ?>" class="text-blue-600 hover:text-blue-800 font-semibold underline"><?= $_SESSION['resetlinkdemo'] ?></a>
+                            <?php unset($_SESSION['resetlinkdemo']); ?>
                         </div>
                     <?php endif; ?>
                 </div>

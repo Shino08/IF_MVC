@@ -5,8 +5,8 @@ namespace App\Core;
 
 class Config
 {
-    public const SMTP_HOST = 'sandbox.smtp.mailtrap.io';
-    public const SMTP_USER = 'TU_USUARIO_AQUI';
-    public const SMTP_PASS = 'TU_CONTRASEÑA_AQUI';
+    public const SMTP_HOST = 'smtp.mailtrap.io';
+    public const SMTP_USER = 'test';
+    public const SMTP_PASS = 'test';
     public const SMTP_PORT = 2525;
 }

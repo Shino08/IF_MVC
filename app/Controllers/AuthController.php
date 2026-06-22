@@ -230,6 +230,7 @@ public function register(): void
                 $mail->send();
             } catch (\Exception $e) {
                 error_log("Error al enviar correo de recuperación: {$mail->ErrorInfo}");
+                $_SESSION['resetlinkdemo'] = $resetLink;
             }
         }
 
