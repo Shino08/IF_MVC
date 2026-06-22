@@ -13,14 +13,17 @@ class CatalogoController extends Router
     {
         $productsModel = new ProductsModel();
         $serviciosModel = new ServiciosModel();
+        $categoriasModel = new \App\Models\CategoriasModel();
 
         $productos = $productsModel->getAllProductsWithCategory();
         $servicios = $serviciosModel->getAll();
+        $categorias = $categoriasModel->getAll();
 
         $data = [
             'title' => 'Catálogo de Productos y Servicios — InstalFuego',
             'productos' => $productos,
-            'servicios' => $servicios
+            'servicios' => $servicios,
+            'categorias' => $categorias
         ];
 
         $this->view('catalogo/index', $data);

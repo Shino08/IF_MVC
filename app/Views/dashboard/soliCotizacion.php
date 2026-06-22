@@ -75,107 +75,53 @@
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
               
-              <!-- Row 1 -->
-              <tr class="hover:bg-gray-50 transition-colors">
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <span class="text-sm font-semibold text-gray-900">#COT202601</span>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <span class="text-sm text-gray-700">correo@gmail.com</span>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <span class="text-sm text-gray-700">04224572397</span>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <span class="text-sm text-gray-700">2026-01-15</span>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-800">
-                    Alta
-                  </span>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800">
-                    Pendiente
-                  </span>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <button class="text-blue-600 hover:text-blue-800 font-medium text-sm flex items-center">
-                    <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/><path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/>
-                    </svg>
-                    Ver
-                  </button>
-                </td>
-              </tr>
-
-              <!-- Row 2 -->
-              <tr class="hover:bg-gray-50 transition-colors">
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <span class="text-sm font-semibold text-gray-900">#COT202602</span>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <span class="text-sm text-gray-700">otro@correo.com</span>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <span class="text-sm text-gray-700">04214185913</span>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <span class="text-sm text-gray-700">2026-01-10</span>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800">
-                    Media
-                  </span>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-800">
-                    Procesada
-                  </span>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <button class="text-blue-600 hover:text-blue-800 font-medium text-sm flex items-center">
-                    <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/><path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/>
-                    </svg>
-                    Ver
-                  </button>
-                </td>
-              </tr>
-
-              <!-- Row 3 -->
-              <tr class="hover:bg-gray-50 transition-colors">
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <span class="text-sm font-semibold text-gray-900">#COT202603</span>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <span class="text-sm text-gray-700">ultimo@correo.com</span>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <span class="text-sm text-gray-700">04129038667</span>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <span class="text-sm text-gray-700">2026-01-03</span>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-800">
-                    Baja
-                  </span>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-800">
-                    Rechazada
-                  </span>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <button class="text-blue-600 hover:text-blue-800 font-medium text-sm flex items-center">
-                    <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/><path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/>
-                    </svg>
-                    Ver
-                  </button>
-                </td>
-              </tr>
+              <?php if (!empty($solicitudes)): ?>
+                <?php foreach ($solicitudes as $solicitud): ?>
+                  <tr class="hover:bg-gray-50 transition-colors">
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <span class="text-sm font-semibold text-gray-900">#COT<?= str_pad((string)$solicitud['id'], 6, '0', STR_PAD_LEFT) ?></span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <div class="text-sm text-gray-900"><?= htmlspecialchars($solicitud['cliente_nombre'] . ' ' . $solicitud['cliente_apellido']) ?></div>
+                      <div class="text-sm text-gray-500"><?= htmlspecialchars($solicitud['cliente_email']) ?></div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <span class="text-sm text-gray-700"><?= htmlspecialchars($solicitud['cliente_telefono'] ?? 'N/A') ?></span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <span class="text-sm text-gray-700"><?= date('Y-m-d', strtotime($solicitud['fecha_solicitud'])) ?></span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-800">
+                        Media
+                      </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold <?php 
+                        if($solicitud['estado_id'] == 2) echo 'bg-yellow-100 text-yellow-800';
+                        elseif($solicitud['estado_id'] == 3) echo 'bg-green-100 text-green-800';
+                        else echo 'bg-red-100 text-red-800'; 
+                      ?>">
+                        <?= htmlspecialchars(ucfirst($solicitud['estado_nombre'])) ?>
+                      </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <a href="<?= $base_url ?? '' ?>/dashboard/detalle-solicitud/<?= $solicitud['id'] ?>" class="text-blue-600 hover:text-blue-800 font-medium text-sm flex items-center">
+                        <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/><path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/>
+                        </svg>
+                        Ver
+                      </a>
+                    </td>
+                  </tr>
+                <?php endforeach; ?>
+              <?php else: ?>
+                <tr>
+                  <td colspan="7" class="px-6 py-4 text-center text-sm text-gray-500">
+                    No hay solicitudes de cotización.
+                  </td>
+                </tr>
+              <?php endif; ?>
 
             </tbody>
           </table>

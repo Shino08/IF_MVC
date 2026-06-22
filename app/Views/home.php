@@ -17,10 +17,6 @@
                        class="w-full sm:w-auto px-8 py-3 bg-red-700 text-white font-bold rounded-full hover:bg-red-800 transition-colors text-center shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 duration-200">
                         Ver Productos
                     </a>
-                    <a href="<?= $base_url ?? '' ?>/cotizacion/actual"
-                       class="w-full sm:w-auto px-8 py-3 border-2 border-gray-300 text-gray-700 font-bold rounded-full hover:border-red-600 hover:text-red-600 transition-colors text-center shadow-sm hover:shadow-md transform hover:-translate-y-0.5 duration-200">
-                        Solicitar Asesoría
-                    </a>
                 </div>
             </div>
 
@@ -41,24 +37,20 @@
 
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             <?php
-            $destacados = [
-                ['img' => 'extintor-espuma-afffar-3-10-lt-ab-mod-em-10k.jpg', 'cat' => 'Extinguidor',  'nombre' => 'Extintor de Espuma'],
-                ['img' => 'bombeo-detalle-bci-min.png',                        'cat' => 'Extinguidor',  'nombre' => 'Bomba Contra Incendio'],
-                ['img' => 'C2-REC.jpg',                                         'cat' => 'Servicio',     'nombre' => 'Recarga de Extintores'],
-                ['img' => 'lampara-sovica.jpg',                                 'cat' => 'Iluminación',  'nombre' => 'Iluminación Emergencia'],
-            ];
-            foreach ($destacados as $p): ?>
-            <div class="bg-gray-50 rounded-lg p-6 relative hover:shadow-xl transition-shadow border border-gray-100">
-                <button class="absolute top-4 right-4 text-gray-400 hover:text-red-600 transition-colors">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
-                </button>
-                <img src="<?= $base_url ?? '' ?>/img/<?= htmlspecialchars($p['img']) ?>"
-                     alt="<?= htmlspecialchars($p['nombre']) ?>"
-                     class="w-full h-40 md:h-48 object-contain mb-4 hover:scale-105 transition-transform duration-300">
-                <p class="text-xs text-gray-500 mb-1 uppercase tracking-wide font-medium"><?= htmlspecialchars($p['cat']) ?></p>
-                <p class="text-sm font-bold text-gray-900 leading-tight"><?= htmlspecialchars($p['nombre']) ?></p>
-            </div>
-            <?php endforeach; ?>
+            if (!empty($destacados)):
+                foreach ($destacados as $p): ?>
+                <div class="bg-gray-50 rounded-lg p-6 relative hover:shadow-xl transition-shadow border border-gray-100">
+                    <button class="absolute top-4 right-4 text-gray-400 hover:text-red-600 transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                    </button>
+                    <img src="<?= $base_url ?? '' ?>/img/<?= htmlspecialchars($p['imagen_principal'] ?: 'width=500,height=500.png') ?>"
+                         alt="<?= htmlspecialchars($p['nombre']) ?>"
+                         class="w-full h-40 md:h-48 object-contain mb-4 hover:scale-105 transition-transform duration-300">
+                    <p class="text-xs text-gray-500 mb-1 uppercase tracking-wide font-medium"><?= htmlspecialchars($p['categoria_nombre'] ?? 'Producto') ?></p>
+                    <p class="text-sm font-bold text-gray-900 leading-tight"><?= htmlspecialchars($p['nombre']) ?></p>
+                </div>
+                <?php endforeach; 
+            endif; ?>
         </div>
     </div>
 </section>

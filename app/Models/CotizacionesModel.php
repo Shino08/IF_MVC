@@ -212,9 +212,10 @@ class CotizacionesModel
     public function getById(int $cotizacionId, int $userId): ?array
     {
         try {
-            $sql = 'SELECT c.*, e.nombre as estado_nombre 
+            $sql = 'SELECT c.*, e.nombre as estado_nombre, u.nombre as cliente_nombre, u.apellido as cliente_apellido, u.email as cliente_email, u.telefono as cliente_telefono, u.cedula as cliente_cedula, u.empresa as cliente_empresa 
                     FROM cotizaciones c
                     JOIN estados_cotizacion e ON c.estado_id = e.id
+                    JOIN usuarios u ON c.usuario_id = u.id
                     WHERE c.id = :id AND c.usuario_id = :userId';
             $stmt = $this->db->prepare($sql);
             $stmt->execute([':id' => $cotizacionId, ':userId' => $userId]);
@@ -223,6 +224,42 @@ class CotizacionesModel
             return $cotizacion ?: null;
         } catch (PDOException $e) {
             error_log("Error en CotizacionesModel::getById - " . $e->getMessage());
+            return null;
+        }
+    }
+
+    public function getAllAdmin(): array
+    {
+        try {
+            $sql = 'SELECT c.*, e.nombre as estado_nombre, u.nombre as cliente_nombre, u.apellido as cliente_apellido, u.email as cliente_email, u.telefono as cliente_telefono 
+                    FROM cotizaciones c
+                    JOIN estados_cotizacion e ON c.estado_id = e.id
+                    JOIN usuarios u ON c.usuario_id = u.id
+                    WHERE c.estado_id != 1
+                    ORDER BY c.fecha_solicitud DESC';
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+        } catch (PDOException $e) {
+            error_log("Error en CotizacionesModel::getAllAdmin - " . $e->getMessage());
+            return [];
+        }
+    }
+
+    public function getByIdAdmin(int $id): ?array
+    {
+        try {
+            $sql = 'SELECT c.*, e.nombre as estado_nombre, u.nombre as cliente_nombre, u.apellido as cliente_apellido, u.email as cliente_email, u.telefono as cliente_telefono, u.cedula as cliente_cedula, u.empresa as cliente_empresa 
+                    FROM cotizaciones c
+                    JOIN estados_cotizacion e ON c.estado_id = e.id
+                    JOIN usuarios u ON c.usuario_id = u.id
+                    WHERE c.id = :id AND c.estado_id != 1';
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute([':id' => $id]);
+            $cotizacion = $stmt->fetch(PDO::FETCH_ASSOC);
+            return $cotizacion ?: null;
+        } catch (PDOException $e) {
+            error_log("Error en CotizacionesModel::getByIdAdmin - " . $e->getMessage());
             return null;
         }
     }

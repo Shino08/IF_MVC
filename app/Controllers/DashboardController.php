@@ -122,9 +122,53 @@ class DashboardController extends Router
     public function cotizaciones(): void
     {
         $this->requireAuth();
+        $cotizacionesModel = new \App\Models\CotizacionesModel();
+        $solicitudes = $cotizacionesModel->getAllAdmin();
         $this->view('dashboard/soliCotizacion', [
             'title' => 'Solicitudes de Cotización',
+            'solicitudes' => $solicitudes
         ]);
+    }
+
+    public function detalleSolicitud(int $id): void
+    {
+        $this->requireAuth();
+        $cotizacionesModel = new \App\Models\CotizacionesModel();
+        $cotizacion = $cotizacionesModel->getByIdAdmin($id);
+
+        if (!$cotizacion) {
+            header('Location: ' . $this->baseUrl() . '/dashboard/cotizaciones');
+            exit;
+        }
+
+        $detalles = $cotizacionesModel->getDetalles($id);
+
+        $this->view('dashboard/detalle-solicitud', [
+            'title' => 'Detalle de Solicitud #' . $id,
+            'cotizacion' => $cotizacion,
+            'detalles' => $detalles
+        ]);
+    }
+
+    public function procesarCotizacion(): void
+    {
+        $this->requireAuth();
+        $cotizacionId = (int)($_POST['cotizacion_id'] ?? 0);
+        $accion = $_POST['accion'] ?? '';
+
+        if ($cotizacionId > 0 && in_array($accion, ['aceptar', 'rechazar'])) {
+            $estadoId = ($accion === 'aceptar') ? 3 : 4; // 3: Aprobada/Procesada, 4: Rechazada
+            
+            // Lógica directa para actualizar
+            $db = \App\Core\Database::getInstance();
+            $stmt = $db->prepare("UPDATE cotizaciones SET estado_id = :estado WHERE id = :id");
+            $stmt->execute([':estado' => $estadoId, ':id' => $cotizacionId]);
+            
+            $_SESSION['success_msg'] = 'Cotización actualizada exitosamente.';
+        }
+        
+        header('Location: ' . $this->baseUrl() . '/dashboard/detalle-solicitud/' . $cotizacionId);
+        exit;
     }
 
     public function servicios(): void

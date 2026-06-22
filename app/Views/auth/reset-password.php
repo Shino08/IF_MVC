@@ -32,7 +32,6 @@
 
                 <form action="<?= $base_url ?? '' ?>/reset-password" method="POST" class="space-y-5">
                     <input type="hidden" name="token" value="<?= htmlspecialchars($token ?? '') ?>">
-                    <input type="hidden" name="email" value="<?= htmlspecialchars($email ?? '') ?>">
 
                     <div>
                         <label for="password" class="block text-sm font-semibold text-gray-700 mb-1">Nueva Contraseña</label>

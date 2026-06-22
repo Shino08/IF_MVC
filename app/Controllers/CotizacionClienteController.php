@@ -165,12 +165,17 @@ class CotizacionClienteController extends Router
     public function detalle(string $id): void
     {
         $userId = (int)$_SESSION['user_id'];
+        $userRol = (int)($_SESSION['rol_id'] ?? 2);
         $cotizacionId = (int)$id;
 
-        $cotizacion = $this->cotizacionesModel->getById($cotizacionId, $userId);
+        if ($userRol === 1) {
+            $cotizacion = $this->cotizacionesModel->getByIdAdmin($cotizacionId);
+        } else {
+            $cotizacion = $this->cotizacionesModel->getById($cotizacionId, $userId);
+        }
 
         if (!$cotizacion) {
-            $_SESSION['error_msg'] = 'Cotización no encontrada.';
+            $_SESSION['error_msg'] = 'Cotización no encontrada o no tiene permisos.';
             header('Location: ' . $this->baseUrl() . '/mis-cotizaciones');
             exit;
         }

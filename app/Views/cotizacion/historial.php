@@ -2,23 +2,18 @@
 
 <div class="bg-gray-50 min-h-screen py-10">
     <div class="max-w-7xl mx-auto px-4">
-        <div class="flex flex-col md:flex-row gap-8">
+        <div class="flex flex-col lg:flex-row gap-8">
             <!-- Sidebar -->
-            <div class="w-full md:w-1/4">
-                <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-4">
-                    <nav class="flex flex-col space-y-1">
-                        <a href="<?= $base_url ?>/cuenta" class="px-4 py-2 rounded-md font-medium text-gray-700 hover:bg-gray-50 hover:text-red-600">Resumen</a>
-                        <a href="<?= $base_url ?>/cuenta/perfil" class="px-4 py-2 rounded-md font-medium text-gray-700 hover:bg-gray-50 hover:text-red-600">Mi Perfil</a>
-                        <a href="<?= $base_url ?>/cuenta/seguridad" class="px-4 py-2 rounded-md font-medium text-gray-700 hover:bg-gray-50 hover:text-red-600">Seguridad</a>
-                        <a href="<?= $base_url ?>/mis-cotizaciones" class="px-4 py-2 rounded-md font-medium bg-red-50 text-red-700">Mis Solicitudes</a>
-                    </nav>
-                </div>
+            <div class="w-full lg:w-1/4">
+                <?php require_once dirname(__DIR__) . '/layouts/cuenta-sidebar.php'; ?>
             </div>
             
             <!-- Content -->
-            <div class="w-full md:w-3/4">
-                <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-6 sm:p-8">
-                    <h2 class="text-2xl font-bold text-gray-900 mb-6 border-b border-gray-200 pb-4">Historial de Cotizaciones</h2>
+            <div class="w-full lg:w-3/4">
+                <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 sm:p-8 relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-64 h-64 bg-red-50 rounded-full mix-blend-multiply filter blur-3xl opacity-70 transform translate-x-1/2 -translate-y-1/2 pointer-events-none"></div>
+                    <div class="relative z-10">
+                        <h2 class="text-3xl font-extrabold text-gray-900 mb-8 border-b border-gray-100 pb-4">Historial de Solicitudes</h2>
                     
                     <?php if (!empty($_SESSION['success_msg'])): ?>
                         <div class="mb-6 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg relative" role="alert">
@@ -67,6 +62,7 @@
                             </table>
                         </div>
                     <?php endif; ?>
+                    </div> <!-- relative z-10 -->
                 </div>
             </div>
         </div>

@@ -5,6 +5,15 @@ session_start();
 
 require_once dirname(__DIR__) . '/autoload.php';
 
+if (isset($_SESSION['user_id'])) {
+    $userModel = new \App\Models\UsersModel();
+    $user = $userModel->findById((int)$_SESSION['user_id']);
+    if (!$user || !isset($_SESSION['session_token']) || $user['session_token'] !== $_SESSION['session_token']) {
+        $_SESSION = [];
+        session_destroy();
+    }
+}
+
 use App\Core\Router;
 use App\Controllers\HomeController;
 use App\Controllers\AuthController;
@@ -42,6 +51,8 @@ Router::post('/dashboard/categorias/store',    [App\Controllers\CategoriasContro
 Router::post('/dashboard/categorias/delete',   [App\Controllers\CategoriasController::class, 'delete']);
 
 Router::get('/dashboard/cotizaciones',         [DashboardController::class, 'cotizaciones']);
+Router::get('/dashboard/detalle-solicitud/{id}', [DashboardController::class, 'detalleSolicitud']);
+Router::post('/dashboard/cotizaciones/procesar', [DashboardController::class, 'procesarCotizacion']);
 
 Router::get('/dashboard/servicios',                      [DashboardController::class,  'servicios']);
 Router::get('/dashboard/servicios/agregar',              [DashboardController::class,  'agregarServicio']);
@@ -68,6 +79,7 @@ Router::post('/cotizacion/enviar',            [CotizacionClienteController::clas
 Router::get('/cotizacion/exito',              [CotizacionClienteController::class, 'exito']);
 Router::get('/mis-cotizaciones',              [CotizacionClienteController::class, 'historial']);
 Router::get('/mis-cotizaciones/{id}',         [CotizacionClienteController::class, 'detalle']);
+Router::get('/cotizacion/detalle/{id}',       [CotizacionClienteController::class, 'detalle']);
 
 Router::get('/catalogo', [CatalogoController::class, 'index']);
 Router::get('/producto/{id}', [CatalogoController::class, 'producto']);

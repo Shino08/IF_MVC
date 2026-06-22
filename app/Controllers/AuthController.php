@@ -5,6 +5,7 @@ namespace App\Controllers;
 
 use App\Core\Router;
 use App\Models\UsersModel;
+use App\Core\Config;
 
 class AuthController extends Router
 {
@@ -40,9 +41,10 @@ class AuthController extends Router
 
         if ($user) {
             session_regenerate_id(true); 
-            $_SESSION['user_id']   = $user['id'];
-            $_SESSION['user_name'] = $user['nombre'];
-            $_SESSION['rol_id']    = $user['rol_id']; 
+            $_SESSION['user_id']       = $user['id'];
+            $_SESSION['user_name']     = $user['nombre'];
+            $_SESSION['rol_id']        = $user['rol_id']; 
+            $_SESSION['session_token'] = $user['session_token'];
 
             $redirectUrl = ($user['rol_id'] == 1) ? $this->baseUrl() . '/dashboard' : $this->baseUrl() . '/';
 
@@ -195,7 +197,7 @@ public function register(): void
             $token = bin2hex(random_bytes(32));
             $userModel->createPasswordResetToken((int)$user['id'], $token);
 
-            $resetLink = $this->baseUrl() . '/reset-password?token=' . $token . '&email=' . urlencode($email);
+            $resetLink = $this->baseUrl() . '/reset-password?token=' . $token;
             
             // Send email using PHPMailer
             try {
@@ -203,12 +205,12 @@ public function register(): void
                 
                 // Configuración de SMTP (Por ejemplo: Mailtrap o SMTP de producción)
                 $mail->isSMTP();
-                $mail->Host       = 'sandbox.smtp.mailtrap.io'; // Cambiar en producción
+                $mail->Host       = Config::SMTP_HOST;
                 $mail->SMTPAuth   = true;
-                $mail->Username   = 'TU_USUARIO_AQUI';          // Reemplazar con credenciales reales
-                $mail->Password   = 'TU_CONTRASEÑA_AQUI';       // Reemplazar con credenciales reales
+                $mail->Username   = Config::SMTP_USER;
+                $mail->Password   = Config::SMTP_PASS;
                 $mail->SMTPSecure = \PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_STARTTLS;
-                $mail->Port       = 2525;                       // Puerto SMTP
+                $mail->Port       = Config::SMTP_PORT;
                 
                 $mail->CharSet = 'UTF-8';
                 $mail->setFrom('no-reply@instalfuego.com', 'InstalFuego Soporte');
@@ -240,17 +242,16 @@ public function register(): void
     public function showResetPassword(): void
     {
         $token = $_GET['token'] ?? '';
-        $email = $_GET['email'] ?? '';
 
-        if (empty($token) || empty($email)) {
+        if (empty($token)) {
             header('Location: ' . $this->baseUrl() . '/login');
             exit;
         }
 
         $userModel = new UsersModel();
-        $user = $userModel->findByEmail($email);
+        $user = $userModel->findByResetToken($token);
 
-        if (!$user || !$userModel->verifyPasswordResetToken((int)$user['id'], $token)) {
+        if (!$user) {
             $this->view('auth/olvide-password', [
                 'title' => 'Recuperar Contraseña',
                 'error' => 'El enlace para restablecer la contraseña es inválido o ha expirado. Por favor, solicita uno nuevo.'
@@ -258,38 +259,30 @@ public function register(): void
             return;
         }
 
-        $this->view('auth/reset-password', ['title' => 'Restablecer Contraseña', 'token' => $token, 'email' => $email]);
+        $this->view('auth/reset-password', ['title' => 'Restablecer Contraseña', 'token' => $token]);
     }
 
     public function processResetPassword(): void
     {
         $token = $_POST['token'] ?? '';
-        $email = $_POST['email'] ?? '';
         $password = $_POST['password'] ?? '';
         $password_confirm = $_POST['password_confirm'] ?? '';
 
         if (empty($password) || $password !== $password_confirm) {
-            $this->view('auth/reset-password', ['title' => 'Restablecer Contraseña', 'token' => $token, 'email' => $email, 'error' => 'Las contraseñas no coinciden.']);
+            $this->view('auth/reset-password', ['title' => 'Restablecer Contraseña', 'token' => $token, 'error' => 'Las contraseñas no coinciden.']);
             return;
         }
 
-        if (strlen($password) < 8) {
-            $this->view('auth/reset-password', ['title' => 'Restablecer Contraseña', 'token' => $token, 'email' => $email, 'error' => 'La contraseña debe tener al menos 8 caracteres.']);
+        if (!preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/', $password)) {
+            $this->view('auth/reset-password', ['title' => 'Restablecer Contraseña', 'token' => $token, 'error' => 'La contraseña debe tener al menos 8 caracteres, incluyendo mayúsculas, minúsculas, números y caracteres especiales.']);
             return;
         }
 
         $userModel = new UsersModel();
-        $user = $userModel->findByEmail($email);
+        $user = $userModel->findByResetToken($token);
 
         if (!$user) {
-            $this->view('auth/reset-password', ['title' => 'Restablecer Contraseña', 'token' => $token, 'email' => $email, 'error' => 'Enlace inválido o expirado.']);
-            return;
-        }
-
-        $isValid = $userModel->verifyPasswordResetToken((int)$user['id'], $token);
-
-        if (!$isValid) {
-            $this->view('auth/reset-password', ['title' => 'Restablecer Contraseña', 'token' => $token, 'email' => $email, 'error' => 'El enlace ha expirado o ya fue utilizado. Solicita uno nuevo.']);
+            $this->view('auth/reset-password', ['title' => 'Restablecer Contraseña', 'token' => $token, 'error' => 'Enlace inválido o expirado.']);
             return;
         }
 

@@ -143,8 +143,8 @@ class CuentaController extends Router
             return;
         }
 
-        if (strlen($nueva) < 8) {
-            $this->renderJsonError('La contraseña debe tener al menos 8 caracteres.', $isAjax);
+        if (!preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/', $nueva)) {
+            $this->renderJsonError('La contraseña debe tener al menos 8 caracteres, incluyendo mayúsculas, minúsculas, números y caracteres especiales.', $isAjax);
             return;
         }
 
@@ -158,6 +158,10 @@ class CuentaController extends Router
         $updated = $this->usersModel->updatePassword($userId, $hashedPassword);
 
         if ($updated) {
+            $sessionToken = bin2hex(random_bytes(32));
+            $this->usersModel->updateSessionToken($userId, $sessionToken);
+            $_SESSION['session_token'] = $sessionToken;
+
             if ($isAjax) {
                 header('Content-Type: application/json');
                 echo json_encode(['success' => true, 'message' => 'Contraseña actualizada exitosamente.']);

@@ -16,17 +16,7 @@ if (!empty($servicios)) {
     }
 }
 
-// Extraer categorías únicas para los filtros
-$categorias = [];
-if (!empty($items)) {
-    foreach ($items as $item) {
-        $cat = $item['categoria_nombre'] ?? 'Sin Categoría';
-        if (!in_array($cat, $categorias)) {
-            $categorias[] = $cat;
-        }
-    }
-    sort($categorias);
-}
+// Categorías ya vienen desde el controlador en $categorias
 
 // Obtener detalles del borrador actual para saber qué items ya están agregados
 $agregadosProductos = [];
@@ -84,29 +74,44 @@ if (isset($_SESSION['user_id']) && (!isset($_SESSION['rol_id']) || $_SESSION['ro
                 </div>
             </div>
 
-            <!-- Franja de filtros reales -->
-            <div class="flex flex-wrap items-center gap-3 border-b border-gray-200 pb-6">
-                <button class="catalog-filter catalog-filter--active group px-5 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 shadow-sm border border-transparent" data-filter="all">
-                    Todos los equipos
+            <!-- Filtro de Tipo -->
+            <div class="flex flex-wrap items-center gap-3 mb-4">
+                <span class="text-sm font-bold text-gray-500 uppercase tracking-wider">Tipo:</span>
+                <button class="type-filter type-filter--active group px-5 py-2 rounded-full text-sm font-semibold transition-all duration-300 shadow-sm border border-transparent" data-type="all">
+                    Todos
                 </button>
-                <?php foreach ($categorias as $cat): ?>
-                    <button class="catalog-filter group px-5 py-2.5 rounded-full text-sm font-semibold text-gray-600 bg-white border border-gray-200 hover:border-red-300 hover:text-red-700 hover:shadow-md transition-all duration-300" data-filter="<?= htmlspecialchars($cat) ?>">
-                        <?= htmlspecialchars($cat) ?>
-                    </button>
-                <?php endforeach; ?>
+                <button class="type-filter group px-5 py-2 rounded-full text-sm font-semibold text-gray-600 bg-white border border-gray-200 hover:border-red-300 hover:text-red-700 hover:shadow-md transition-all duration-300" data-type="producto">
+                    Productos
+                </button>
+                <button class="type-filter group px-5 py-2 rounded-full text-sm font-semibold text-gray-600 bg-white border border-gray-200 hover:border-red-300 hover:text-red-700 hover:shadow-md transition-all duration-300" data-type="servicio">
+                    Servicios
+                </button>
                 
                 <!-- Separador -->
-                <div class="w-px h-8 bg-gray-200 mx-2 hidden sm:block"></div>
+                <div class="w-px h-6 bg-gray-200 mx-2 hidden sm:block"></div>
                 
                 <button class="catalog-filter flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold text-gray-600 bg-white border border-gray-200 hover:border-red-300 hover:text-red-700 hover:bg-red-50 hover:shadow-md transition-all duration-300" data-filter="added">
                     <svg class="w-4 h-4 text-red-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd"/></svg>
                     En mi solicitud
                 </button>
             </div>
+
+            <!-- Filtros de Categoría reales -->
+            <div class="flex flex-wrap items-center gap-3 border-b border-gray-200 pb-6">
+                <span class="text-sm font-bold text-gray-500 uppercase tracking-wider">Categoría:</span>
+                <button class="catalog-filter catalog-filter--active group px-5 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 shadow-sm border border-transparent" data-filter="all">
+                    Todas las categorías
+                </button>
+                <?php foreach ($categorias as $cat): ?>
+                    <button class="catalog-filter group px-5 py-2.5 rounded-full text-sm font-semibold text-gray-600 bg-white border border-gray-200 hover:border-red-300 hover:text-red-700 hover:shadow-md transition-all duration-300" data-filter="<?= htmlspecialchars($cat['nombre']) ?>">
+                        <?= htmlspecialchars($cat['nombre']) ?>
+                    </button>
+                <?php endforeach; ?>
+            </div>
         </div>
 
         <style>
-            .catalog-filter--active {
+            .catalog-filter--active, .type-filter--active {
                 background-color: #b91c1c; /* red-700 */
                 color: #ffffff !important;
                 border-color: #b91c1c !important;
@@ -200,6 +205,7 @@ if (isset($_SESSION['user_id']) && (!isset($_SESSION['rol_id']) || $_SESSION['ro
                     ?>
                     
                     <div class="product-card-premium js-product-item group" 
+                         data-tipo-item="<?= $tipo ?>"
                          data-categoria="<?= $catName ?>" 
                          data-nombre="<?= strtolower($nombre) ?>" 
                          data-sku="<?= strtolower($sku) ?>" 
@@ -209,11 +215,15 @@ if (isset($_SESSION['user_id']) && (!isset($_SESSION['rol_id']) || $_SESSION['ro
                             <!-- Badges Superiores -->
                             <div class="absolute top-4 left-4 right-4 flex justify-between items-start z-10 pointer-events-none">
                                 <div class="flex flex-col gap-1.5">
-                                    <span class="bg-gray-900/85 backdrop-blur-md text-white text-[10px] font-bold px-3 py-1.5 rounded-lg uppercase tracking-wider shadow-sm">
+                                    <span class="bg-gray-900/85 backdrop-blur-md text-white text-[10px] font-bold px-3 py-1.5 rounded-lg uppercase tracking-wider shadow-sm w-max">
                                         <?= $catName ?>
                                     </span>
-                                    <?php if (!$isProduct): ?>
-                                    <span class="bg-blue-600/90 text-white text-[10px] font-bold px-3 py-1.5 rounded-lg uppercase tracking-wider self-start shadow-sm">
+                                    <?php if ($isProduct): ?>
+                                    <span class="bg-green-600/90 text-white text-[10px] font-bold px-3 py-1.5 rounded-lg uppercase tracking-wider self-start shadow-sm w-max">
+                                        Producto
+                                    </span>
+                                    <?php else: ?>
+                                    <span class="bg-blue-600/90 text-white text-[10px] font-bold px-3 py-1.5 rounded-lg uppercase tracking-wider self-start shadow-sm w-max">
                                         Servicio
                                     </span>
                                     <?php endif; ?>
@@ -307,6 +317,7 @@ if (isset($_SESSION['user_id']) && (!isset($_SESSION['rol_id']) || $_SESSION['ro
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const filters = document.querySelectorAll('.catalog-filter');
+    const typeFilters = document.querySelectorAll('.type-filter');
     const products = Array.from(document.querySelectorAll('.js-product-item'));
     const searchInput = document.getElementById('searchInput');
     const noResults = document.getElementById('noResultsMsg');
@@ -315,6 +326,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const paginationInfo = document.getElementById('paginationInfo');
     
     let currentFilter = 'all';
+    let currentType = 'all';
     let searchTerm = '';
     
     // Configuración de Paginación
@@ -327,11 +339,17 @@ document.addEventListener('DOMContentLoaded', function() {
         searchTerm = searchInput ? searchInput.value.toLowerCase().trim() : '';
         
         filteredProducts = products.filter(product => {
+            const tipoItem = product.getAttribute('data-tipo-item');
             const cat = product.getAttribute('data-categoria');
             const added = product.getAttribute('data-added') === 'true';
             const nombre = product.getAttribute('data-nombre') || '';
             const sku = product.getAttribute('data-sku') || '';
             
+            // Lógica de tipo (Producto / Servicio)
+            let showByType = false;
+            if (currentType === 'all') showByType = true;
+            else showByType = (tipoItem === currentType);
+
             // Lógica de categoría
             let showByCategory = false;
             if (currentFilter === 'all') showByCategory = true;
@@ -344,7 +362,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 showBySearch = nombre.includes(searchTerm) || sku.includes(searchTerm);
             }
 
-            return showByCategory && showBySearch;
+            return showByType && showByCategory && showBySearch;
         });
 
         // Reiniciar a primera página al filtrar
@@ -437,12 +455,22 @@ document.addEventListener('DOMContentLoaded', function() {
         paginationContainer.appendChild(nextBtn);
     }
 
-    // Eventos de botones de filtro
+    // Eventos de botones de filtro por categoría
     filters.forEach(btn => {
         btn.addEventListener('click', () => {
             filters.forEach(f => f.classList.remove('catalog-filter--active'));
             btn.classList.add('catalog-filter--active');
             currentFilter = btn.getAttribute('data-filter');
+            applyFilters();
+        });
+    });
+
+    // Eventos de botones de filtro por tipo
+    typeFilters.forEach(btn => {
+        btn.addEventListener('click', () => {
+            typeFilters.forEach(f => f.classList.remove('type-filter--active'));
+            btn.classList.add('type-filter--active');
+            currentType = btn.getAttribute('data-type');
             applyFilters();
         });
     });

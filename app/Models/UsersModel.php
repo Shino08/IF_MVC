@@ -58,6 +58,13 @@ class UsersModel
 
         if ($user && password_verify($password, $user['contrasena'])) {
             unset($user['contrasena']);
+            
+            // Generate and save session token
+            $sessionToken = bin2hex(random_bytes(32));
+            $stmt = $this->db->prepare('UPDATE usuarios SET session_token = :token WHERE id = :id');
+            $stmt->execute([':token' => $sessionToken, ':id' => $user['id']]);
+            $user['session_token'] = $sessionToken;
+            
             return $user;
         }
 
@@ -166,6 +173,21 @@ class UsersModel
         }
     }
 
+    public function updateSessionToken(int $id, string $token): bool
+    {
+        try {
+            $sql = 'UPDATE usuarios SET session_token = :token WHERE id = :id';
+            $stmt = $this->db->prepare($sql);
+            return $stmt->execute([
+                ':id'    => $id,
+                ':token' => $token
+            ]);
+        } catch (PDOException $e) {
+            error_log("Error en Usuario::updateSessionToken - " . $e->getMessage());
+            return false;
+        }
+    }
+
     public function createPasswordResetToken(int $userId, string $token): bool
     {
         try {
@@ -205,6 +227,28 @@ class UsersModel
         }
     }
 
+    public function findByResetToken(string $token): ?array
+    {
+        try {
+            $sql = 'SELECT u.* FROM usuarios u
+                    INNER JOIN password_resets pr ON u.id = pr.usuarioid
+                    WHERE pr.token_hash = :token_hash 
+                      AND pr.usado = 0 
+                      AND pr.expiracion > NOW() 
+                    LIMIT 1';
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute([
+                ':token_hash' => hash('sha256', $token)
+            ]);
+            
+            $user = $stmt->fetch(PDO::FETCH_ASSOC);
+            return $user ?: null;
+        } catch (PDOException $e) {
+            error_log("Error en Usuario::findByResetToken - " . $e->getMessage());
+            return null;
+        }
+    }
+
     public function verifyPasswordResetToken(int $userId, string $token): bool
     {
         try {
@@ -241,6 +285,11 @@ class UsersModel
                 ':usuarioid'  => $userId,
                 ':token_hash' => hash('sha256', $token)
             ]);
+
+            // Invalidate sessions by generating a new session_token
+            $sessionToken = bin2hex(random_bytes(32));
+            $stmtToken = $this->db->prepare('UPDATE usuarios SET session_token = :token WHERE id = :id');
+            $stmtToken->execute([':token' => $sessionToken, ':id' => $userId]);
 
             $this->db->commit();
             return true;
