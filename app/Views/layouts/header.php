@@ -86,10 +86,7 @@ if (isset($_SESSION['user_id']) && (!isset($_SESSION['rol_id']) || $_SESSION['ro
             </div>
             <div class="flex flex-col space-y-3">
                 <a href="<?= $base_url ?? '' ?>/catalogo" class="text-gray-700 font-medium hover:text-red-600">CATÁLOGO</a>
-                <a href="<?= $base_url ?? '' ?>/catalogo" class="text-gray-700 font-medium hover:text-red-600">DETECCIÓN DE HUMO</a>
                 <a href="<?= $base_url ?? '' ?>/catalogo" class="text-gray-700 font-medium hover:text-red-600">EXTINGUIDORES</a>
-                <a href="<?= $base_url ?? '' ?>/catalogo" class="text-gray-700 font-medium hover:text-red-600">SISTEMAS DE RIEGO</a>
-                <a href="<?= $base_url ?? '' ?>/catalogo" class="text-gray-700 font-medium hover:text-red-600">EPP</a>
                 <hr class="border-gray-100">
                 <?php if (isset($_SESSION['user_id'])): ?>
                     <div class="py-2 flex items-center space-x-3 bg-gray-50 px-3 rounded-lg">
@@ -125,5 +122,3 @@ if (isset($_SESSION['user_id']) && (!isset($_SESSION['rol_id']) || $_SESSION['ro
         </div>
     </div>
 </nav>
-
-<!-- MAIN CONTENT -->
