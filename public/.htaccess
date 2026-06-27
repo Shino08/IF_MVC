@@ -1,0 +1,15 @@
+# ── IF_MVC/public/.htaccess ──────────────────────────────────────────────────
+# Reglas de enrutamiento para cuando public/ es el Document Root.
+# ──────────────────────────────────────────────────────────────────────────────
+
+Options -Indexes
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Si el archivo o directorio solicitado no existe físicamente
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    # Redirigir todo al index.php (Front Controller)
+    RewriteRule ^(.*)$ index.php [QSA,L]
+</IfModule>

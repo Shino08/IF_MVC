@@ -1,0 +1,30 @@
+services:
+  web:
+    image: php:8.2-apache
+    container_name: if_mvc_web
+    restart: always
+    ports:
+      - "8080:80"
+    volumes:
+      # Mapeamos TODO el proyecto para que PHP pueda leer autoload.php y app/
+      - ./:/var/www/html
+    # ESTA LÍNEA ENCIENDE EL MÓDULO REWRITE PARA TU .HTACCESS
+    command: bash -c "a2enmod rewrite && apache2-foreground"
+    depends_on:
+      - db
+
+  db:
+    image: mysql:8.0
+    container_name: if_mvc_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: install_fuego  # Ajusta esto al nombre que use tu código
+      MYSQL_USER: deiber
+      MYSQL_PASSWORD: Password123!
+    ports:
+      - "3306:3306"
+    volumes:
+      # Las carpetas de la base de datos se crearán aquí adentro solas
+      - ./mysql_data:/var/lib/mysql
+      - ./db_dumps:/docker-entrypoint-initdb.d

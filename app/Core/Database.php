@@ -10,10 +10,10 @@ class Database
 {
     private static ?PDO $instance = null;
 
-    private static string $host   = 'localhost';
+    private static string $host   = 'db';
     private static string $dbname = 'instal_fuego';
-    private static string $user   = 'root';
-    private static string $pass   = '';
+    private static string $user   = 'deiber';
+    private static string $pass   = 'Password123!';
     private static string $charset = 'utf8mb4';
 
     public static function getInstance(): PDO

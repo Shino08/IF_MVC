@@ -32,3 +32,10 @@ desktop.ini
 *.log
 public/img/servicios/
 public/img/productos/
+
+# ─── Docker y base de datos local ──────────────────────────────────
+mysql_data/
+db_dumps/
+
+# ─── Herramientas de IA ────────────────────────────────────────────
+.codegraph/
