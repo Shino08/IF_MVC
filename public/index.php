@@ -5,6 +5,8 @@ session_start();
 
 require_once dirname(__DIR__) . '/autoload.php';
 
+\App\Core\Env::load(dirname(__DIR__) . '/.env');
+
 if (isset($_SESSION['user_id'])) {
     $userModel = new \App\Models\UsersModel();
     $user = $userModel->findById((int)$_SESSION['user_id']);

@@ -197,24 +197,13 @@ public function register(): void
             $token = bin2hex(random_bytes(32));
             $userModel->createPasswordResetToken((int)$user['id'], $token);
 
-            $resetLink = $this->baseUrl() . '/reset-password?token=' . $token;
+            $resetLink = $this->absoluteUrl() . '/reset-password?token=' . $token;
             
-            // Send email using PHPMailer
+            // Send email using MailerService
             try {
-                $mail = new \PHPMailer\PHPMailer\PHPMailer(true);
+                $mail = \App\Core\MailerService::make();
                 
-                // Configuración de SMTP (Por ejemplo: Mailtrap o SMTP de producción)
-                $mail->isSMTP();
-                $mail->Host       = Config::SMTP_HOST;
-                $mail->SMTPAuth   = true;
-                $mail->Username   = Config::SMTP_USER;
-                $mail->Password   = Config::SMTP_PASS;
-                $mail->SMTPSecure = \PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_STARTTLS;
-                $mail->Port       = Config::SMTP_PORT;
-                
-                $mail->CharSet = 'UTF-8';
-                $mail->setFrom('no-reply@instalfuego.com', 'InstalFuego Soporte');
-                $mail->addAddress($email, htmlspecialchars($user['nombre']));
+                $mail->addAddress($email, htmlspecialchars((string)$user['nombre']));
                 
                 $mail->isHTML(true);
                 $mail->Subject = 'Recuperación de Contraseña - InstalFuego';
@@ -296,5 +285,18 @@ public function register(): void
     {
         $scriptName = $_SERVER['SCRIPT_NAME'];
         return rtrim(str_replace('/index.php', '', $scriptName), '/');
+    }
+
+    private function absoluteUrl(): string
+    {
+        $scheme = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http';
+        $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+        
+        // Si tienes una variable de entorno APP_URL, mejor usarla
+        if (getenv('APP_URL')) {
+            return rtrim(getenv('APP_URL'), '/') . $this->baseUrl();
+        }
+
+        return $scheme . '://' . $host . $this->baseUrl();
     }
 }

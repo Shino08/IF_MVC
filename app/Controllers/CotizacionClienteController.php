@@ -296,16 +296,9 @@ class CotizacionClienteController extends Router
 
         $pdfContent = $this->generatePdfContent($cotizacionId, $userId, $userRol);
 
-        $mail = new PHPMailer(true);
         try {
-            $mail->isSMTP();
-            $mail->Host       = Config::SMTP_HOST;
-            $mail->SMTPAuth   = true;
-            $mail->Username   = Config::SMTP_USER;
-            $mail->Password   = Config::SMTP_PASS;
-            $mail->Port       = Config::SMTP_PORT;
+            $mail = \App\Core\MailerService::make();
 
-            $mail->setFrom(Config::SMTP_USER, 'InstalFuego C.A.');
             $mail->addAddress($cotizacion['cliente_email'], $cotizacion['cliente_nombre']);
 
             $mail->isHTML(true);
@@ -319,7 +312,8 @@ class CotizacionClienteController extends Router
             $mail->send();
             $_SESSION['success_msg'] = 'Cotización enviada por correo exitosamente.';
         } catch (PHPMailerException $e) {
-            $_SESSION['error_msg'] = 'No se pudo enviar el correo. Error: ' . $mail->ErrorInfo;
+            $errorInfo = isset($mail) ? $mail->ErrorInfo : $e->getMessage();
+            $_SESSION['error_msg'] = 'No se pudo enviar el correo. Error: ' . $errorInfo;
         }
 
         header('Location: ' . $_SERVER['HTTP_REFERER']);
