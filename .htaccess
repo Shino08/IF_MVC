@@ -7,25 +7,15 @@ Options -Indexes
 
 <IfModule mod_rewrite.c>
     RewriteEngine On
-    RewriteBase /IF_MVC/
+    RewriteBase /
 
-    # Si se pide algo que ya está dentro de public/
-    RewriteCond %{REQUEST_URI} ^/IF_MVC/public/ [NC]
-    # Y ese archivo o directorio existe físicamente, servirlo y detener.
+    # Si la petición apunta a un archivo/directorio real, lo sirve
     RewriteCond %{REQUEST_FILENAME} -f [OR]
     RewriteCond %{REQUEST_FILENAME} -d
     RewriteRule ^ - [L]
 
-    # Si se pide algo dentro de public/ pero no es un archivo (ej: public/login), enviarlo al index
-    RewriteCond %{REQUEST_URI} ^/IF_MVC/public/ [NC]
-    RewriteCond %{REQUEST_FILENAME} !-f
-    RewriteCond %{REQUEST_FILENAME} !-d
+    # Si no es un archivo real, redirige al front controller de public/
     RewriteRule ^(.*)$ public/index.php [QSA,L]
-
-    # Si NO estamos en public/ (ej: /IF_MVC/login), también enviarlo al index.php
-    RewriteCond %{REQUEST_URI} !^/IF_MVC/public/ [NC]
-    RewriteRule ^(.*)$ public/index.php [QSA,L]
-
 </IfModule>
 
 # Seguridad: bloquear acceso a archivos sensibles y de configuración
