@@ -1,5 +1,5 @@
 ================================================================================
-MANUAL DE USUARIO — Sistema de Cotizaciones InstalFuego (IF_MVC)
+MANUAL DE USUARIO — Plataforma Híbrida de Presupuestos y Pedidos InstalFuego (IF_MVC)
 ================================================================================
 
 1. REQUISITOS PARA ENTRAR AL SISTEMA

@@ -210,7 +210,7 @@ $active_nav   = 'servicios';
                                 <li><span class="text-red-600 mr-1">•</span><strong>Por hora:</strong> Mano de obra técnica</li>
                                 <li><span class="text-red-600 mr-1">•</span><strong>Por unidad:</strong> Recargas, inspecciones</li>
                                 <li><span class="text-red-600 mr-1">•</span><strong>Por metro:</strong> Instalaciones lineales</li>
-                                <li><span class="text-red-600 mr-1">•</span><strong>Por proyecto:</strong> Cotización global</li>
+                                <li><span class="text-red-600 mr-1">•</span><strong>Por proyecto:</strong> Presupuesto global</li>
                             </ul>
                         </div>
                     </div>

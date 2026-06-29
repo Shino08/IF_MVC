@@ -5,7 +5,7 @@ $pasoActual = (int)($_GET['paso'] ?? 1);
 $pasos = [
     1 => ['label' => 'Ítems', 'icon' => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2'],
     2 => ['label' => 'Configurar', 'icon' => 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z'],
-    3 => ['label' => 'Revisar y Emitir', 'icon' => 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z'],
+    3 => ['label' => 'Revisar y Configurar', 'icon' => 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z'],
 ];
 $totalPasos = count($pasos);
 
@@ -30,7 +30,7 @@ if ($previewTotal < 0) $previewTotal = 0;
                 </a>
                 <div>
                     <div class="flex items-center gap-3">
-                        <h1 class="text-xl font-bold text-gray-900">Solicitud #COT<?= str_pad((string)$cotizacion['id'], 6, '0', STR_PAD_LEFT) ?></h1>
+                        <h1 class="text-xl font-bold text-gray-900">Solicitud #PED<?= str_pad((string)$cotizacion['id'], 6, '0', STR_PAD_LEFT) ?></h1>
                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold <?php 
                             if($cotizacion['estado_id'] == 2) echo 'bg-yellow-100 text-yellow-800';
                             elseif($cotizacion['estado_id'] == 3) echo 'bg-blue-100 text-blue-800';
@@ -48,10 +48,16 @@ if ($previewTotal < 0) $previewTotal = 0;
                 <?php if ($cotizacion['estado_id'] == 2): ?>
                     <span class="text-xs text-orange-600 bg-orange-50 px-2.5 py-1 rounded-full font-semibold">Pendiente de revisión</span>
                 <?php endif; ?>
-                <a href="<?= $base_url ?? '' ?>/cotizacion/pdf/<?= $cotizacion['id'] ?>" target="_blank" class="px-3 py-1.5 border border-gray-200 rounded-lg text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors flex items-center gap-1.5">
+                <a href="<?= $base_url ?? '' ?>/pedido/pdf/<?= $cotizacion['id'] ?>" target="_blank" class="px-3 py-1.5 border border-gray-200 rounded-lg text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors flex items-center gap-1.5">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
                     PDF
                 </a>
+                <?php if ($cotizacion['estado_id'] == 4): // Aprobada ?>
+                <a href="<?= $base_url ?? '' ?>/factura/pdf/<?= $cotizacion['id'] ?>" target="_blank" class="px-3 py-1.5 border border-transparent shadow-sm rounded-lg text-xs font-bold text-white bg-green-600 hover:bg-green-700 transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                    Factura
+                </a>
+                <?php endif; ?>
             </div>
         </header>
 
@@ -115,7 +121,7 @@ if ($previewTotal < 0) $previewTotal = 0;
                         <?php if (empty($detalles)): ?>
                             <div class="p-16 text-center text-gray-400">
                                 <svg class="w-16 h-16 mx-auto mb-4 text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/></svg>
-                                <p class="text-sm font-medium">Esta cotización no tiene ítems</p>
+                                <p class="text-sm font-medium">Esta presupuesto no tiene ítems</p>
                                 <p class="text-xs mt-1">El cliente debe agregar productos o servicios desde el catálogo.</p>
                             </div>
                         <?php else: ?>
@@ -209,6 +215,98 @@ if ($previewTotal < 0) $previewTotal = 0;
                         </div>
                     </div>
 
+                    <!-- Datos Logística -->
+                    <?php if (!empty($cotizacion['tipo_entrega'])): ?>
+                    <div class="mt-4 bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+                        <h3 class="text-sm font-bold text-gray-900 mb-3 flex items-center gap-2">
+                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.242-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                            Logística y Entrega
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                            <div><span class="text-gray-500 text-xs">Método de Entrega</span><p class="font-medium text-gray-900"><?= $cotizacion['tipo_entrega'] === 'domicilio' ? 'Envío a Domicilio' : 'Retiro en Tienda' ?></p></div>
+                            <div>
+                                <?php
+                                    $estadoEntrega = 'pendiente';
+                                    if (isset($pedido) && $pedido['estado_pedido'] === 'despachado') $estadoEntrega = 'en_camino';
+                                    if (isset($pedido) && $pedido['estado_pedido'] === 'entregado') $estadoEntrega = 'entregado';
+                                ?>
+                                <span class="text-gray-500 text-xs">Estado Logístico</span>
+                                <div class="mt-1">
+                                    <span class="px-2 py-1 rounded text-xs font-bold <?= $estadoEntrega === 'entregado' ? 'bg-green-200 text-green-800' : ($estadoEntrega === 'en_camino' ? 'bg-blue-200 text-blue-800' : 'bg-gray-200 text-gray-800') ?>">
+                                        <?= strtoupper(str_replace('_', ' ', $estadoEntrega)) ?>
+                                    </span>
+                                </div>
+                            </div>
+                            <?php if ($cotizacion['tipo_entrega'] === 'domicilio' && !empty($cotizacion['direccion_envio'])): ?>
+                                <div class="md:col-span-2"><span class="text-gray-500 text-xs">Dirección Completa</span><p class="font-medium text-gray-900"><?= htmlspecialchars($cotizacion['direccion_envio']) ?></p></div>
+                            <?php endif; ?>
+                            
+                            <?php if ($estadoEntrega !== 'entregado' && isset($pedido) && in_array($pedido['estado_pedido'], ['procesando', 'despachado', 'entregado'])): ?>
+                            <div class="col-span-1 md:col-span-2 border-t border-gray-100 mt-2 pt-4">
+                                <form action="<?= $base_url ?? '' ?>/dashboard/cotizaciones/actualizar-logistica" method="POST" class="flex items-center gap-3">
+                                    <input type="hidden" name="cotizacion_id" value="<?= $cotizacion['id'] ?>">
+                                    <select name="estado_entrega" class="input-elegant text-sm py-1.5 flex-1">
+                                        <option value="pendiente" <?= $estadoEntrega === 'pendiente' ? 'selected' : '' ?>>Pendiente</option>
+                                        <option value="en_camino" <?= $estadoEntrega === 'en_camino' ? 'selected' : '' ?>><?= $cotizacion['tipo_entrega'] === 'domicilio' ? 'En Camino' : 'Listo para Retiro' ?></option>
+                                        <option value="entregado" <?= $estadoEntrega === 'entregado' ? 'selected' : '' ?>>Entregado / Finalizado</option>
+                                    </select>
+                                    <button type="submit" class="px-4 py-1.5 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800">Actualizar Estado</button>
+                                </form>
+                            </div>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                    <?php endif; ?>
+
+                    <!-- Reporte de Pagos -->
+                    <?php if (!empty($pagos)): ?>
+                    <div class="mt-4 bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+                        <h3 class="text-sm font-bold text-gray-900 mb-3 flex items-center gap-2">
+                            <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            Reportes de Pago
+                        </h3>
+                        <div class="space-y-4">
+                            <?php foreach ($pagos as $pago): ?>
+                            <div class="border rounded-lg p-4 <?= $pago['estado'] === 'validado' ? 'border-green-200 bg-green-50' : ($pago['estado'] === 'rechazado' ? 'border-red-200 bg-red-50' : 'border-yellow-200 bg-yellow-50') ?>">
+                                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mb-3">
+                                    <div><span class="text-gray-500 text-xs block">Monto</span><p class="font-bold text-gray-900"><?= $pago['moneda'] === 'USD' ? '$' : 'Bs. ' ?><?= number_format((float)$pago['monto'], 2) ?></p></div>
+                                    <div><span class="text-gray-500 text-xs block">Referencia</span><p class="font-mono text-gray-900"><?= htmlspecialchars($pago['referencia']) ?></p></div>
+                                    <div><span class="text-gray-500 text-xs block">Método</span><p class="text-gray-900"><?= htmlspecialchars($pago['metodo_nombre'] ?? 'N/A') ?></p></div>
+                                    <div>
+                                        <span class="text-gray-500 text-xs block">Estado</span>
+                                        <span class="px-2 py-1 rounded text-xs font-bold <?= $pago['estado'] === 'validado' ? 'bg-green-200 text-green-800' : ($pago['estado'] === 'rechazado' ? 'bg-red-200 text-red-800' : 'bg-yellow-200 text-yellow-800') ?>">
+                                            <?= strtoupper($pago['estado']) ?>
+                                        </span>
+                                    </div>
+                                </div>
+                                <?php if (!empty($pago['comprobante_url'])): ?>
+                                    <div class="mb-3">
+                                        <a href="<?= $base_url ?? '' ?><?= $pago['comprobante_url'] ?>" target="_blank" class="text-blue-600 hover:underline text-sm flex items-center gap-1">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>
+                                            Ver Comprobante
+                                        </a>
+                                    </div>
+                                <?php endif; ?>
+                                
+                                <?php if ($pago['estado'] === 'por_validar'): ?>
+                                <form action="<?= $base_url ?? '' ?>/dashboard/cotizaciones/validar-pago" method="POST" class="mt-3 border-t pt-3 flex items-center gap-3">
+                                    <input type="hidden" name="pago_id" value="<?= $pago['id'] ?>">
+                                    <input type="hidden" name="cotizacion_id" value="<?= $cotizacion['id'] ?>">
+                                    <input type="text" name="observaciones_admin" placeholder="Observaciones (opcional)" class="input-elegant text-sm py-1.5 flex-1">
+                                    <button type="submit" name="accion" value="validado" class="px-3 py-1.5 bg-green-600 text-white text-sm font-medium rounded hover:bg-green-700">Validar</button>
+                                    <button type="submit" name="accion" value="rechazado" class="px-3 py-1.5 bg-red-600 text-white text-sm font-medium rounded hover:bg-red-700">Rechazar</button>
+                                </form>
+                                <?php elseif (!empty($pago['observaciones_admin'])): ?>
+                                    <div class="mt-2 text-sm text-gray-600 border-t pt-2">
+                                        <strong>Nota admin:</strong> <?= htmlspecialchars($pago['observaciones_admin']) ?>
+                                    </div>
+                                <?php endif; ?>
+                            </div>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+                    <?php endif; ?>
+
                     <!-- Next button -->
                     <div class="mt-6 flex justify-end">
                         <a href="?paso=2" class="inline-flex items-center px-6 py-2.5 bg-red-600 text-white text-sm font-semibold rounded-lg hover:bg-red-700 transition-colors shadow-sm gap-2">
@@ -250,6 +348,14 @@ if ($previewTotal < 0) $previewTotal = 0;
                                 <label class="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1.5">IVA / Impuestos <span class="text-gray-400 normal-case font-normal">($)</span></label>
                                 <input type="number" step="0.01" min="0" name="impuestos" value="<?= number_format((float)($cotizacion['impuestos'] ?? 0), 2, '.', '') ?>" class="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500">
                             </div>
+                            <?php if ($cotizacion['tipo_entrega'] === 'domicilio'): ?>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1.5">Costo de Envío <span class="text-gray-400 normal-case font-normal">($)</span></label>
+                                <input type="number" step="0.01" min="0" name="costo_envio" value="<?= number_format((float)($cotizacion['costo_envio'] ?? 0), 2, '.', '') ?>" class="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500">
+                            </div>
+                            <?php else: ?>
+                            <input type="hidden" name="costo_envio" value="0">
+                            <?php endif; ?>
                             <div class="md:col-span-2">
                                 <label class="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1.5">Condiciones de Pago</label>
                                 <input type="text" name="condiciones_pago" value="<?= htmlspecialchars($cotizacion['condiciones_pago'] ?? '') ?>" placeholder="Ej: 50% anticipo, 50% contra entrega" class="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500">
@@ -320,10 +426,10 @@ if ($previewTotal < 0) $previewTotal = 0;
                         <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
                             <h2 class="text-base font-bold text-gray-900 flex items-center gap-1.5">
                                 <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                                Resumen de Cotización
+                                Resumen de Presupuesto
                             </h2>
                             <div class="flex gap-2">
-                                <a href="<?= $base_url ?? '' ?>/cotizacion/pdf/<?= $cotizacion['id'] ?>" target="_blank" class="px-3 py-1.5 border border-gray-200 rounded-lg text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors flex items-center gap-1">
+                                <a href="<?= $base_url ?? '' ?>/pedido/pdf/<?= $cotizacion['id'] ?>" target="_blank" class="px-3 py-1.5 border border-gray-200 rounded-lg text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors flex items-center gap-1">
                                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
                                     PDF
                                 </a>
@@ -361,53 +467,60 @@ if ($previewTotal < 0) $previewTotal = 0;
                         <div class="px-6 py-4 border-b border-gray-100">
                             <h2 class="text-base font-bold text-gray-900 flex items-center gap-1.5">
                                 <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-                                Acciones
+                                Estado del Pedido
                             </h2>
                         </div>
                         <div class="p-6">
                             <?php if ($cotizacion['estado_id'] == 2): // Pendiente revisión ?>
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <!-- Emitir -->
-                                    <button type="button" onclick="confirmarAccion('emitir', <?= $cotizacion['id'] ?>)"
-                                            class="w-full flex items-center justify-center gap-2 px-5 py-3.5 bg-blue-600 text-white text-sm font-bold rounded-lg hover:bg-blue-700 transition-colors shadow-sm">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                    <button type="button" onclick="confirmarAccion('emitir', <?= $cotizacion['id'] ?>)" 
+                                        class="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg shadow-sm">
                                         Emitir Cotización
                                     </button>
                                     <!-- Rechazar -->
                                     <button type="button" onclick="confirmarAccion('rechazar', <?= $cotizacion['id'] ?>)"
-                                            class="w-full flex items-center justify-center gap-2 px-5 py-3.5 bg-red-600 text-white text-sm font-bold rounded-lg hover:bg-red-700 transition-colors shadow-sm">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                                        Rechazar Cotización
+                                            class="w-full flex items-center justify-center gap-2 px-5 py-2 border border-red-200 text-red-600 text-sm font-bold rounded-lg hover:bg-red-50 transition-colors shadow-sm">
+                                        Anular Solicitud
                                     </button>
                                 </div>
-                                <p class="text-xs text-gray-400 text-center mt-3">Al emitir, el cliente recibirá la cotización y podrá verla en su panel.</p>
+                                <p class="text-xs text-gray-400 text-center mt-3">Al emitir la cotización, el cliente podrá proceder a pagar el pedido.</p>
                             <?php elseif ($cotizacion['estado_id'] == 3): ?>
-                                <div class="space-y-4">
+                                <?php 
+                                    $estadoPago = 'pendiente';
+                                    if (isset($pedido)) {
+                                        $estadoPago = $pedido['estado_pedido'] === 'pago_por_validar' ? 'por_validar' : 
+                                                     ($pedido['estado_pedido'] === 'cancelado' ? 'rechazado' : 'pendiente');
+                                    }
+                                ?>
+                                <?php if ($estadoPago === 'pendiente'): ?>
                                     <div class="bg-blue-50 border border-blue-100 rounded-lg p-4 text-center">
                                         <p class="text-sm font-bold text-blue-800">Cotización Emitida</p>
-                                        <p class="text-xs text-blue-600 mt-1">Esperando respuesta del cliente.</p>
+                                        <p class="text-xs text-blue-600 mt-1">Pendiente de pago del cliente.</p>
                                     </div>
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <button type="button" onclick="confirmarAccion('aprobar', <?= $cotizacion['id'] ?>)"
-                                                class="w-full flex items-center justify-center gap-2 px-5 py-3 bg-green-600 text-white text-sm font-bold rounded-lg hover:bg-green-700 transition-colors shadow-sm">
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                                            Aprobar Cotización
-                                        </button>
-                                        <button type="button" onclick="confirmarAccion('rechazar', <?= $cotizacion['id'] ?>)"
-                                                class="w-full flex items-center justify-center gap-2 px-5 py-3 bg-red-600 text-white text-sm font-bold rounded-lg hover:bg-red-700 transition-colors shadow-sm">
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                                            Rechazar Cotización
-                                        </button>
+                                <?php elseif ($estadoPago === 'por_validar'): ?>
+                                    <div class="bg-yellow-50 border border-yellow-100 rounded-lg p-4 text-center">
+                                        <p class="text-sm font-bold text-yellow-800">Pago reportado por el cliente</p>
+                                        <p class="text-xs text-yellow-600 mt-1">Validación pendiente en la sección de "Reportes de Pago".</p>
                                     </div>
-                                    <p class="text-xs text-gray-400 text-center">Si el cliente confirmó, márcala como aprobada.</p>
-                                </div>
+                                <?php elseif ($estadoPago === 'rechazado'): ?>
+                                    <div class="bg-red-50 border border-red-100 rounded-lg p-4 text-center">
+                                        <p class="text-sm font-bold text-red-800">Pago Rechazado</p>
+                                        <p class="text-xs text-red-600 mt-1">Esperando un nuevo reporte de pago por parte del cliente.</p>
+                                    </div>
+                                <?php endif; ?>
                             <?php elseif ($cotizacion['estado_id'] == 4): ?>
                                 <div class="bg-green-50 border border-green-100 rounded-lg p-4 text-center">
-                                    <p class="text-sm font-bold text-green-800">✅ Cotización Aprobada por el Cliente</p>
+                                    <p class="text-sm font-bold text-green-800">✅ Pago validado y factura generada</p>
+                                    <div class="mt-3">
+                                        <a href="<?= $base_url ?? '' ?>/factura/pdf/<?= $cotizacion['id'] ?>" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white text-sm font-semibold rounded-lg hover:bg-green-700 transition-colors shadow-sm">
+                                            Ver Factura PDF
+                                        </a>
+                                    </div>
                                 </div>
                             <?php elseif ($cotizacion['estado_id'] == 5): ?>
                                 <div class="bg-red-50 border border-red-100 rounded-lg p-4 text-center">
-                                    <p class="text-sm font-bold text-red-800">❌ Cotización Rechazada</p>
+                                    <p class="text-sm font-bold text-red-800">❌ Solicitud Anulada / Cancelada</p>
                                 </div>
                             <?php endif; ?>
                         </div>
@@ -455,6 +568,8 @@ if ($previewTotal < 0) $previewTotal = 0;
         </div>
     </div>
 </div>
+<!-- Safelist for Tailwind JIT used in JS -->
+<div class="hidden bg-blue-600 hover:bg-blue-700 bg-green-600 hover:bg-green-700 bg-red-600 hover:bg-red-700 text-blue-600 text-green-600 text-red-600 bg-blue-50 bg-green-50 bg-red-50"></div>
 
 <script>
 // ─── Modal de confirmación reutilizable ───
@@ -480,29 +595,29 @@ function confirmarAccion(accion, id, nombre) {
         icon.innerHTML = '<svg class="w-7 h-7 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>';
         icon.className = 'w-14 h-14 rounded-full flex items-center justify-center bg-red-50';
         titulo.textContent = 'Eliminar ítem';
-        mensaje.textContent = nombre ? '¿Eliminar "' + nombre + '" de la cotización?' : '¿Eliminar este ítem?';
+        mensaje.textContent = nombre ? '¿Eliminar "' + nombre + '" de la presupuesto?' : '¿Eliminar este ítem?';
         btnConfirmar.textContent = 'Eliminar';
         btnConfirmar.className = 'flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold text-white bg-red-600 hover:bg-red-700 transition-colors shadow-sm';
     } else if (accion === 'emitir') {
         icon.innerHTML = '<svg class="w-7 h-7 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>';
         icon.className = 'w-14 h-14 rounded-full flex items-center justify-center bg-blue-50';
-        titulo.textContent = 'Emitir Cotización';
-        mensaje.textContent = 'Se cambiará el estado a "Enviada" y el cliente podrá ver la cotización en su panel. ¿Continuar?';
-        btnConfirmar.textContent = 'Emitir';
+        titulo.textContent = 'Marcar como Listo para Pago';
+        mensaje.textContent = 'Se marcará el pedido como "Listo para Pago" y el cliente podrá proceder a pagar. ¿Continuar?';
+        btnConfirmar.textContent = 'Confirmar';
         btnConfirmar.className = 'flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-colors shadow-sm';
     } else if (accion === 'aprobar') {
         icon.innerHTML = '<svg class="w-7 h-7 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>';
         icon.className = 'w-14 h-14 rounded-full flex items-center justify-center bg-green-50';
-        titulo.textContent = 'Aprobar Cotización';
-        mensaje.textContent = 'Se marcará como "Aprobada por el Cliente". ¿Confirmar?';
-        btnConfirmar.textContent = 'Aprobar';
+        titulo.textContent = 'Generar Factura';
+        mensaje.textContent = 'Se generará la factura de este pedido. ¿Confirmar?';
+        btnConfirmar.textContent = 'Generar';
         btnConfirmar.className = 'flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold text-white bg-green-600 hover:bg-green-700 transition-colors shadow-sm';
     } else if (accion === 'rechazar') {
         icon.innerHTML = '<svg class="w-7 h-7 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>';
         icon.className = 'w-14 h-14 rounded-full flex items-center justify-center bg-red-50';
-        titulo.textContent = 'Rechazar Cotización';
-        mensaje.textContent = 'Indica el motivo del rechazo:';
-        btnConfirmar.textContent = 'Rechazar';
+        titulo.textContent = 'Anular Pedido';
+        mensaje.textContent = 'Indica el motivo de la anulación:';
+        btnConfirmar.textContent = 'Anular';
         btnConfirmar.className = 'flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold text-white bg-red-600 hover:bg-red-700 transition-colors shadow-sm';
         inputContainer.classList.remove('hidden');
     }

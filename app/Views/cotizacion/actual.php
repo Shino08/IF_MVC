@@ -24,7 +24,7 @@
             <div class="bg-white rounded-xl p-10 text-center border border-gray-200 shadow-sm">
                 <svg class="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                 <h3 class="text-lg font-medium text-gray-900 mb-2">Tu lista está vacía</h3>
-                <p class="text-gray-500 mb-6">Navega por nuestro catálogo para agregar items a tu cotización.</p>
+                <p class="text-gray-500 mb-6">Navega por nuestro catálogo para agregar items a tu presupuesto.</p>
                 <a href="<?= $base_url ?? '' ?>/catalogo" class="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-red-600 hover:bg-red-700 transition-colors">
                     Explorar Catálogo
                 </a>
@@ -72,7 +72,7 @@
                                     </div>
 
                                     <div class="flex items-center gap-4 w-full sm:w-auto justify-center sm:justify-end">
-                                        <form action="<?= $base_url ?? '' ?>/cotizacion/item/actualizar" method="POST" class="flex items-center form-actualizar-cantidad">
+                                        <form action="<?= $base_url ?? '' ?>/pedido/item/actualizar" method="POST" class="flex items-center form-actualizar-cantidad">
                                             <input type="hidden" name="detalle_id" value="<?= $item['id'] ?>">
                                             <div class="flex items-center border border-gray-300 rounded-lg bg-white overflow-hidden w-24">
                                                 <input type="number" name="cantidad" value="<?= $item['cantidad'] ?>" class="w-full text-center text-gray-900 font-medium py-2 focus:outline-none focus:ring-0 border-none bg-transparent" min="1" step="0.5">
@@ -82,7 +82,7 @@
                                             </button>
                                         </form>
 
-                                        <form action="<?= $base_url ?? '' ?>/cotizacion/item/eliminar" method="POST" class="form-eliminar-item">
+                                        <form action="<?= $base_url ?? '' ?>/pedido/item/eliminar" method="POST" class="form-eliminar-item">
                                             <input type="hidden" name="detalle_id" value="<?= $item['id'] ?>">
                                             <button type="submit" class="p-2 text-gray-400 hover:text-red-600 transition-colors bg-red-50 rounded-lg hover:bg-red-100" title="Eliminar">
                                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
@@ -100,14 +100,28 @@
                     <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6 sticky top-24">
                         <h3 class="text-lg font-bold text-gray-900 mb-4 border-b border-gray-100 pb-3">Completar Solicitud</h3>
                         
-                        <form action="<?= $base_url ?? '' ?>/cotizacion/enviar" method="POST">
+                        <form action="<?= $base_url ?? '' ?>/pedido/enviar" method="POST">
+                            <div class="mb-4">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Método de Entrega *</label>
+                                <select name="tipo_entrega" id="tipo_entrega" class="input-elegant" required>
+                                    <option value="">Seleccione una opción</option>
+                                    <option value="retiro_tienda">Retiro en Tienda / Almacén</option>
+                                    <option value="domicilio">Envío a Domicilio</option>
+                                </select>
+                            </div>
+                            
+                            <div class="mb-4 hidden" id="div_direccion">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Dirección de Envío Completa *</label>
+                                <textarea name="direccion_envio" id="direccion_envio" rows="3" class="input-elegant resize-none" placeholder="Ciudad, Municipio, Parroquia, Sector, Calle/Avenida, Edificio/Casa, Punto de referencia..."></textarea>
+                            </div>
+
                             <div class="mb-6">
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Notas Técnicas / Observaciones (Opcional)</label>
-                                <textarea name="notas_tecnicas" rows="4" class="input-elegant resize-none" placeholder="Ingresa especificaciones adicionales, dimensiones, o detalles del proyecto..."></textarea>
+                                <textarea name="notas_tecnicas" rows="3" class="input-elegant resize-none" placeholder="Ingresa especificaciones adicionales, dimensiones, o detalles del proyecto..."></textarea>
                             </div>
                             
                             <button type="submit" class="w-full btn-primary h-[50px]">
-                                Enviar Solicitud de Cotización
+                                Enviar Solicitud de Presupuesto
                             </button>
                             <p class="text-xs text-center text-gray-500 mt-4">Un asesor se pondrá en contacto contigo a la brevedad.</p>
                         </form>
@@ -121,6 +135,22 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    const tipoEntrega = document.getElementById('tipo_entrega');
+    const divDireccion = document.getElementById('div_direccion');
+    const inputDireccion = document.getElementById('direccion_envio');
+
+    if (tipoEntrega) {
+        tipoEntrega.addEventListener('change', function() {
+            if (this.value === 'domicilio') {
+                divDireccion.classList.remove('hidden');
+                inputDireccion.setAttribute('required', 'required');
+            } else {
+                divDireccion.classList.add('hidden');
+                inputDireccion.removeAttribute('required');
+                inputDireccion.value = '';
+            }
+        });
+    }
     document.querySelectorAll('.form-actualizar-cantidad').forEach(form => {
         form.addEventListener('submit', function(e) {
             e.preventDefault();

@@ -1,4 +1,4 @@
-<?php $title = 'Solicitudes de Cotización'; $active_nav = 'cotizaciones'; ?>
+<?php $title = 'Pedidos y Cotizaciones'; $active_nav = 'cotizaciones'; ?>
 <?php require_once __DIR__ . '/../layouts/_head.php'; ?>
 <body class="bg-gray-50">
 <div class="flex h-screen overflow-hidden">
@@ -8,7 +8,7 @@
         <header class="bg-white border-b border-gray-200 px-8 py-5 flex-shrink-0">
             <div class="flex justify-between items-center">
                 <div>
-                    <h1 class="text-2xl font-bold text-gray-900">Solicitudes de Cotización</h1>
+                    <h1 class="text-2xl font-bold text-gray-900">Pedidos y Cotizaciones</h1>
                     <p class="text-gray-500 text-sm mt-0.5">Gestiona todas las solicitudes de clientes</p>
                 </div>
             </div>

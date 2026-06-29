@@ -50,7 +50,7 @@ if (isset($_SESSION['user_id']) && (!isset($_SESSION['rol_id']) || $_SESSION['ro
                         <a href="<?= $base_url ?? '' ?>/logout" class="text-sm text-gray-600 hover:text-red-700 font-medium">Salir</a>
                     <?php else: ?>
                         <div class="flex items-center space-x-6">
-                            <a href="<?= $base_url ?? '' ?>/cotizacion/actual" class="relative hover:text-red-600 transition-colors">
+                            <a href="<?= $base_url ?? '' ?>/pedido/actual" class="relative hover:text-red-600 transition-colors">
                                 <svg class="w-6 h-6 text-gray-600 hover:text-red-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                                 <?php if ($cotizacionCount > 0): ?>
                                 <span class="absolute -top-2 -right-2 bg-red-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold shadow-sm">
@@ -67,7 +67,7 @@ if (isset($_SESSION['user_id']) && (!isset($_SESSION['rol_id']) || $_SESSION['ro
                                         <p class="text-sm font-bold text-gray-900 truncate"><?= htmlspecialchars($_SESSION['user_name'] ?? 'Usuario') ?></p>
                                     </div>
                                     <a href="<?= $base_url ?? '' ?>/cuenta" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-red-600 transition-colors">Mi Perfil</a>
-                                    <a href="<?= $base_url ?? '' ?>/mis-cotizaciones" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-red-600 transition-colors">Mis Solicitudes</a>
+                                    <a href="<?= $base_url ?? '' ?>/mis-pedidos" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-red-600 transition-colors">Mis Pedidos / Presupuestos</a>
                                     <a href="<?= $base_url ?? '' ?>/logout" class="block px-4 py-2 text-sm text-red-600 hover:bg-red-50 font-medium transition-colors border-t border-gray-50 mt-1">Cerrar Sesión</a>
                                 </div>
                             </div>
@@ -98,7 +98,7 @@ if (isset($_SESSION['user_id']) && (!isset($_SESSION['rol_id']) || $_SESSION['ro
                     <?php if (isset($_SESSION['rol_id']) && $_SESSION['rol_id'] == 1): ?>
                         <a href="<?= $base_url ?? '' ?>/dashboard" class="text-red-700 font-semibold pl-2">Panel Admin</a>
                     <?php else: ?>
-                        <a href="<?= $base_url ?? '' ?>/mis-cotizaciones" class="text-gray-700 font-medium hover:text-red-600 pl-2">Mis Cotizaciones</a>
+                        <a href="<?= $base_url ?? '' ?>/mis-pedidos" class="text-gray-700 font-medium hover:text-red-600 pl-2">Mis Presupuestos</a>
                     <?php endif; ?>
                     <a href="<?= $base_url ?? '' ?>/logout" class="text-red-600 font-semibold pl-2 pt-2 border-t border-gray-100">Cerrar Sesión</a>
                 <?php else: ?>

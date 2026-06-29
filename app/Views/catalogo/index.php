@@ -65,7 +65,7 @@ if (isset($_SESSION['user_id']) && (!isset($_SESSION['rol_id']) || $_SESSION['ro
             <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-6">
                 <div>
                     <h1 class="text-4xl font-extrabold text-gray-900 tracking-tight">Catálogo Técnico</h1>
-                    <p class="text-gray-500 mt-2 text-sm max-w-xl">Explora nuestros equipos y sistemas certificados. Añade los productos a tu solicitud y obtén una cotización formal.</p>
+                    <p class="text-gray-500 mt-2 text-sm max-w-xl">Explora nuestros equipos y sistemas certificados. Añade los productos a tu solicitud y obtén una presupuesto formal.</p>
                 </div>
                 
                 <div class="w-full md:w-80 relative">
@@ -256,7 +256,7 @@ if (isset($_SESSION['user_id']) && (!isset($_SESSION['rol_id']) || $_SESSION['ro
                                             data-id="<?= $itemId ?>" 
                                             data-tipo="<?= $tipo ?>"
                                             <?= $isAdded ? 'disabled' : '' ?>
-                                            title="<?= $isAdded ? 'Ya está en tu solicitud' : 'Añadir a solicitud de cotización' ?>">
+                                            title="<?= $isAdded ? 'Ya está en tu solicitud' : 'Añadir a solicitud de presupuesto' ?>">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
                                         <span class="btn-text"><?= $isAdded ? 'Añadido' : 'Cotizar' ?></span>
                                     </button>
@@ -313,7 +313,7 @@ if (isset($_SESSION['user_id']) && (!isset($_SESSION['rol_id']) || $_SESSION['ro
     </div>
 </div>
 
-<!-- Logica JS para Filtros y Agregar a Cotización (AJAX) -->
+<!-- Logica JS para Filtros y Agregar a Presupuesto (AJAX) -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const filters = document.querySelectorAll('.catalog-filter');
@@ -487,7 +487,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Inicializar vista
     applyFilters();
 
-    // Agregar a cotización vía AJAX
+    // Agregar a presupuesto vía AJAX
     document.querySelectorAll('.js-add-to-quote').forEach(btn => {
         btn.addEventListener('click', function() {
             if(this.disabled) return;
@@ -509,13 +509,13 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             formData.append('cantidad', 1);
 
-            fetch('<?= $base_url ?? '' ?>/cotizacion/agregar', {
+            fetch('<?= $base_url ?? '' ?>/pedido/agregar', {
                 method: 'POST',
                 body: formData
             })
             .then(res => res.text()) // Expecting redirect or html if no json output, but wait, the controller redirect headers...
             .then(text => {
-                // Controller actually does a header('Location: ...') so fetch will follow it to /cotizacion/actual or whatever.
+                // Controller actually does a header('Location: ...') so fetch will follow it to /pedido/actual or whatever.
                 // We should ideally change the backend to respond with JSON if fetch, but for now we just assume success.
                 
                 // Actualizar estado visual de la card
@@ -527,14 +527,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 if(badge) badge.classList.replace('opacity-0', 'opacity-100');
 
                 // Actualizar contador del header
-                const headerBadge = document.querySelector('a[href$="/cotizacion/actual"] span.absolute');
+                const headerBadge = document.querySelector('a[href$="/pedido/actual"] span.absolute');
                 if (headerBadge) {
                     let currentCount = parseInt(headerBadge.innerText) || 0;
                     if(isNaN(currentCount)) currentCount = 0; // If it was '✓'
                     headerBadge.innerText = currentCount + 1;
                 } else {
                     // Create badge if it didn't exist
-                    const cartIcon = document.querySelector('a[href$="/cotizacion/actual"]');
+                    const cartIcon = document.querySelector('a[href$="/pedido/actual"]');
                     if(cartIcon) {
                         const newBadge = document.createElement('span');
                         newBadge.className = 'absolute -top-2 -right-2 bg-red-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold shadow-sm';

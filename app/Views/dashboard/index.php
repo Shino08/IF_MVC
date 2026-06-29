@@ -92,7 +92,7 @@
                     <p class="text-xs text-green-600 font-medium mt-2">Productos y servicios</p>
                 </a>
 
-                <!-- Cotizaciones (datos reales) -->
+                <!-- Presupuestos (datos reales) -->
                 <a href="<?= $base_url ?>/dashboard/cotizaciones"
                    class="bg-gradient-to-br from-red-700 to-red-900 rounded-2xl shadow-sm p-6 hover:shadow-md transition-shadow group text-white">
                     <div class="flex justify-between items-start mb-4">
@@ -107,7 +107,7 @@
                         </span>
                     </div>
                     <p class="text-3xl font-black mb-1"><?= $cotTotal ?></p>
-                    <p class="text-sm text-white/80">Solicitudes de Cotización</p>
+                    <p class="text-sm text-white/80">Solicitudes de Presupuesto</p>
                     <p class="text-xs text-white/60 font-medium mt-2">
                         <?php if ($cotEnviadas > 0): ?>
                             <?= $cotEnviadas ?> enviada<?= $cotEnviadas > 1 ? 's' : '' ?> — <?= $cotPendientes ?> por revisar

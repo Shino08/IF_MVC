@@ -55,7 +55,7 @@
                     </div>
 
                     <div class="mt-auto">
-                        <form action="<?= $base_url ?? '' ?>/cotizacion/agregar" method="POST" class="bg-gray-50 p-6 rounded-xl border border-gray-200">
+                        <form action="<?= $base_url ?? '' ?>/pedido/agregar" method="POST" class="bg-gray-50 p-6 rounded-xl border border-gray-200">
                             <input type="hidden" name="producto_id" value="<?= htmlspecialchars((string)($producto['id'] ?? '')) ?>">
                             <input type="hidden" name="precio" value="<?= htmlspecialchars((string)($producto['precio'] ?? '0')) ?>">
 
@@ -67,7 +67,7 @@
                                 <div class="flex-1">
                                     <button type="submit" class="w-full btn-primary flex items-center justify-center gap-2 h-[46px]">
                                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                                        Agregar a Solicitud de Cotización
+                                        Agregar a Solicitud de Presupuesto
                                     </button>
                                 </div>
                             </div>

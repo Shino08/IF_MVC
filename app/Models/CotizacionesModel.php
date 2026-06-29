@@ -184,7 +184,7 @@ class CotizacionesModel
             $allowedFields = [
                 'fecha_vencimiento', 'impuestos', 'descuento', 'id_metodo_pago',
                 'condiciones_pago', 'notas_internas', 'notas_tecnicas',
-                'proyecto_referencia', 'direccion_envio', 'direccion_facturacion'
+                'proyecto_referencia', 'direccion_envio', 'direccion_facturacion', 'costo_envio'
             ];
             
             foreach ($allowedFields as $field) {
@@ -200,8 +200,8 @@ class CotizacionesModel
             $stmt = $this->db->prepare($sql);
             $res = $stmt->execute($params);
             
-            // Recalcular total si cambió descuento o impuestos
-            if (array_key_exists('descuento', $data) || array_key_exists('impuestos', $data)) {
+            // Recalcular total si cambió descuento o impuestos o costo_envio
+            if (array_key_exists('descuento', $data) || array_key_exists('impuestos', $data) || array_key_exists('costo_envio', $data)) {
                 $this->updateCotizacionTotals($cotizacionId);
             }
             
@@ -252,17 +252,18 @@ class CotizacionesModel
             $stmt->execute([':id' => $cotizacionId]);
             $subtotal = $stmt->fetchColumn() ?: 0;
 
-            // Obtener descuento e impuestos actuales
-            $sqlC = 'SELECT descuento, impuestos FROM cotizaciones WHERE id = :id';
+            // Obtener descuento, impuestos y costo_envio actuales
+            $sqlC = 'SELECT descuento, impuestos, costo_envio FROM cotizaciones WHERE id = :id';
             $stmtC = $this->db->prepare($sqlC);
             $stmtC->execute([':id' => $cotizacionId]);
             $cot = $stmtC->fetch(PDO::FETCH_ASSOC);
             
             $descuento = (float)($cot['descuento'] ?? 0);
             $impuestos = (float)($cot['impuestos'] ?? 0);
+            $costo_envio = (float)($cot['costo_envio'] ?? 0);
             
-            // Total = subtotal + impuestos - descuento
-            $total = $subtotal + $impuestos - $descuento;
+            // Total = subtotal + impuestos + costo_envio - descuento
+            $total = $subtotal + $impuestos + $costo_envio - $descuento;
             if ($total < 0) $total = 0;
 
             $sqlUpdate = 'UPDATE cotizaciones SET subtotal = :sub, total = :tot WHERE id = :id';
@@ -277,15 +278,17 @@ class CotizacionesModel
         }
     }
 
-    public function sendCotizacion(int $cotizacionId, string $notas): bool
+    public function sendCotizacion(int $cotizacionId, string $notas, ?string $tipo_entrega = null, ?string $direccion_envio = null): bool
     {
         try {
             // estado 2 = pendiente_revision
-            $sql = 'UPDATE cotizaciones SET estado_id = 2, notas_tecnicas = :notas, fecha_solicitud = CURRENT_TIMESTAMP WHERE id = :id AND estado_id = 1';
+            $sql = 'UPDATE cotizaciones SET estado_id = 2, notas_tecnicas = :notas, tipo_entrega = :tipo_entrega, direccion_envio = :direccion, fecha_solicitud = CURRENT_TIMESTAMP WHERE id = :id AND estado_id = 1';
             $stmt = $this->db->prepare($sql);
             return $stmt->execute([
-                ':notas' => $notas,
-                ':id'    => $cotizacionId
+                ':notas'         => $notas,
+                ':tipo_entrega'  => $tipo_entrega,
+                ':direccion'     => $direccion_envio,
+                ':id'            => $cotizacionId
             ]);
         } catch (PDOException $e) {
             error_log("Error en CotizacionesModel::sendCotizacion - " . $e->getMessage());
@@ -367,17 +370,5 @@ class CotizacionesModel
         }
     }
 
-    public function confirmarCotizacionCliente(int $cotizacionId, int $userId): bool
-    {
-        try {
-            // Estado 4 = Aprobada por el cliente (solo desde Enviada = estado 3)
-            $sql = 'UPDATE cotizaciones SET estado_id = 4 WHERE id = :id AND usuario_id = :userId AND estado_id = 3';
-            $stmt = $this->db->prepare($sql);
-            $stmt->execute([':id' => $cotizacionId, ':userId' => $userId]);
-            return $stmt->rowCount() > 0;
-        } catch (PDOException $e) {
-            error_log("Error en CotizacionesModel::confirmarCotizacionCliente - " . $e->getMessage());
-            return false;
-        }
-    }
+
 }

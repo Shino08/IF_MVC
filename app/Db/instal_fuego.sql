@@ -28,6 +28,12 @@ CREATE TABLE `metodos_de_pagos` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+INSERT INTO `metodos_de_pagos` (`metodo`) VALUES
+('Pago Móvil'),
+('Transferencia Bancaria'),
+('Efectivo'),
+('Divisas');
+
 CREATE TABLE `categorias` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `nombre` varchar(255) NOT NULL,
@@ -67,12 +73,12 @@ CREATE TABLE `estados_cotizacion` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 INSERT INTO `estados_cotizacion` (`id`, `nombre`) VALUES
+(4, 'facturado'),
 (1, 'borrador'),
+(3, 'listo_para_pago'),
 (2, 'pendiente_revision'),
-(3, 'enviada'),
-(4, 'aprobada'),
-(5, 'rechazada'),
-(6, 'vencida');
+(5, 'anulado'),
+(6, 'cancelado');
 
 -- --------------------------------------------------------
 -- 2. USUARIOS Y CATÁLOGO (Productos y Servicios)
@@ -181,19 +187,19 @@ CREATE TABLE `cotizaciones` (
   `subtotal` decimal(10,2) NOT NULL DEFAULT 0.00,
   `impuestos` decimal(10,2) NOT NULL DEFAULT 0.00,
   `descuento` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `costo_envio` decimal(10,2) NOT NULL DEFAULT 0.00,
   `estado_id` int(11) NOT NULL DEFAULT 1 COMMENT '1 = borrador',
-  `id_metodo_pago` int(11) DEFAULT NULL,
   `proyecto_referencia` varchar(255) DEFAULT NULL,
   `condiciones_pago` text DEFAULT NULL,
   `notas_internas` text DEFAULT NULL,
   `notas_tecnicas` text DEFAULT NULL,
+  `tipo_entrega` enum('domicilio','retiro_tienda') DEFAULT NULL,
   `direccion_envio` text DEFAULT NULL,
-  `direccion_facturacion` text DEFAULT NULL,
   `tasabcv` decimal(10,4) DEFAULT NULL,
   `montousd` decimal(10,2) DEFAULT NULL,
+  `tipo_flujo` enum('presupuesto','compra_directa') NOT NULL DEFAULT 'presupuesto',
   PRIMARY KEY (`id`),
   CONSTRAINT `fk_cotizaciones_estado` FOREIGN KEY (`estado_id`) REFERENCES `estados_cotizacion` (`id`) ON DELETE RESTRICT,
-  CONSTRAINT `fk_cotizaciones_metodo_pago` FOREIGN KEY (`id_metodo_pago`) REFERENCES `metodos_de_pagos` (`id`) ON DELETE SET NULL,
   CONSTRAINT `fk_cotizaciones_usuario` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -210,6 +216,66 @@ CREATE TABLE `cotizacion_detalles` (
   CONSTRAINT `fk_detalle_producto` FOREIGN KEY (`producto_id`) REFERENCES `productos` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `fk_detalle_servicio` FOREIGN KEY (`servicio_id`) REFERENCES `servicios` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_item_tipo` CHECK ((`producto_id` IS NOT NULL AND `servicio_id` IS NULL) OR (`producto_id` IS NULL AND `servicio_id` IS NOT NULL))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+CREATE TABLE `pedidos` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `cotizacion_id` int(11) NOT NULL,
+  `usuario_id` int(11) NOT NULL,
+  `fecha_creacion` timestamp NOT NULL DEFAULT current_timestamp(),
+  `total` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `costo_envio` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `id_metodo_pago` int(11) DEFAULT NULL,
+  `estado_pedido` enum('pendiente_pago','pago_por_validar','procesando','despachado','entregado','cancelado') NOT NULL DEFAULT 'pendiente_pago',
+  `direccion_envio` text DEFAULT NULL,
+  `direccion_facturacion` text DEFAULT NULL,
+  `tipo_entrega` enum('domicilio','retiro_tienda') DEFAULT NULL,
+  `referencia_pago` varchar(255) DEFAULT NULL,
+  `fecha_pago_reportado` datetime DEFAULT NULL,
+  `fecha_pago_validado` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  CONSTRAINT `fk_pedido_cotizacion` FOREIGN KEY (`cotizacion_id`) REFERENCES `cotizaciones` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_pedido_usuario` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`) ON DELETE RESTRICT,
+  CONSTRAINT `fk_pedido_metodo_pago` FOREIGN KEY (`id_metodo_pago`) REFERENCES `metodos_de_pagos` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `pagos` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `pedido_id` int(11) NOT NULL,
+  `metodo_pago_id` int(11) DEFAULT NULL,
+  `monto` decimal(10,2) NOT NULL,
+  `moneda` varchar(10) DEFAULT 'VES',
+  `referencia` varchar(255) NOT NULL,
+  `banco_origen` varchar(255) DEFAULT NULL,
+  `telefono_pagador` varchar(50) DEFAULT NULL,
+  `cedula_pagador` varchar(50) DEFAULT NULL,
+  `comprobante_url` varchar(255) DEFAULT NULL,
+  `estado` enum('por_validar','validado','rechazado') NOT NULL DEFAULT 'por_validar',
+  `observaciones_admin` text DEFAULT NULL,
+  `fecha_reporte` timestamp NOT NULL DEFAULT current_timestamp(),
+  `fecha_validacion` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  CONSTRAINT `fk_pagos_pedido` FOREIGN KEY (`pedido_id`) REFERENCES `pedidos` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_pagos_metodo` FOREIGN KEY (`metodo_pago_id`) REFERENCES `metodos_de_pagos` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `facturas` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `pedido_id` int(11) NOT NULL,
+  `numero_factura` varchar(50) NOT NULL,
+  `fecha_emision` datetime NOT NULL DEFAULT current_timestamp(),
+  `subtotal` decimal(10,2) NOT NULL,
+  `impuestos` decimal(10,2) NOT NULL,
+  `descuento` decimal(10,2) NOT NULL,
+  `costo_envio` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `total` decimal(10,2) NOT NULL,
+  `cliente_nombre` varchar(255) DEFAULT NULL,
+  `cliente_cedula` varchar(50) DEFAULT NULL,
+  `cliente_direccion` text DEFAULT NULL,
+  `cliente_email` varchar(255) DEFAULT NULL,
+  `metodo_pago_texto` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `numero_factura` (`numero_factura`),
+  CONSTRAINT `fk_facturas_pedido` FOREIGN KEY (`pedido_id`) REFERENCES `pedidos` (`id`) ON DELETE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `reportes` (

@@ -1,10 +1,10 @@
 ================================================================================
-MANUAL TECNICO — Sistema de Cotizaciones InstalFuego (IF_MVC)
+MANUAL TECNICO — Plataforma Híbrida de Presupuestos y Pedidos InstalFuego (IF_MVC)
 ================================================================================
 
 1. INFORMACION GENERAL
 --------------------------------------------------------------------------------
-- Proyecto: Sistema de Cotizaciones para InstalFuego C.A.
+- Proyecto: Plataforma Híbrida de Presupuestos y Pedidos para InstalFuego C.A.
 - Entidad: InstalFuego C.A. — Sistemas de Seguridad Contra Incendios
 - Version: 1.0 (Modulo de Cotizaciones + Catalogo + Admin)
 - Arquitectura: MVC (Modelo-Vista-Controlador) personalizado con Front Controller

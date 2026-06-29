@@ -16,7 +16,7 @@ $fecha = date('d/m/Y', strtotime($cotizacion['fecha_solicitud']));
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Cotización #<?= $cotizacion['id'] ?></title>
+    <title>Factura #<?= $cotizacion['id'] ?></title>
     <style>
         body { font-family: Arial, sans-serif; font-size: 12px; color: #333; }
         .header { width: 100%; border-bottom: 2px solid #eee; padding-bottom: 20px; margin-bottom: 20px; }
@@ -68,24 +68,23 @@ if (file_exists($logoFile)) {
                 <p>contacto@instalfuego.com | +58 412-1234567</p>
             </td>
             <td class="quote-info">
-                <h1>Cotización</h1>
-                <p><strong>Nro:</strong> #COT-<?= $year ?>-<?= $cotizacionNum ?></p>
-                <p><strong>Fecha:</strong> <?= $fecha ?></p>
-                <p><strong>Validez:</strong> 15 días hábiles</p>
-                <p><strong>Estado:</strong> <?= strtoupper($cotizacion['estado_nombre']) ?></p>
+                <h1>Factura Comercial</h1>
+                <p><strong>Nro:</strong> #FAC-<?= $year ?>-<?= $cotizacionNum ?></p>
+                <p><strong>Fecha de Emisión:</strong> <?= date('d/m/Y') ?></p>
+                <p><strong>Estado:</strong> PAGADO</p>
             </td>
         </tr>
     </table>
 </div>
 
 <div class="client-info">
-    <h3>Cotización para:</h3>
+    <h3>Facturado a:</h3>
     <table class="client-table">
         <tr>
             <td>
-                <strong><?= htmlspecialchars($cotizacion['cliente_nombre'] . ' ' . $cotizacion['cliente_apellido']) ?></strong><br>
+                <strong><?= htmlspecialchars($factura['cliente_nombre']) ?></strong><br>
                 <?= htmlspecialchars($cotizacion['cliente_empresa'] ?? 'Persona Natural') ?><br>
-                CI/RIF: <?= htmlspecialchars($cotizacion['cliente_cedula'] ?? 'N/A') ?>
+                CI/RIF: <?= htmlspecialchars($factura['cliente_cedula'] ?? 'N/A') ?>
             </td>
             <td>
                 <?= htmlspecialchars($cotizacion['cliente_email']) ?><br>
@@ -129,16 +128,22 @@ if (file_exists($logoFile)) {
     <table class="totals-table">
         <tr>
             <td>Subtotal:</td>
-            <td class="text-right">$<?= number_format($subtotal, 2) ?></td>
+            <td class="text-right">$<?= number_format((float)$factura['subtotal'], 2) ?></td>
         </tr>
         <tr>
             <td>IVA (16%):</td>
-            <td class="text-right">$<?= number_format($iva, 2) ?></td>
+            <td class="text-right">$<?= number_format((float)$factura['impuestos'], 2) ?></td>
         </tr>
-        <?php if($descuento > 0): ?>
+        <?php if((float)$factura['descuento'] > 0): ?>
         <tr>
             <td style="color:red;">Descuento:</td>
-            <td class="text-right" style="color:red;">-$<?= number_format($descuento, 2) ?></td>
+            <td class="text-right" style="color:red;">-$<?= number_format((float)$factura['descuento'], 2) ?></td>
+        </tr>
+        <?php endif; ?>
+        <?php if ((float)$factura['costo_envio'] > 0): ?>
+        <tr>
+            <td>Costo de Envío:</td>
+            <td class="text-right">$<?= number_format((float)$factura['costo_envio'], 2) ?></td>
         </tr>
         <?php endif; ?>
         <tr>
@@ -175,8 +180,7 @@ if (file_exists($logoFile)) {
         <h4>Términos y Condiciones</h4>
         <ul>
             <li>Los precios están expresados en dólares americanos (USD).</li>
-            <li>La validez de esta cotización es de 15 días hábiles a partir de su emisión.</li>
-            <li>Formas de pago aceptadas: Transferencia bancaria, Pago Móvil, efectivo, divisas.</li>
+            <li>Formas de pago recibidas: Transferencia bancaria, Pago Móvil, efectivo, divisas.</li>
             <li>La entrega se realizará en los plazos acordados tras la confirmación de pago.</li>
             <li>Garantía aplicable según especificaciones del fabricante.</li>
             <li>Para coordinar el pago, contáctenos vía WhatsApp: <?= \App\Core\Config::WHATSAPP_DISPLAY ?></li>
