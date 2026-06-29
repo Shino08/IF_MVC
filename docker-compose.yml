@@ -1,6 +1,6 @@
 services:
   web:
-    image: php:8.2-apache
+    build: .
     container_name: if_mvc_web
     restart: always
     ports:
@@ -8,8 +8,6 @@ services:
     volumes:
       # Mapeamos TODO el proyecto para que PHP pueda leer autoload.php y app/
       - ./:/var/www/html
-    # ESTA LÍNEA ENCIENDE EL MÓDULO REWRITE PARA TU .HTACCESS
-    command: bash -c "a2enmod rewrite && apache2-foreground"
     depends_on:
       - db
 

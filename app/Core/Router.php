@@ -53,6 +53,7 @@ class Router
 
             if (preg_match($pattern, $uri, $matches)) {
                 array_shift($matches);
+                http_response_code(200);
 
                 if (is_callable($callback)) {
                     call_user_func_array($callback, $matches);
