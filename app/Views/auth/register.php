@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Regístrate — InstalFuego</title>
     <meta name="description" content="Crea tu cuenta empresarial en InstalFuego para solicitar cotizaciones.">
+    <link rel="icon" type="image/png" href="<?= $base_url ?? '' ?>/favicon.png">
     <link rel="stylesheet" href="<?= $base_url ?? '' ?>/css/output.css">
     <link rel="stylesheet" href="<?= $base_url ?? '' ?>/css/styles.css">
 </head>
