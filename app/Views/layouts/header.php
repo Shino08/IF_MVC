@@ -10,6 +10,12 @@ if (isset($_SESSION['user_id']) && (!isset($_SESSION['rol_id']) || $_SESSION['ro
         }
     }
 }
+
+$headerCategorias = [];
+if (class_exists('\App\Models\CategoriasModel')) {
+    $catModel = new \App\Models\CategoriasModel();
+    $headerCategorias = $catModel->getAll();
+}
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -37,10 +43,12 @@ if (isset($_SESSION['user_id']) && (!isset($_SESSION['rol_id']) || $_SESSION['ro
             </button>
 
             <div class="hidden md:flex flex-1 max-w-2xl mx-4 lg:mx-8 order-last md:order-none w-full md:w-auto mt-3 md:mt-0" id="desktop-search">
-                <div class="relative w-full">
-                    <input type="text" placeholder="Buscar productos, marcas y más..." class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 text-sm">
-                    <svg class="w-5 h-5 text-gray-400 absolute right-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                </div>
+                <form action="<?= $base_url ?? '' ?>/catalogo" method="GET" class="relative w-full">
+                    <input type="text" name="search" placeholder="Buscar productos, marcas y más..." class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 text-sm">
+                    <button type="submit" class="absolute right-3 top-2.5 outline-none">
+                        <svg class="w-5 h-5 text-gray-400 hover:text-red-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                    </button>
+                </form>
             </div>
 
             <div class="hidden md:flex items-center space-x-4">
@@ -81,12 +89,18 @@ if (isset($_SESSION['user_id']) && (!isset($_SESSION['rol_id']) || $_SESSION['ro
         </div>
 
         <div id="mobile-menu" class="hidden md:hidden mt-4 border-t pt-4 pb-2">
-            <div class="relative mb-4">
-                <input type="text" placeholder="Buscar..." class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none">
-            </div>
+            <form action="<?= $base_url ?? '' ?>/catalogo" method="GET" class="relative mb-4">
+                <input type="text" name="search" placeholder="Buscar..." class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none pr-10">
+                <button type="submit" class="absolute right-3 top-2.5 outline-none">
+                    <svg class="w-5 h-5 text-gray-400 hover:text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                </button>
+            </form>
             <div class="flex flex-col space-y-3">
-                <a href="<?= $base_url ?? '' ?>/catalogo" class="text-gray-700 font-medium hover:text-red-600">CATÁLOGO</a>
-                <a href="<?= $base_url ?? '' ?>/catalogo" class="text-gray-700 font-medium hover:text-red-600">EXTINGUIDORES</a>
+                <a href="<?= $base_url ?? '' ?>/catalogo" class="text-gray-700 font-medium hover:text-red-600">TODO EL CATÁLOGO</a>
+                <?php foreach ($headerCategorias as $cat): ?>
+                    <a href="<?= $base_url ?? '' ?>/catalogo?categoria=<?= urlencode($cat['nombre']) ?>" class="text-gray-700 font-medium hover:text-red-600 uppercase"><?= htmlspecialchars($cat['nombre']) ?></a>
+                <?php endforeach; ?>
+                <a href="<?= $base_url ?? '' ?>/catalogo?tipo=servicio" class="text-gray-700 font-medium hover:text-red-600">SERVICIOS</a>
                 <hr class="border-gray-100">
                 <?php if (isset($_SESSION['user_id'])): ?>
                     <div class="py-2 flex items-center space-x-3 bg-gray-50 px-3 rounded-lg">
@@ -113,12 +127,11 @@ if (isset($_SESSION['user_id']) && (!isset($_SESSION['rol_id']) || $_SESSION['ro
 <nav class="hidden md:block bg-white border-b border-gray-200">
     <div class="max-w-7xl mx-auto px-4">
         <div class="flex items-center space-x-4 lg:space-x-8 py-4 overflow-x-auto text-sm lg:text-base whitespace-nowrap">
-            <a href="<?= $base_url ?? '' ?>/catalogo" class="text-gray-700 font-medium hover:text-red-600 transition-colors">CATÁLOGO</a>
-            <a href="<?= $base_url ?? '' ?>/catalogo" class="text-gray-700 font-medium hover:text-red-600 transition-colors">DETECCIÓN DE HUMO</a>
-            <a href="<?= $base_url ?? '' ?>/catalogo" class="text-gray-700 font-medium hover:text-red-600 transition-colors">EXTINGUIDORES</a>
-            <a href="<?= $base_url ?? '' ?>/catalogo" class="text-gray-700 font-medium hover:text-red-600 transition-colors">RIEGO AUTOMÁTICO</a>
-            <a href="<?= $base_url ?? '' ?>/catalogo" class="text-gray-700 font-medium hover:text-red-600 transition-colors">EPP</a>
-            <a href="<?= $base_url ?? '' ?>/catalogo" class="text-gray-700 font-medium hover:text-red-600 transition-colors">SERVICIOS</a>
+            <a href="<?= $base_url ?? '' ?>/catalogo" class="text-gray-700 font-medium hover:text-red-600 transition-colors">TODO EL CATÁLOGO</a>
+            <?php foreach ($headerCategorias as $cat): ?>
+                <a href="<?= $base_url ?? '' ?>/catalogo?categoria=<?= urlencode($cat['nombre']) ?>" class="text-gray-700 font-medium hover:text-red-600 transition-colors uppercase"><?= htmlspecialchars($cat['nombre']) ?></a>
+            <?php endforeach; ?>
+            <a href="<?= $base_url ?? '' ?>/catalogo?tipo=servicio" class="text-gray-700 font-medium hover:text-red-600 transition-colors">SERVICIOS</a>
         </div>
     </div>
 </nav>

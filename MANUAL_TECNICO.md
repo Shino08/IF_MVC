@@ -22,6 +22,7 @@ IF_MVC/
   composer.json                  - Dependencias de Composer (Dompdf, PHPMailer)
   package.json                   - Dependencias de Node (Tailwind CSS)
   pnpm-lock.yaml                 - Lockfile de pnpm
+  pnpm-workspace.yaml            - Archivo de workspace de pnpm
   autoload.php                   - Autocargador PSR-4 de namespaces
 
   public/                        - Document root (punto de entrada)
@@ -65,9 +66,12 @@ IF_MVC/
       CategoriasModel.php        - CRUD categorias
       UsersModel.php             - Autenticacion, registro, perfil, reset
                                    de password, session tokens
-      CotizacionesModel.php      - Flujo completo de cotizaciones: borrador,
+      CotizacionesModel.php      - Flujo completo de cotizaciones/presupuestos: borrador,
                                    items, envio, historial, admin, campos
                                    comerciales, calculo de totales
+      PedidosModel.php           - Creación y actualización de logística y estados de pedidos
+      PagosModel.php             - Registro, reporte y validación de pagos/comprobantes
+      FacturasModel.php          - Generación e historial de facturas asociadas a pedidos
 
     Views/                       - Plantillas PHP organizadas por modulo
       layouts/                   - Layouts reutilizables (_head, _sidebar,
@@ -82,9 +86,9 @@ IF_MVC/
                                    detalle, pdf_template
       cuenta/                    - Perfil, seguridad del usuario
 
-  Db/
-    instal_fuego.sql             - Esquema completo de BD con datos iniciales
-                                   (seed)
+    Db/
+      instal_fuego.sql           - Esquema completo de BD con datos iniciales
+                                   (seed) e histórico de tablas. Ubicado bajo app/Db/
 
 
 3. BASE DE DATOS
@@ -129,6 +133,17 @@ Tablas principales:
     - 1: Por hora, 2: Por unidad, 3: Por metro lineal, 4: Por proyecto
 
   metodos_de_pagos (id, metodo)
+
+  pedidos (id, cotizacion_id, usuario_id, fecha_creacion, total, costo_envio,
+           id_metodo_pago, estado_pedido, direccion_envio, direccion_facturacion,
+           tipo_entrega, referencia_pago, fecha_pago_reportado, fecha_pago_validado,
+           fecha_despacho, fecha_entrega)
+    - FK: cotizacion_id -> cotizaciones.id
+    - FK: usuario_id -> usuarios.id
+    - FK: id_metodo_pago -> metodos_de_pagos.id
+    - estado_pedido: ENUM('pendiente_pago', 'pago_por_validar', 'procesando', 'despachado', 'entregado', 'cancelado')
+    - fecha_despacho y fecha_entrega: campos DATETIME para registrar la transicion logistica de despacho y entrega formal.
+    - tipo_entrega: ENUM('domicilio', 'retiro_tienda')
 
   cotizaciones (id, usuario_id, fecha_solicitud, fecha_vencimiento,
                 total, subtotal, impuestos, descuento, estado_id,
@@ -192,12 +207,14 @@ Tablas principales:
   UsersModel        - Autenticacion con password_hash/verify, session_token,
                       registro con validacion de duplicados email/cedula,
                       reset de password con tokens expirables
-  CotizacionesModel - Flujo completo: borrador por usuario, items (addItem,
-                      removeItem, updateItemQuantity, updateItemPrice),
-                      envio de solicitud, historial por usuario, metodos
-                      admin (getAllAdmin, getByIdAdmin), campos comerciales
-                      (updateComercialFields), emision (emitirCotizacion),
-                      calculo de totales con descuento e impuestos
+  CotizacionesModel - Flujo completo de cotización/presupuesto borrador por usuario,
+                      ítems, envío de solicitud, historial y edición comercial.
+  PedidosModel      - Gestiona la conversión de cotización a pedido real (compras directas),
+                      el almacenamiento del tipo de entrega y dirección consolidada, 
+                      y la actualización del estado logístico del pedido.
+  PagosModel        - Gestiona el reporte de pagos por parte del cliente, asocia comprobantes
+                      y referencias bancarias, y permite la validación o rechazo del pago.
+  FacturasModel     - Crea y administra las facturas generadas a partir de pedidos aceptados.
 
 
 5. SISTEMA DE RUTAS
@@ -219,50 +236,52 @@ Rutas principales:
   /dashboard[/...]                       - Panel admin
   /catalogo, /producto/{id},
   /servicio/{id}                         - Catalogo publico
-  /cotizacion/actual, /cotizacion/agregar,
-  /cotizacion/enviar, /mis-cotizaciones  - Flujo cliente
-  /cotizacion/pdf/{id}                   - PDF
+  /pedido/actual, /pedido/agregar,
+  /pedido/enviar, /mis-pedidos,
+  /mis-pedidos/{id}, /pedido/pagar/{id}  - Flujo cliente (Pedidos/Checkout)
+  /cotizacion/pdf/{id}                   - PDF Pedido
+  /factura/pdf/{id}                      - PDF Factura
   /cuenta, /cuenta/perfil,
   /cuenta/seguridad                      - Perfil de usuario
 
 
-6. FLUJO DE COTIZACION
+6. FLUJO DE COMPRA Y PEDIDOS
 --------------------------------------------------------------------------------
 
-  1. CLIENTE: Navega el catalogo, agrega items a su borrador
-     - GET /cotizacion/actual
-     - POST /cotizacion/agregar (producto_id o servicio_id + cantidad)
-     - POST /cotizacion/item/actualizar (detalle_id + cantidad)
-     - POST /cotizacion/item/eliminar (detalle_id)
+  1. CLIENTE: Navega el catálogo, agrega ítems a su carrito
+     - GET /pedido/actual (Carrito de compra)
+     - POST /pedido/agregar (producto_id o servicio_id + cantidad)
+     - POST /pedido/item/actualizar (detalle_id + cantidad)
+     - POST /pedido/item/eliminar (detalle_id)
 
-  2. CLIENTE: Envia la solicitud
-     - POST /cotizacion/enviar (notas_tecnicas)
-     - Estado: borrador(1) -> pendiente_revision(2)
+  2. CLIENTE: Procesa el Checkout
+     - Selecciona Método de Entrega: "Retiro en Tienda" o "Envío a Domicilio".
+     - Para Envío a Domicilio, rellena campos estructurados: Estado, Municipio, Dirección Completa y Punto de Referencia.
+     - Confirma el pedido mediante POST /pedido/enviar.
+     - Estado inicial del pedido: pendiente_pago.
 
-  3. ADMIN: Revisa la solicitud en el dashboard
-     - GET /dashboard/cotizaciones (listado)
-     - GET /dashboard/detalle-solicitud/{id} (vista detalle con wizard 3 pasos)
+  3. CLIENTE: Reporta el Pago (POST /pedido/pagar/{id})
+     - Si paga en efectivo/divisas de forma presencial, se omite el comprobante y referencia.
+     - Si paga por transferencia/pago móvil, adjunta referencia y capture de pantalla.
+     - Estado del pedido: pendiente_pago -> pago_por_validar.
 
-  4. ADMIN: Ajusta precios, descuento, impuestos, vencimiento, etc.
-     - POST /dashboard/cotizaciones/update-precio (AJAX)
-     - POST /dashboard/cotizaciones/update-cantidad (AJAX)
-     - POST /dashboard/cotizaciones/eliminar-item (AJAX)
-     - POST /dashboard/cotizaciones/actualizar-comercial
-       (descuento, impuestos, vencimiento, metodo_pago, condiciones_pago,
-        proyecto_referencia, notas_internas, notas_tecnicas)
+  4. ADMIN: Valida o rechaza el pago
+     - Desde el Dashboard, valida el pago reportado.
+     - Si se valida: estado_pedido cambia a "procesando" y la orden pasa a preparación.
+     - Si se rechaza: regresa a "pendiente_pago" para que el cliente lo re-envíe.
 
-  5. ADMIN: Emite o rechaza la cotizacion
-     - POST /dashboard/cotizaciones/emitir
-       (estado: pendiente_revision(2) -> enviada(3))
-     - POST /dashboard/cotizaciones/rechazar
-       (estado: pendiente_revision(2) -> rechazada(5))
+  5. ADMIN: Despacha el pedido (Panel de Despacho)
+     - El vendedor avanza el estado del pedido:
+       * "procesando" -> "despachado" (se registra fecha_despacho).
+       * "despachado" -> "entregado" (se registra fecha_entrega).
+       * Opcionalmente, se puede cancelar el pedido (estado: "cancelado").
 
-  6. CLIENTE: Visualiza la cotizacion emitida y confirma interes
-     - GET /mis-cotizaciones/{id}
-     - Estado: enviada(3) -> aprobada(4)
+  6. CLIENTE: Seguimiento en tiempo real (Timeline)
+     - El cliente ve un timeline de 5 pasos en el detalle de su pedido:
+       Recibido -> Pago Reportado -> Pago Validado -> Preparando/En Camino (según método de entrega) -> Entregado.
+     - Muestra fechas exactas de confirmación de pago y despacho.
 
-  7. GENERACION DE PDF: Dompdf con template en
-     app/Views/cotizacion/pdf_template.php
+  7. GENERACION DE PDF: Dompdf con template en app/Views/cotizacion/pdf_template.php (imprime como Pedido en lugar de Cotización).
 
 
 7. SEGURIDAD IMPLEMENTADA

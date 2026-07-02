@@ -39,9 +39,15 @@ class CatalogoController extends Router
             exit;
         }
 
+        $productos_similares = [];
+        if (!empty($producto['categoria_id'])) {
+            $productos_similares = $productsModel->getSimilares((int)$producto['categoria_id'], (int)$id, 4);
+        }
+
         $data = [
             'title' => htmlspecialchars($producto['nombre']) . ' — InstalFuego',
-            'producto' => $producto
+            'producto' => $producto,
+            'productos_similares' => $productos_similares
         ];
 
         $this->view('catalogo/producto_detalle', $data);
@@ -57,9 +63,15 @@ class CatalogoController extends Router
             exit;
         }
 
+        $servicios_similares = [];
+        if (!empty($servicio['categoria_id'])) {
+            $servicios_similares = $serviciosModel->getSimilares((int)$servicio['categoria_id'], (int)$id, 4);
+        }
+
         $data = [
             'title' => htmlspecialchars($servicio['nombre']) . ' — InstalFuego',
-            'servicio' => $servicio
+            'servicio' => $servicio,
+            'servicios_similares' => $servicios_similares
         ];
 
         $this->view('catalogo/servicio_detalle', $data);

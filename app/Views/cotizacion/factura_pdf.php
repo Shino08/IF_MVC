@@ -111,9 +111,6 @@ if (file_exists($logoFile)) {
         <tr>
             <td>
                 <strong><?= htmlspecialchars(!empty($item['producto_id']) ? $item['producto_nombre'] : $item['servicio_nombre']) ?></strong><br>
-                <span style="color:#777; font-size: 10px;">
-                    <?= !empty($item['producto_id']) ? 'SKU: ' . htmlspecialchars($item['sku'] ?? 'N/A') : 'COD: ' . htmlspecialchars($item['codigo'] ?? 'N/A') ?>
-                </span>
             </td>
             <td class="text-center"><?= !empty($item['producto_id']) ? 'Prod' : 'Serv' ?></td>
             <td class="text-center"><?= $item['cantidad'] ?></td>
@@ -158,7 +155,7 @@ if (file_exists($logoFile)) {
         Bs. <?= number_format((float)$cotizacion['tasabcv'], 4, ',', '.') ?> / $1 USD
         (al <?= date('d/m/Y', strtotime($cotizacion['fecha_solicitud'])) ?>)<br>
         <?php if (!empty($cotizacion['montousd'])): ?>
-        <span style="color: #666;">Equivalente: <strong>$<?= number_format((float)$cotizacion['montousd'], 2) ?> USD</strong></span>
+        <span style="color: #666;">Equivalente: <strong>Bs. <?= number_format((float)$cotizacion['montousd'], 2, ',', '.') ?></strong></span>
         <?php endif; ?>
     </div>
     <?php endif; ?>

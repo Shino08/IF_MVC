@@ -166,12 +166,12 @@ require_once __DIR__ . '/../layouts/_head.php'; ?>
 
             <div>
               <label class="block text-sm font-semibold text-gray-900 mb-2">Fecha Inicio</label>
-              <input type="date" name="fecha_inicio" value="<?= htmlspecialchars($fechaInicio) ?>" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500">
+              <input type="date" id="fecha_inicio" name="fecha_inicio" value="<?= htmlspecialchars($fechaInicio) ?>" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500">
             </div>
 
             <div>
               <label class="block text-sm font-semibold text-gray-900 mb-2">Fecha Fin</label>
-              <input type="date" name="fecha_fin" value="<?= htmlspecialchars($fechaFin) ?>" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500">
+              <input type="date" id="fecha_fin" name="fecha_fin" value="<?= htmlspecialchars($fechaFin) ?>" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500">
             </div>
 
             <div class="flex items-end">
@@ -322,5 +322,42 @@ require_once __DIR__ . '/../layouts/_head.php'; ?>
       </div>
     </main>
 </div>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const fechaInicio = document.getElementById("fecha_inicio");
+    const fechaFin = document.getElementById("fecha_fin");
+
+    function validateDates() {
+        if (fechaInicio.value) {
+            fechaFin.min = fechaInicio.value;
+        } else {
+            fechaFin.min = "";
+        }
+        
+        if (fechaFin.value) {
+            fechaInicio.max = fechaFin.value;
+        } else {
+            fechaInicio.max = "";
+        }
+    }
+
+    fechaInicio.addEventListener("change", function() {
+        if (fechaInicio.value && fechaFin.value && fechaInicio.value > fechaFin.value) {
+            fechaFin.value = fechaInicio.value;
+        }
+        validateDates();
+    });
+
+    fechaFin.addEventListener("change", function() {
+        if (fechaInicio.value && fechaFin.value && fechaFin.value < fechaInicio.value) {
+            fechaInicio.value = fechaFin.value;
+        }
+        validateDates();
+    });
+
+    // Validar al cargar
+    validateDates();
+});
+</script>
 </body>
 </html>

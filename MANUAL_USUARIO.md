@@ -48,7 +48,7 @@ URL /catalogo.
     - Stock disponible
     - Informacion de garantia y envio (si aplica)
     - Galeria de imagenes adicionales
-    - Boton "Agregar a Cotizacion"
+    - Boton "Agregar" (sustituyendo el antiguo "Cotizar")
 
 2.3 DETALLE DE SERVICIO
     Al hacer clic en un servicio, se muestra:
@@ -57,116 +57,91 @@ URL /catalogo.
     - Descripcion del servicio
     - Precio referencial
     - Tipo de cobro (Por hora, Por unidad, Por metro lineal, Por proyecto)
-    - Boton "Agregar a Cotizacion"
+    - Boton "Agregar" (sustituyendo el antiguo "Cotizar")
 
 
-3. SOLICITUD DE COTIZACION
+3. SOLICITUD DE PEDIDO
 --------------------------------------------------------------------------------
-El sistema permite armar una solicitud de cotizacion con productos y/o
+El sistema permite armar una solicitud de pedido con productos y/o
 servicios antes de enviarla al equipo de InstalFuego.
 
-3.1 AGREGAR ITEMS A LA COTIZACION
+3.1 AGREGAR ITEMS AL CARRITO
     Desde el detalle de cualquier producto o servicio:
-    1. Haga clic en "Agregar a Cotizacion".
+    1. Haga clic en "Agregar".
     2. En el modal, seleccione la cantidad deseada.
     3. Haga clic en "Agregar".
-    4. El item se agregara a su lista de cotizacion actual.
+    4. El item se agregara a su carrito actual.
 
-    Tambien puede ir directamente a "Cotizacion Actual" en el menu
+    Tambien puede ir directamente a "Carrito" en el menu
     para ver todos los items agregados.
 
-3.2 GESTIONAR LA LISTA DE COTIZACION
-    En la pagina "Cotizacion Actual" (/cotizacion/actual) puede:
+3.2 GESTIONAR EL CARRITO
+    En la pagina "Carrito" (/pedido/actual) puede:
     - Ver todos los items agregados con sus cantidades y precios
-    - Modificar cantidades usando los botones +/- o escribiendo
-      directamente
+    - Modificar cantidades usando los botones +/-
     - Eliminar items individuales con el icono de papelera
     - Ver el subtotal actualizado en tiempo real
 
-3.3 ENVIAR LA SOLICITUD
+3.3 CONFIRMAR EL PEDIDO
     Cuando tenga todos los items deseados en su lista:
-    1. Agregue notas tecnicas o comentarios sobre su solicitud
-       (opcional).
-    2. Haga clic en "Enviar Solicitud de Cotizacion".
-    3. La solicitud se enviara al equipo de InstalFuego para su
-       revision y cotizacion formal.
-    4. Recibira una confirmacion del envio exitoso.
+    - Seleccione el Método de Entrega (Retiro o Envío).
+    - Para Envío a Domicilio, rellene los datos de dirección y referencia.
+    - Opcionalmente agregue especificaciones adicionales en el cuadro de "Observaciones".
+    - Haga clic en el botón "Confirmar Pedido".
+    - El pedido se registrará y será redirigido a la pantalla de pago.
 
-    NOTA: No puede enviar una solicitud vacia. Debe tener al menos
+    NOTA: No puede confirmar un pedido vacío. Debe tener al menos
     un producto o servicio agregado.
 
 
-4. HISTORIAL DE COTIZACIONES
+4. HISTORIAL DE PEDIDOS
 --------------------------------------------------------------------------------
-En la seccion "Mis Cotizaciones" (/mis-cotizaciones) puede ver el
+En la seccion "Mis Pedidos" (/mis-pedidos) puede ver el
 historial completo de todas sus solicitudes enviadas.
 
 Cada entrada del historial muestra:
-- Numero de solicitud (#COT-XXXXXX)
-- Fecha de solicitud
-- Estado actual (Pendiente, Enviada, Aprobada, Rechazada)
-- Monto total cotizado (si ya fue procesada)
+- Número de Pedido (#PED-AÑO-XXXX)
+- Fecha del pedido
+- Estado actual (Pendiente de Pago, Pago en Revisión, Preparando, En Camino, Entregado, Cancelado)
+- Monto total en USD
 - Enlace para ver el detalle completo
 
-Los estados de una cotizacion son:
-  - Borrador: Aun no enviada, solo visible para usted
-  - Pendiente de Revision: Enviada, esperando respuesta del equipo
-  - Enviada: Cotizacion formal emitida por InstalFuego, lista para
-    su revision
-  - Aprobada: Usted confirmo su interes en la cotizacion
-  - Rechazada: La solicitud fue rechazada por el equipo
-  - Vencida: La cotizacion perdio su vigencia
+Los estados de un pedido son:
+  - **Pendiente de Pago:** Pedido confirmado, esperando que reporte su pago.
+  - **Pago en Revisión:** Reporte de pago recibido y bajo análisis de administración.
+  - **Preparando Pedido:** Pago aprobado; el personal alista sus productos y logística.
+  - **En Camino / Listo para Retiro:** En despacho de transporte (domicilio) o listo en la sede de la tienda (retiro).
+  - **Entregado:** Recibido formalmente por el cliente.
+  - **Cancelado:** Pedido anulado.
 
 
-5. VISUALIZACION DE COTIZACIONES
+5. DETALLE Y TIMELINE DE SEGUIMIENTO
 --------------------------------------------------------------------------------
-Al hacer clic en una cotizacion del historial, se muestra el documento
-formal tipo factura que incluye:
+Al acceder al detalle de cualquier pedido en su historial (/mis-pedidos/{id}), visualizará un panel dinámico de seguimiento:
 
-5.1 ENCABEZADO
-    - Logotipo de InstalFuego C.A.
-    - Datos de la empresa (RIF, direccion, contacto)
-    - Numero de cotizacion (#COT-AÑO-XXXX)
-    - Fecha de emision
-    - Fecha de vencimiento
-    - Estado actual de la cotizacion
+5.1 TIMELINE VISUAL EN TIEMPO REAL
+    Un indicador interactivo de 5 etapas le permite conocer la ubicación de su pedido:
+    1. **Pedido Recibido:** Indica que la solicitud fue registrada.
+    2. **Pago Reportado:** Se activa tras subir el capture del pago.
+    3. **Pago Validado:** Confirmación de cobro por parte de administración.
+    4. **Preparando / En Camino:** Informa si su paquete está siendo preparado o si ya está en tránsito hacia su dirección (o listo para retiro físico).
+    5. **Entregado:** Culminación de la entrega.
 
-5.2 DATOS DEL CLIENTE
-    - Nombre completo
-    - Empresa
-    - CI/RIF
-    - Correo electronico
-    - Telefono
+    Cada etapa completada se ilumina en rojo/verde y muestra la fecha y hora exactas en que ocurrió el evento.
 
-5.3 DETALLE DE ITEMS
-    Tabla con:
-    - Descripcion del item (producto o servicio)
-    - Tipo (Producto o Servicio)
-    - Cantidad solicitada
-    - Precio unitario en USD
-    - Subtotal por linea
-
-5.4 TOTALES
-    - Subtotal (suma de todos los items)
-    - IVA / Impuestos (si aplica)
-    - Descuentos (si aplican)
-    - Total final en USD
-
-5.5 NOTAS Y CONDICIONES
-    - Notas tecnicas y comerciales
-    - Terminos y condiciones
-    - Metodo de pago
-    - Condiciones de pago
-    - Proyecto de referencia (si aplica)
+5.2 INFORMACIÓN LOGÍSTICA
+    - Método de entrega acordado.
+    - Dirección exacta desglosada y referencia provista.
+    - Conversión de precios referenciales de USD a Bolívares usando la tasa oficial del BCV del día.
 
 
 6. DESCARGA DE PDF
 --------------------------------------------------------------------------------
-Desde la pagina de detalle de cualquier cotizacion (tanto en el historial
-como en la vista de cliente), puede descargar la cotizacion en formato PDF.
+Desde la pagina de detalle de cualquier pedido (tanto en el historial
+como en la vista de cliente), puede descargar el documento en formato PDF.
 
 Pasos:
-  1. Abra el detalle de la cotizacion.
+  1. Abra el detalle del pedido.
   2. Haga clic en el boton "Descargar PDF".
   3. El PDF se abrira en una nueva pestana o se descargara
      automaticamente, dependiendo de su navegador.
@@ -178,79 +153,37 @@ presentar como documento formal.
 
 7. PANEL DE ADMINISTRACION (SOLO PERSONAL AUTORIZADO)
 --------------------------------------------------------------------------------
-El panel de administracion esta disponible solo para usuarios con rol
-de Administrador o Gerente de Operaciones. No es accesible para clientes.
+El panel de administración está disponible solo para usuarios con rol de Administrador o Gerente de Operaciones. No es accesible para clientes.
 
 7.1 DASHBOARD
-    Pagina principal del panel que muestra:
-    - KPIs: total de productos, servicios, categorias
+    Página principal del panel que muestra:
+    - KPIs: total de productos, servicios, categorías
     - Alertas de stock (productos sin existencia)
-    - Distribucion de productos por categoria (grafico de barras)
+    - Gráfico de distribución de productos por categoría
     - Lista de servicios activos
-    - Ultimos productos agregados
+    - Últimos productos agregados
 
-7.2 GESTION DE PRODUCTOS
-    Permite:
-    - Ver listado completo con busqueda por SKU/nombre
-    - Agregar nuevo producto con hasta 5 imagenes
-    - Editar producto (datos, precios, stock, imagenes)
-    - Reemplazar o eliminar imagenes individualmente
-    - Eliminar productos
+7.2 GESTION DE PRODUCTOS Y SERVICIOS
+    - CRUD completo de productos con gestión de SKU, marcas, stock y subida de hasta 5 imágenes por producto.
+    - CRUD completo de servicios y asignación del tipo de cobro.
+    - CRUD de categorías.
 
-    Campos del producto:
-    - Nombre, SKU, Categoria, Precio, Marca, Modelo
-    - Stock, Descripcion tecnica
-    - Imagen principal + galeria de imagenes
+7.3 GESTION DE PEDIDOS Y VALIDACIÓN DE PAGO
+    El administrador gestiona las solicitudes de compras mediante un flujo estructurado:
+    1. **Revisión de Pedido (Detalle):** Permite ver la información del cliente, los productos solicitados con sus precios y la dirección de envío o almacén seleccionado.
+    2. **Validación del Pago:** El administrador visualiza los detalles del comprobante subido por el cliente (referencia bancaria, captura de pantalla o modalidad de efectivo presencial) y tiene las opciones de:
+       - **Validar:** Aprueba el pago, cambiando el estado del pedido a "Preparando Pedido" (procesando).
+       - **Rechazar:** Rechaza el pago añadiendo un comentario para que el cliente vuelva a reportarlo correctamente.
+    3. **Panel de Despacho (Logística):** Una vez que el pago es válido, se activa la sección de despacho donde el administrador puede:
+       - Registrar el envío marcándolo como **Despachado** (se guarda automáticamente la fecha de despacho y se notifica en el timeline del cliente).
+       - Confirmar la llegada final marcándolo como **Entregado** (se guarda la fecha de entrega y cierra el pedido).
+       - Cancelar el pedido en caso de problemas de stock o logística.
 
-7.3 GESTION DE SERVICIOS
-    Permite:
-    - Ver listado con busqueda y filtro por categoria
-    - Agregar nuevo servicio
-    - Editar servicio
-    - Eliminar servicio
-
-    Campos del servicio:
-    - Codigo, Nombre, Categoria, Precio Referencial
-    - Tipo de Cobro (Por hora, Por unidad, etc.)
-    - Descripcion, Imagen
-
-7.4 GESTION DE CATEGORIAS
-    Permite crear y eliminar categorias para clasificar productos
-    y servicios.
-
-7.5 GESTION DE SOLICITUDES DE COTIZACION
-    Flujo completo de gestion comercial mediante wizard de 3 pasos:
-
-    PASO 1: REVISAR ITEMS
-    - Visualizar los items solicitados por el cliente
-    - Ajustar precios unitarios (se guardan automaticamente)
-    - Modificar cantidades
-    - Eliminar items si es necesario
-    - Ver datos del cliente
-
-    PASO 2: CONFIGURAR
-    - Fecha de vencimiento de la cotizacion
-    - Descuento aplicado (en USD)
-    - IVA / Impuestos (en USD)
-    - Metodo de pago aceptado
-    - Condiciones de pago (ej: 50% anticipo, 50% contra entrega)
-    - Proyecto/Referencia
-    - Guardar cambios y continuar
-
-    PASO 3: REVISAR Y EMITIR
-    - Notas internas (solo visibles para el equipo)
-    - Notas para el cliente (visibles en PDF)
-    - Resumen de la cotizacion
-    - Acciones: Emitir cotizacion o Rechazar con motivo
-    - Acceso a vista previa como cliente y descarga de PDF
-
-7.6 REPORTES
-    Generacion de reportes con filtros:
-    - Tipo de reporte: Solicitudes de Cotizacion / Mas Solicitados
-    - Filtro por estado (Pendiente, Procesada, Rechazada)
-    - Rango de fechas
-    - Exportacion a CSV
-    - Visualizacion de totales y tasas de conversion
+7.4 REPORTES
+    Generación de reportes con filtros:
+    - Tipo de reporte: Ventas / Pedidos / Más Solicitados
+    - Filtro por estado del pedido (Pendiente de Pago, Preparando, Despachado, Entregado, Cancelado)
+    - Rango de fechas y exportación a formato CSV.
 
 
 8. PERFIL DE USUARIO
@@ -270,8 +203,8 @@ personal.
 8.2 SEGURIDAD (/cuenta/seguridad)
     Permite cambiar la contrasena de acceso al sistema.
 
-8.3 MIS SOLICITUDES (/mis-cotizaciones)
-    Acceso directo al historial completo de cotizaciones.
+8.3 MIS PEDIDOS (/mis-pedidos)
+    Acceso directo al historial completo de pedidos.
 
 
 9. TIPOS DE USUARIO Y PERMISOS
@@ -281,60 +214,47 @@ El sistema maneja tres roles con diferentes niveles de acceso:
   ADMIN (rol_id = 1)
   - Acceso completo al panel de administracion
   - Gestion de productos, servicios, categorias
-  - Gestion de cotizaciones (revisar, ajustar, emitir, rechazar)
+  - Gestion de pedidos (revisar, validar pago, despachar)
   - Reportes y exportacion
-  - Envio de cotizaciones por correo al cliente
 
   GERENTE DE OPERACIONES (rol_id = 3)
   - Acceso al panel de administracion
-  - Gestion de cotizaciones (revisar, ajustar, emitir, rechazar)
+  - Gestion de pedidos (revisar, validar pago, despachar)
   - Reportes y exportacion
   - Gestion de servicios
   - SIN acceso a gestion de productos
 
   CLIENTE (rol_id = 2)
-  - Catalogo de productos y servicios
-  - Solicitud de cotizaciones (armar, enviar)
-  - Historial de cotizaciones
+  - Catálogo de productos y servicios
+  - Solicitud de Pedidos (añadir al carrito, procesar checkout)
+  - Historial y seguimiento de Pedidos (visualización de timeline de entrega)
   - Perfil de usuario
-  - SIN acceso al panel de administracion
+  - SIN acceso al panel de administración
 
 
 10. PREGUNTAS FRECUENTES
 --------------------------------------------------------------------------------
 
-10.1 ¿COMO SOLICITO UNA COTIZACION?
-     Navegue el catalogo, haga clic en "Agregar a Cotizacion" en los
-     productos o servicios de su interes, luego vaya a "Cotizacion Actual"
-     y haga clic en "Enviar Solicitud".
+10.1 ¿CÓMO REALIZO UN PEDIDO?
+     Navegue por el catálogo de productos y servicios, haga clic en el botón "Agregar" para sumarlos a su Carrito de compra, vaya a su Carrito (/pedido/actual), seleccione su método de entrega (con su dirección si es despacho a domicilio) y pulse el botón "Confirmar Pedido".
 
-10.2 ¿PUEDO MODIFICAR UNA SOLICITUD ENVIADA?
-     No, una vez enviada la solicitud no puede modificarse. Si necesita
-     cambios, contacte al equipo de InstalFuego directamente.
+10.2 ¿PUEDO MODIFICAR UN PEDIDO CONFIRMADO?
+     No, una vez que el pedido es confirmado en el sistema no puede modificarse directamente desde la web. Si requiere algún cambio en la orden o en los datos de entrega, póngase en contacto inmediato con un asesor de InstalFuego.
 
-10.3 ¿CUANTO TIEMPO TARDA UNA COTIZACION?
-     El equipo de InstalFuego revisara su solicitud y emitira una
-     cotizacion formal. El tiempo de respuesta depende de la complejidad
-     de los items solicitados.
+10.3 ¿QUÉ DEBO HACER TRAS CONFIRMAR MI PEDIDO?
+     Debe proceder a reportar su pago desde el botón "Reportar Pago" en el detalle de su pedido. Si el pago es en efectivo de forma presencial al recibirlo, simplemente marque la casilla correspondiente para que el sistema lo registre.
 
-10.4 ¿QUE SIGNIFICA EL ESTADO "ENVIADA"?
-     Significa que el equipo de InstalFuego ya reviso su solicitud y
-     emitio una cotizacion formal con precios, descuentos y condiciones
-     comerciales. Puede ver el detalle completo y descargar el PDF.
+10.4 ¿CÓMO SEGUIR EL ESTADO DE MI ENTREGA?
+     Vaya a la sección de "Mis Pedidos", abra el detalle de su compra y ahí visualizará el Timeline en tiempo real con las etapas de: Pedido Recibido -> Pago Reportado -> Pago Validado -> Preparando / En Camino -> Entregado.
 
-10.5 ¿COMO DESCARGO UNA COTIZACION EN PDF?
-     Abra el detalle de la cotizacion desde "Mis Cotizaciones" y haga
-     clic en "Descargar PDF".
+10.5 ¿CÓMO DESCARGO EL COMPROBANTE O PDF DE MI PEDIDO?
+     Abra el detalle de su pedido desde el historial de "Mis Pedidos" y pulse el botón "Descargar PDF". También puede descargar la Factura en PDF si el estado del pago ya fue validado por la administración.
 
-10.6 ¿POR QUE NO VEO EL PANEL DE ADMINISTRACION?
-     El panel de administracion es exclusivo para usuarios con rol de
-     Administrador o Gerente de Operaciones. Si es cliente, no tiene
-     acceso a esta seccion.
+10.6 ¿POR QUÉ NO VEO EL PANEL DE ADMINISTRACIÓN?
+     El panel de administración es exclusivo para usuarios con rol de Administrador o Gerente de Operaciones. Si es cliente, no tiene acceso a esta sección.
 
-10.7 ¿PUEDO AGREGAR PRODUCTOS Y SERVICIOS EN LA MISMA COTIZACION?
-     Si, puede agregar tanto productos como servicios en una misma
-     solicitud de cotizacion. Ambos tipos de items se listaran juntos
-     en el detalle.
+10.7 ¿PUEDO COMPRAR PRODUCTOS Y SERVICIOS EN EL MISMO PEDIDO?
+     Sí, la plataforma permite consolidar tanto productos físicos (como extintores) como servicios de mantenimiento e instalación en el mismo carrito y en el mismo pedido final. Ambos tipos de ítems se listarán juntos.
 
 ================================================================================
 Fin del Manual de Usuario

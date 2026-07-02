@@ -14,27 +14,31 @@ class FacturasModel
         $this->db = Database::getInstance();
     }
 
-    public function crearFactura(int $cotizacionId): ?int
+    public function crearFactura(int $pedidoId): ?int
     {
         try {
             // Check if it already exists
-            $stmt = $this->db->prepare('SELECT id FROM facturas WHERE cotizacion_id = :cid');
-            $stmt->execute([':cid' => $cotizacionId]);
+            $stmt = $this->db->prepare('SELECT id FROM facturas WHERE pedido_id = :pid');
+            $stmt->execute([':pid' => $pedidoId]);
             if ($stmt->fetchColumn()) {
                 return null; // Already exists
             }
 
-            // Get cotizacion details
-            $sql = 'SELECT c.*, u.nombre, u.apellido, u.cedula_rif, u.direccion, u.email, m.metodo 
-                    FROM cotizaciones c 
-                    LEFT JOIN usuarios u ON c.usuario_id = u.id 
-                    LEFT JOIN metodos_de_pagos m ON c.id_metodo_pago = m.id 
-                    WHERE c.id = :cid';
+            // Get pedido and cotizacion details
+            $sql = 'SELECT p.id as pedido_id, p.total, p.costo_envio, p.id_metodo_pago,
+                           c.subtotal, c.impuestos, c.descuento, c.direccion_envio, c.tipo_entrega,
+                           u.nombre, u.apellido, u.cedula as cliente_cedula, u.direccion as cliente_direccion, u.email,
+                           m.metodo as metodo_pago_texto
+                    FROM pedidos p
+                    JOIN cotizaciones c ON p.cotizacion_id = c.id
+                    LEFT JOIN usuarios u ON p.usuario_id = u.id
+                    LEFT JOIN metodos_de_pagos m ON p.id_metodo_pago = m.id
+                    WHERE p.id = :pid';
             $stmt = $this->db->prepare($sql);
-            $stmt->execute([':cid' => $cotizacionId]);
-            $cot = $stmt->fetch(PDO::FETCH_ASSOC);
+            $stmt->execute([':pid' => $pedidoId]);
+            $ped = $stmt->fetch(PDO::FETCH_ASSOC);
 
-            if (!$cot) return null;
+            if (!$ped) return null;
 
             // Generate invoice number
             $year = date('Y');
@@ -51,22 +55,22 @@ class FacturasModel
             $numFac = sprintf("FAC-%s-%06d", $year, $next);
 
             // Insert invoice
-            $insertSql = 'INSERT INTO facturas (cotizacion_id, numero_factura, subtotal, impuestos, descuento, costo_envio, total, cliente_nombre, cliente_cedula, cliente_direccion, cliente_email, metodo_pago_texto)
-                          VALUES (:cid, :num, :sub, :imp, :desc, :envio, :tot, :nom, :ced, :dir, :email, :metodo)';
+            $insertSql = 'INSERT INTO facturas (pedido_id, numero_factura, subtotal, impuestos, descuento, costo_envio, total, cliente_nombre, cliente_cedula, cliente_direccion, cliente_email, metodo_pago_texto)
+                          VALUES (:pid, :num, :sub, :imp, :desc, :envio, :tot, :nom, :ced, :dir, :email, :metodo)';
             $stmt = $this->db->prepare($insertSql);
             $stmt->execute([
-                ':cid' => $cotizacionId,
+                ':pid' => $pedidoId,
                 ':num' => $numFac,
-                ':sub' => $cot['subtotal'],
-                ':imp' => $cot['impuestos'],
-                ':desc' => $cot['descuento'],
-                ':envio' => $cot['costo_envio'] ?? 0,
-                ':tot' => $cot['total'],
-                ':nom' => trim(($cot['nombre'] ?? '') . ' ' . ($cot['apellido'] ?? '')),
-                ':ced' => $cot['cedula_rif'] ?? '',
-                ':dir' => $cot['direccion_facturacion'] ?: ($cot['direccion'] ?? ''),
-                ':email' => $cot['email'] ?? '',
-                ':metodo' => $cot['metodo'] ?? 'Transferencia/Otro'
+                ':sub' => $ped['subtotal'],
+                ':imp' => $ped['impuestos'],
+                ':desc' => $ped['descuento'],
+                ':envio' => $ped['costo_envio'] ?? 0,
+                ':tot' => $ped['total'],
+                ':nom' => trim(($ped['nombre'] ?? '') . ' ' . ($ped['apellido'] ?? '')),
+                ':ced' => $ped['cliente_cedula'] ?? '',
+                ':dir' => $ped['direccion_envio'] ?: ($ped['cliente_direccion'] ?? ''),
+                ':email' => $ped['email'] ?? '',
+                ':metodo' => $ped['metodo_pago_texto'] ?? 'Transferencia/Otro'
             ]);
 
             return (int)$this->db->lastInsertId();
@@ -78,7 +82,7 @@ class FacturasModel
     }
     
     public function getByCotizacionId(int $cotId) {
-        $stmt = $this->db->prepare('SELECT * FROM facturas WHERE cotizacion_id = :cid LIMIT 1');
+        $stmt = $this->db->prepare('SELECT f.* FROM facturas f JOIN pedidos p ON f.pedido_id = p.id WHERE p.cotizacion_id = :cid LIMIT 1');
         $stmt->execute([':cid' => $cotId]);
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }

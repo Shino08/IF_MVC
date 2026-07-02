@@ -5,7 +5,7 @@
         
         <div class="mb-8">
             <h1 class="text-3xl font-bold text-gray-900">Reportar Pago</h1>
-            <p class="text-gray-600 mt-2">Presupuesto #COT-<?= date('Y', strtotime($cotizacion['fecha_solicitud'])) ?>-<?= str_pad((string)$cotizacion['id'], 4, '0', STR_PAD_LEFT) ?></p>
+            <p class="text-gray-600 mt-2">Pedido #PED-<?= date('Y', strtotime($cotizacion['fecha_solicitud'])) ?>-<?= str_pad((string)$cotizacion['id'], 4, '0', STR_PAD_LEFT) ?></p>
         </div>
 
         <?php if (!empty($_SESSION['error_msg'])): ?>
@@ -76,11 +76,11 @@
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Monto Pagado *</label>
                                 <input type="number" step="0.01" name="monto" class="input-elegant" required>
                             </div>
-                            <div>
+                            <div id="container-referencia">
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Número de Referencia *</label>
-                                <input type="text" name="referencia" class="input-elegant" required>
+                                <input type="text" id="input-referencia" name="referencia" class="input-elegant" required>
                             </div>
-                            <div>
+                            <div id="container-banco">
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Banco de Origen</label>
                                 <input type="text" name="banco_origen" class="input-elegant" placeholder="Opcional">
                             </div>
@@ -90,9 +90,9 @@
                             </div>
                         </div>
 
-                        <div class="mb-6">
+                        <div class="mb-6" id="container-comprobante">
                             <label class="block text-sm font-medium text-gray-700 mb-2">Comprobante (Captura de pantalla) *</label>
-                            <input type="file" name="comprobante" class="w-full text-sm text-gray-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-red-50 file:text-red-700 hover:file:bg-red-100" accept="image/*,.pdf" required>
+                            <input type="file" id="input-comprobante" name="comprobante" class="w-full text-sm text-gray-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-red-50 file:text-red-700 hover:file:bg-red-100" accept="image/*,.pdf" required>
                         </div>
 
                         <div class="flex justify-end gap-3 mt-8 pt-6 border-t border-gray-100">
@@ -105,5 +105,39 @@
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const selectMetodo = document.querySelector('select[name="metodo_pago_id"]');
+    const containerReferencia = document.getElementById('container-referencia');
+    const inputReferencia = document.getElementById('input-referencia');
+    const containerComprobante = document.getElementById('container-comprobante');
+    const inputComprobante = document.getElementById('input-comprobante');
+    const containerBanco = document.getElementById('container-banco');
+
+    function toggleCamposPago() {
+        const metodoId = selectMetodo.value;
+        // 3 = Efectivo, 4 = Divisas (Pago Presencial)
+        if (metodoId === '3' || metodoId === '4') {
+            containerReferencia.style.display = 'none';
+            inputReferencia.removeAttribute('required');
+            containerComprobante.style.display = 'none';
+            inputComprobante.removeAttribute('required');
+            if (containerBanco) containerBanco.style.display = 'none';
+        } else {
+            containerReferencia.style.display = 'block';
+            inputReferencia.setAttribute('required', 'required');
+            containerComprobante.style.display = 'block';
+            inputComprobante.setAttribute('required', 'required');
+            if (containerBanco) containerBanco.style.display = 'block';
+        }
+    }
+
+    if (selectMetodo) {
+        selectMetodo.addEventListener('change', toggleCamposPago);
+        toggleCamposPago(); // Ejecutar al inicio
+    }
+});
+</script>
 
 <?php require_once dirname(__DIR__) . '/layouts/footer.php'; ?>

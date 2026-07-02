@@ -47,7 +47,7 @@
                         $pImgFile = $p['imagen_principal'] ?? '';
                         $pImgPath = !empty($pImgFile) ? (dirname(__DIR__,2) . '/public/img/productos/' . $pImgFile) : '';
                         $pExists = !empty($pImgFile) && file_exists($pImgPath);
-                        $pSrc = $pExists ? ($base_url ?? '') . '/img/productos/' . htmlspecialchars($pImgFile) : ($base_url ?? '') . '/img/width=500,height=500.png';
+                        $pSrc = $pExists ? ($base_url ?? '') . '/img/productos/' . htmlspecialchars($pImgFile) : ($base_url ?? '') . '/img/Photoroom-20251106_165742.png';
                     ?>
                     <img src="<?= $pSrc ?>"
                          alt="<?= htmlspecialchars($p['nombre']) ?>"
@@ -93,7 +93,7 @@
                 $dImgFile = $d['imagen_principal'] ?? '';
                 $dImgPath = !empty($dImgFile) ? (dirname(__DIR__,2) . '/public/img/productos/' . $dImgFile) : '';
                 $dExists = !empty($dImgFile) && file_exists($dImgPath);
-                $dSrc = $dExists ? ($base_url ?? '') . '/img/productos/' . htmlspecialchars($dImgFile) : ($base_url ?? '') . '/img/width=500,height=500.png';
+                $dSrc = $dExists ? ($base_url ?? '') . '/img/productos/' . htmlspecialchars($dImgFile) : ($base_url ?? '') . '/img/Photoroom-20251106_165742.png';
             ?>
             <div class="bg-white rounded-lg p-6 hover:shadow-xl transition-shadow flex flex-col justify-between border border-gray-100">
                 <div>
@@ -136,7 +136,7 @@
                     $uFsDir = $u['tipo'] === 'producto' ? '/public/img/productos/' : '/public/img/servicios/';
                     $uImgPath = !empty($uImgFile) ? (dirname(__DIR__,2) . $uFsDir . $uImgFile) : '';
                     $uExists = !empty($uImgFile) && file_exists($uImgPath);
-                    $uSrc = $uExists ? ($base_url ?? '') . $uImgDir . htmlspecialchars($uImgFile) : ($base_url ?? '') . '/img/width=500,height=500.png';
+                    $uSrc = $uExists ? ($base_url ?? '') . $uImgDir . htmlspecialchars($uImgFile) : ($base_url ?? '') . '/img/Photoroom-20251106_165742.png';
                     $uLink = ($base_url ?? '') . '/' . $u['tipo'] . '/' . $u['id'];
             ?>
             <div class="bg-white rounded-lg p-4 border border-gray-200 hover:shadow-lg transition-shadow group cursor-pointer">

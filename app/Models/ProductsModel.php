@@ -51,6 +51,21 @@ class ProductsModel
         }
     }
 
+    public function getSimilares(int $categoriaId, int $excludeId, int $limit = 4): array
+    {
+        try {
+            $stmt = $this->db->prepare('SELECT id, sku, nombre, precio, imagen_principal FROM productos WHERE categoria_id = :cat_id AND id != :exc_id ORDER BY RAND() LIMIT :lim');
+            $stmt->bindParam(':cat_id', $categoriaId, PDO::PARAM_INT);
+            $stmt->bindParam(':exc_id', $excludeId, PDO::PARAM_INT);
+            $stmt->bindParam(':lim', $limit, PDO::PARAM_INT);
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log("Error en ProductsModel::getSimilares - " . $e->getMessage());
+            return [];
+        }
+    }
+
     // 3. Imágenes de galería de un producto
     public function getImages(int $productoId): array
     {

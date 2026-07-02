@@ -57,7 +57,21 @@ class CotizacionClienteController extends Router
         $productoId = !empty($_POST['producto_id']) ? (int)$_POST['producto_id'] : null;
         $servicioId = !empty($_POST['servicio_id']) ? (int)$_POST['servicio_id'] : null;
         $cantidad = !empty($_POST['cantidad']) ? (float)$_POST['cantidad'] : 1.0;
-        $precio = !empty($_POST['precio']) ? (float)$_POST['precio'] : 0.0;
+        
+        $precio = 0.0;
+        if ($productoId) {
+            $productsModel = new \App\Models\ProductsModel();
+            $producto = $productsModel->findById($productoId);
+            if ($producto) {
+                $precio = (float)($producto['precio'] ?? 0.0);
+            }
+        } elseif ($servicioId) {
+            $serviciosModel = new \App\Models\ServiciosModel();
+            $servicio = $serviciosModel->findById($servicioId);
+            if ($servicio) {
+                $precio = (float)($servicio['precio_referencial'] ?? 0.0);
+            }
+        }
 
         $isAjax = !empty($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false;
 
@@ -126,10 +140,25 @@ class CotizacionClienteController extends Router
         $userId = (int)$_SESSION['user_id'];
         $notas = strip_tags(trim($_POST['notas_tecnicas'] ?? ''));
         $tipo_entrega = $_POST['tipo_entrega'] ?? null;
-        $direccion_envio = strip_tags(trim($_POST['direccion_envio'] ?? ''));
+
+        // Consolidar dirección enriquecida
+        if ($tipo_entrega === 'domicilio') {
+            $partes = array_filter([
+                strip_tags(trim($_POST['estado_envio']    ?? '')),
+                strip_tags(trim($_POST['municipio_envio'] ?? '')),
+                strip_tags(trim($_POST['direccion_envio'] ?? '')),
+            ]);
+            $referencia = strip_tags(trim($_POST['referencia_envio'] ?? ''));
+            if ($referencia) {
+                $partes[] = 'Ref: ' . $referencia;
+            }
+            $direccion_envio = implode(', ', $partes);
+        } else {
+            $direccion_envio = '';
+        }
 
         $borrador = $this->cotizacionesModel->getBorradorByUserId($userId);
-        
+
         if (!$borrador) {
             $_SESSION['error_msg'] = 'No hay solicitud actual.';
             header('Location: ' . $this->baseUrl() . '/pedido/actual');
@@ -146,20 +175,21 @@ class CotizacionClienteController extends Router
         $res = $this->cotizacionesModel->sendCotizacion((int)$borrador['id'], $notas, $tipo_entrega, $direccion_envio);
 
         if ($res) {
-            $_SESSION['success_msg'] = '¡Solicitud de presupuesto enviada correctamente! Nos comunicaremos pronto.';
-            header('Location: ' . $this->baseUrl() . '/pedido/exito');
+            $_SESSION['success_msg'] = '¡Compra procesada correctamente! Por favor, reporte su pago.';
+            header('Location: ' . $this->baseUrl() . '/pedido/pagar/' . $borrador['id']);
             exit;
         }
 
-        $_SESSION['error_msg'] = 'Ocurrió un error al enviar la solicitud.';
+        $_SESSION['error_msg'] = 'Ocurrió un error al procesar la compra.';
         header('Location: ' . $this->baseUrl() . '/pedido/actual');
         exit;
     }
 
+
     public function exito(): void
     {
         $this->view('cotizacion/exito', [
-            'title' => '¡Cotización Enviada!'
+            'title' => '¡Compra Exitosa!'
         ]);
     }
 
@@ -204,7 +234,7 @@ class CotizacionClienteController extends Router
         $pedido = $pedidosModel->getByCotizacionId($cotizacionId);
 
         $this->view('cotizacion/detalle', [
-            'title'      => 'Detalle de Solicitud #' . $cotizacionId,
+            'title'      => 'Detalle de Pedido #' . $cotizacionId,
             'cotizacion' => $cotizacion,
             'pedido'     => $pedido,
             'detalles'   => $detalles
@@ -460,6 +490,9 @@ class CotizacionClienteController extends Router
             exit;
         }
 
+        $metodoPagoId = (int)$_POST['metodo_pago_id'];
+        $isCash = in_array($metodoPagoId, [3, 4]); // 3 = Efectivo, 4 = Divisas
+
         $comprobante_url = null;
         if (isset($_FILES['comprobante']) && $_FILES['comprobante']['error'] === UPLOAD_ERR_OK) {
             $tmpName = $_FILES['comprobante']['tmp_name'];
@@ -479,18 +512,20 @@ class CotizacionClienteController extends Router
             }
         }
 
-        if (!$comprobante_url) {
+        if (!$isCash && !$comprobante_url) {
             $_SESSION['error_msg'] = 'Debe subir un comprobante válido (JPG, PNG o PDF).';
             header('Location: ' . $this->baseUrl() . '/pedido/pagar/' . $cotizacionId);
             exit;
         }
 
+        $referencia = $isCash ? 'EFECTIVO_PRESENCIAL' : strip_tags(trim($_POST['referencia'] ?? ''));
+
         $data = [
             'pedido_id'        => $pedido['id'],
-            'metodo_pago_id'   => (int)$_POST['metodo_pago_id'],
+            'metodo_pago_id'   => $metodoPagoId,
             'monto'            => (float)$_POST['monto'],
             'moneda'           => $_POST['moneda'] ?? 'VES',
-            'referencia'       => strip_tags(trim($_POST['referencia'] ?? '')),
+            'referencia'       => $referencia,
             'banco_origen'     => strip_tags(trim($_POST['banco_origen'] ?? '')),
             'telefono_pagador' => strip_tags(trim($_POST['telefono_pagador'] ?? '')),
             'comprobante_url'  => $comprobante_url
@@ -500,6 +535,80 @@ class CotizacionClienteController extends Router
             $_SESSION['success_msg'] = '¡Pago reportado exitosamente! Será validado a la brevedad.';
         } else {
             $_SESSION['error_msg'] = 'Ocurrió un error al reportar el pago.';
+        }
+
+        header('Location: ' . $this->baseUrl() . '/mis-pedidos/' . $cotizacionId);
+        exit;
+    }
+
+    public function aceptar(string $id): void
+    {
+        $userId = (int)$_SESSION['user_id'];
+        $cotizacionId = (int)$id;
+
+        $cotizacion = $this->cotizacionesModel->getById($cotizacionId, $userId);
+        if (!$cotizacion || $cotizacion['estado_id'] != 3) {
+            $_SESSION['error_msg'] = 'Presupuesto no encontrado o no está en estado emitido.';
+            header('Location: ' . $this->baseUrl() . '/mis-pedidos');
+            exit;
+        }
+
+        $db = Database::getInstance();
+        try {
+            $db->beginTransaction();
+
+            $stmt = $db->prepare("UPDATE cotizaciones SET estado_id = 4 WHERE id = :id AND estado_id = 3");
+            $stmt->execute([':id' => $cotizacionId]);
+
+            // Crear el pedido asociado
+            $stmtCheck = $db->prepare('SELECT id FROM pedidos WHERE cotizacion_id = :id');
+            $stmtCheck->execute([':id' => $cotizacionId]);
+            if (!$stmtCheck->fetch()) {
+                $sqlPed = "INSERT INTO pedidos (cotizacion_id, usuario_id, total, costo_envio, estado_pedido, direccion_envio, tipo_entrega) 
+                           VALUES (:cot_id, :usr_id, :tot, :envio, 'pendiente_pago', :dir, :tipo)";
+                $stmtPed = $db->prepare($sqlPed);
+                $stmtPed->execute([
+                    ':cot_id' => $cotizacionId,
+                    ':usr_id' => $cotizacion['usuario_id'],
+                    ':tot'    => $cotizacion['total'],
+                    ':envio'  => $cotizacion['costo_envio'],
+                    ':dir'    => $cotizacion['direccion_envio'],
+                    ':tipo'   => $cotizacion['tipo_entrega']
+                ]);
+            }
+
+            $db->commit();
+            $_SESSION['success_msg'] = 'Presupuesto aceptado correctamente. Su pedido se ha generado.';
+        } catch (\PDOException $e) {
+            $db->rollBack();
+            error_log("Error al aceptar presupuesto: " . $e->getMessage());
+            $_SESSION['error_msg'] = 'Ocurrió un error al aceptar el presupuesto.';
+        }
+
+        header('Location: ' . $this->baseUrl() . '/mis-pedidos/' . $cotizacionId);
+        exit;
+    }
+
+    public function rechazar(string $id): void
+    {
+        $userId = (int)$_SESSION['user_id'];
+        $cotizacionId = (int)$id;
+
+        $cotizacion = $this->cotizacionesModel->getById($cotizacionId, $userId);
+        if (!$cotizacion || $cotizacion['estado_id'] != 3) {
+            $_SESSION['error_msg'] = 'Presupuesto no encontrado o no está en estado emitido.';
+            header('Location: ' . $this->baseUrl() . '/mis-pedidos');
+            exit;
+        }
+
+        $db = Database::getInstance();
+        $stmt = $db->prepare("UPDATE cotizaciones SET estado_id = 5 WHERE id = :id AND estado_id = 3");
+        $stmt->execute([':id' => $cotizacionId]);
+
+        if ($stmt->rowCount() > 0) {
+            $_SESSION['success_msg'] = 'Presupuesto rechazado correctamente.';
+        } else {
+            $_SESSION['error_msg'] = 'No se pudo rechazar el presupuesto.';
         }
 
         header('Location: ' . $this->baseUrl() . '/mis-pedidos/' . $cotizacionId);

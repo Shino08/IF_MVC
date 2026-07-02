@@ -2,6 +2,9 @@
 <?php require_once __DIR__ . '/../layouts/_head.php'; ?>
 <?php
 $pasoActual = (int)($_GET['paso'] ?? 1);
+if (($cotizacion['tipo_flujo'] ?? '') === 'compra_directa') {
+    $pasoActual = 1;
+}
 $pasos = [
     1 => ['label' => 'Ítems', 'icon' => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2'],
     2 => ['label' => 'Configurar', 'icon' => 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z'],
@@ -48,16 +51,10 @@ if ($previewTotal < 0) $previewTotal = 0;
                 <?php if ($cotizacion['estado_id'] == 2): ?>
                     <span class="text-xs text-orange-600 bg-orange-50 px-2.5 py-1 rounded-full font-semibold">Pendiente de revisión</span>
                 <?php endif; ?>
-                <a href="<?= $base_url ?? '' ?>/pedido/pdf/<?= $cotizacion['id'] ?>" target="_blank" class="px-3 py-1.5 border border-gray-200 rounded-lg text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors flex items-center gap-1.5">
+                <a href="<?= $base_url ?? '' ?>/cotizacion/pdf/<?= $cotizacion['id'] ?>" target="_blank" class="px-3 py-1.5 border border-gray-200 rounded-lg text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors flex items-center gap-1.5">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
                     PDF
                 </a>
-                <?php if ($cotizacion['estado_id'] == 4): // Aprobada ?>
-                <a href="<?= $base_url ?? '' ?>/factura/pdf/<?= $cotizacion['id'] ?>" target="_blank" class="px-3 py-1.5 border border-transparent shadow-sm rounded-lg text-xs font-bold text-white bg-green-600 hover:bg-green-700 transition-colors flex items-center gap-1.5">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                    Factura
-                </a>
-                <?php endif; ?>
             </div>
         </header>
 
@@ -76,6 +73,7 @@ if ($previewTotal < 0) $previewTotal = 0;
         <?php endif; ?>
 
         <!-- ─── STEP NAVIGATOR ─── -->
+        <?php if (($cotizacion['tipo_flujo'] ?? '') !== 'compra_directa'): ?>
         <div class="bg-white border-b border-gray-200 px-8 py-0">
             <div class="flex items-center gap-0 max-w-3xl mx-auto">
                 <?php for ($i = 1; $i <= $totalPasos; $i++): 
@@ -102,6 +100,7 @@ if ($previewTotal < 0) $previewTotal = 0;
                 <?php endfor; ?>
             </div>
         </div>
+        <?php endif; ?>
 
         <!-- ─── CONTENIDO ─── -->
         <div class="flex-1 overflow-y-auto">
@@ -134,7 +133,6 @@ if ($previewTotal < 0) $previewTotal = 0;
                                             <th class="px-4 py-3 text-center text-[11px] font-bold text-gray-500 uppercase tracking-wider">Cant.</th>
                                             <th class="px-4 py-3 text-right text-[11px] font-bold text-gray-500 uppercase tracking-wider">P. Unitario</th>
                                             <th class="px-4 py-3 text-right text-[11px] font-bold text-gray-500 uppercase tracking-wider">Subtotal</th>
-                                            <th class="px-4 py-3 text-center text-[11px] font-bold text-gray-500 uppercase tracking-wider w-16"></th>
                                         </tr>
                                     </thead>
                                     <tbody class="divide-y divide-gray-50">
@@ -163,27 +161,28 @@ if ($previewTotal < 0) $previewTotal = 0;
                                                 </span>
                                             </td>
                                             <td class="px-4 py-3 text-center">
-                                                <input type="number" step="0.01" min="0.01" value="<?= $item['cantidad'] ?>"
-                                                       class="item-cantidad w-20 px-2 py-1.5 text-sm text-center border border-gray-200 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                                                       data-detalle-id="<?= $item['id'] ?>">
+                                                <span class="text-sm font-semibold text-gray-700">
+                                                    <?= !empty($item['producto_id']) ? (int)$item['cantidad'] : number_format((float)$item['cantidad'], 2) ?>
+                                                </span>
                                             </td>
                                             <td class="px-4 py-3 text-right">
-                                                <div class="inline-flex items-center gap-0.5">
-                                                    <span class="text-gray-400 text-xs">$</span>
-                                                    <input type="number" step="0.01" min="0" value="<?= number_format((float)$item['precio_unitario'], 2, '.', '') ?>"
-                                                           class="item-precio w-22 px-2 py-1.5 text-sm text-right border border-gray-200 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                                                           data-detalle-id="<?= $item['id'] ?>">
-                                                </div>
+                                                <?php if (($cotizacion['tipo_flujo'] ?? '') === 'compra_directa'): ?>
+                                                    <span class="text-sm font-semibold text-gray-700">
+                                                        $<?= number_format((float)$item['precio_unitario'], 2) ?>
+                                                    </span>
+                                                <?php else: ?>
+                                                    <div class="inline-flex items-center gap-0.5">
+                                                        <span class="text-gray-400 text-xs">$</span>
+                                                        <input type="number" step="0.01" min="0" value="<?= number_format((float)$item['precio_unitario'], 2, '.', '') ?>"
+                                                               class="item-precio w-22 px-2 py-1.5 text-sm text-right border border-gray-200 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                                                               data-detalle-id="<?= $item['id'] ?>">
+                                                    </div>
+                                                <?php endif; ?>
                                             </td>
                                             <td class="px-4 py-3 text-right text-sm font-semibold text-gray-900 item-subtotal">
                                                 $<?= number_format((float)$lineTotal, 2) ?>
                                             </td>
-                                            <td class="px-4 py-3 text-center">
-                                                <button type="button" onclick="confirmarAccion('eliminar', <?= $item['id'] ?>, '<?= htmlspecialchars(addslashes(!empty($item['producto_id']) ? $item['producto_nombre'] : $item['servicio_nombre'])) ?>')"
-                                                        class="text-gray-300 hover:text-red-500 transition-colors p-1" title="Eliminar ítem">
-                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                                                </button>
-                                            </td>
+
                                         </tr>
                                         <?php endforeach; ?>
                                     </tbody>
@@ -192,7 +191,11 @@ if ($previewTotal < 0) $previewTotal = 0;
 
                             <!-- Totals bar -->
                             <div class="px-6 py-4 bg-gray-50 border-t border-gray-100 flex justify-between items-center">
-                                <span class="text-xs text-gray-500">Los precios se guardan automáticamente al editarlos</span>
+                                <?php if (($cotizacion['tipo_flujo'] ?? '') !== 'compra_directa'): ?>
+                                    <span class="text-xs text-gray-500">Los precios se guardan automáticamente al editarlos</span>
+                                <?php else: ?>
+                                    <span></span>
+                                <?php endif; ?>
                                 <div class="text-right">
                                     <span class="text-sm text-gray-600">Subtotal: </span>
                                     <span class="text-lg font-bold text-gray-900">$<?= number_format($calcSubtotal, 2) ?></span>
@@ -215,48 +218,137 @@ if ($previewTotal < 0) $previewTotal = 0;
                         </div>
                     </div>
 
-                    <!-- Datos Logística -->
-                    <?php if (!empty($cotizacion['tipo_entrega'])): ?>
-                    <div class="mt-4 bg-white rounded-xl shadow-sm border border-gray-200 p-5">
-                        <h3 class="text-sm font-bold text-gray-900 mb-3 flex items-center gap-2">
-                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.242-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                            Logística y Entrega
-                        </h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                            <div><span class="text-gray-500 text-xs">Método de Entrega</span><p class="font-medium text-gray-900"><?= $cotizacion['tipo_entrega'] === 'domicilio' ? 'Envío a Domicilio' : 'Retiro en Tienda' ?></p></div>
-                            <div>
-                                <?php
-                                    $estadoEntrega = 'pendiente';
-                                    if (isset($pedido) && $pedido['estado_pedido'] === 'despachado') $estadoEntrega = 'en_camino';
-                                    if (isset($pedido) && $pedido['estado_pedido'] === 'entregado') $estadoEntrega = 'entregado';
-                                ?>
-                                <span class="text-gray-500 text-xs">Estado Logístico</span>
-                                <div class="mt-1">
-                                    <span class="px-2 py-1 rounded text-xs font-bold <?= $estadoEntrega === 'entregado' ? 'bg-green-200 text-green-800' : ($estadoEntrega === 'en_camino' ? 'bg-blue-200 text-blue-800' : 'bg-gray-200 text-gray-800') ?>">
-                                        <?= strtoupper(str_replace('_', ' ', $estadoEntrega)) ?>
-                                    </span>
+
+                    <!-- Panel de Despacho -->
+                    <?php if (!empty($pedido)): ?>
+                    <div class="mt-4 bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                        <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+                            <h3 class="text-sm font-bold text-gray-900 flex items-center gap-2">
+                                <svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                                Panel de Despacho
+                            </h3>
+                            <?php
+                            $estadoPedidoBadge = [
+                                'pendiente_pago'   => ['label' => 'Pendiente de Pago',  'class' => 'bg-yellow-100 text-yellow-800'],
+                                'pago_por_validar' => ['label' => 'Pago en Revisión',   'class' => 'bg-blue-100 text-blue-800'],
+                                'procesando'       => ['label' => 'Preparando Pedido',  'class' => 'bg-purple-100 text-purple-800'],
+                                'despachado'       => ['label' => 'Despachado',         'class' => 'bg-indigo-100 text-indigo-800'],
+                                'entregado'        => ['label' => 'Entregado',          'class' => 'bg-green-100 text-green-800'],
+                                'cancelado'        => ['label' => 'Cancelado',          'class' => 'bg-red-100 text-red-800'],
+                            ];
+                            $estadoActual = $pedido['estado_pedido'] ?? 'pendiente_pago';
+                            $badgeInfo    = $estadoPedidoBadge[$estadoActual] ?? ['label' => strtoupper($estadoActual), 'class' => 'bg-gray-100 text-gray-800'];
+                            ?>
+                            <span class="px-2.5 py-1 rounded-full text-xs font-bold <?= $badgeInfo['class'] ?>">
+                                <?= $badgeInfo['label'] ?>
+                            </span>
+                        </div>
+
+                        <div class="p-5 space-y-4 text-sm">
+
+                            <!-- Info de entrega -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <span class="text-gray-400 text-xs uppercase tracking-wider font-semibold">Método de Entrega</span>
+                                    <p class="mt-1 font-semibold text-gray-900">
+                                        <?php if (($cotizacion['tipo_entrega'] ?? '') === 'domicilio'): ?>
+                                            🚚 Envío a Domicilio
+                                        <?php elseif (($cotizacion['tipo_entrega'] ?? '') === 'retiro_tienda'): ?>
+                                            🏪 Retiro en Tienda
+                                        <?php else: ?>
+                                            <span class="text-gray-400">No especificado</span>
+                                        <?php endif; ?>
+                                    </p>
                                 </div>
+                                <?php if (!empty($pedido['fecha_creacion'])): ?>
+                                <div>
+                                    <span class="text-gray-400 text-xs uppercase tracking-wider font-semibold">Pedido Recibido</span>
+                                    <p class="mt-1 font-medium text-gray-900"><?= date('d/m/Y H:i', strtotime($pedido['fecha_creacion'])) ?></p>
+                                </div>
+                                <?php endif; ?>
+                                <?php if (!empty($pedido['fecha_pago_validado'])): ?>
+                                <div>
+                                    <span class="text-gray-400 text-xs uppercase tracking-wider font-semibold">Pago Validado</span>
+                                    <p class="mt-1 font-medium text-gray-900"><?= date('d/m/Y H:i', strtotime($pedido['fecha_pago_validado'])) ?></p>
+                                </div>
+                                <?php endif; ?>
+                                <?php if (!empty($pedido['fecha_despacho'])): ?>
+                                <div>
+                                    <span class="text-gray-400 text-xs uppercase tracking-wider font-semibold">Fecha de Despacho</span>
+                                    <p class="mt-1 font-medium text-indigo-700"><?= date('d/m/Y H:i', strtotime($pedido['fecha_despacho'])) ?></p>
+                                </div>
+                                <?php endif; ?>
+                                <?php if (!empty($pedido['fecha_entrega'])): ?>
+                                <div>
+                                    <span class="text-gray-400 text-xs uppercase tracking-wider font-semibold">Fecha de Entrega</span>
+                                    <p class="mt-1 font-medium text-green-700"><?= date('d/m/Y H:i', strtotime($pedido['fecha_entrega'])) ?></p>
+                                </div>
+                                <?php endif; ?>
                             </div>
-                            <?php if ($cotizacion['tipo_entrega'] === 'domicilio' && !empty($cotizacion['direccion_envio'])): ?>
-                                <div class="md:col-span-2"><span class="text-gray-500 text-xs">Dirección Completa</span><p class="font-medium text-gray-900"><?= htmlspecialchars($cotizacion['direccion_envio']) ?></p></div>
+
+                            <!-- Dirección si es domicilio -->
+                            <?php if (($cotizacion['tipo_entrega'] ?? '') === 'domicilio' && !empty($cotizacion['direccion_envio'])): ?>
+                            <div class="p-3 bg-blue-50 rounded-lg border border-blue-100">
+                                <span class="text-blue-600 text-xs font-bold uppercase tracking-wider">Dirección de Entrega</span>
+                                <p class="mt-1 text-gray-800 font-medium"><?= htmlspecialchars($cotizacion['direccion_envio']) ?></p>
+                            </div>
                             <?php endif; ?>
-                            
-                            <?php if ($estadoEntrega !== 'entregado' && isset($pedido) && in_array($pedido['estado_pedido'], ['procesando', 'despachado', 'entregado'])): ?>
-                            <div class="col-span-1 md:col-span-2 border-t border-gray-100 mt-2 pt-4">
-                                <form action="<?= $base_url ?? '' ?>/dashboard/cotizaciones/actualizar-logistica" method="POST" class="flex items-center gap-3">
+
+                            <!-- Botones de avance de estado -->
+                            <?php
+                            // Mostrar sólo las transiciones válidas desde el estado actual
+                            $transiciones = [
+                                'procesando' => [
+                                    ['estado' => 'despachado', 'label' => '🚚 Marcar como Despachado',   'class' => 'bg-indigo-600 hover:bg-indigo-700 text-white'],
+                                    ['estado' => 'cancelado',  'label' => '✕ Cancelar Pedido',           'class' => 'bg-red-50 hover:bg-red-100 text-red-700 border border-red-200'],
+                                ],
+                                'despachado' => [
+                                    ['estado' => 'entregado',  'label' => '✅ Confirmar Entrega',         'class' => 'bg-green-600 hover:bg-green-700 text-white'],
+                                ],
+                            ];
+                            $botonesDisponibles = $transiciones[$estadoActual] ?? [];
+                            ?>
+                            <?php if (!empty($botonesDisponibles)): ?>
+                            <div class="border-t border-gray-100 pt-4">
+                                <p class="text-xs text-gray-400 font-semibold uppercase tracking-wider mb-3">Avanzar Estado</p>
+                                <form action="<?= $base_url ?? '' ?>/dashboard/cotizaciones/actualizar-logistica" method="POST" class="flex flex-wrap gap-2">
                                     <input type="hidden" name="cotizacion_id" value="<?= $cotizacion['id'] ?>">
-                                    <select name="estado_entrega" class="input-elegant text-sm py-1.5 flex-1">
-                                        <option value="pendiente" <?= $estadoEntrega === 'pendiente' ? 'selected' : '' ?>>Pendiente</option>
-                                        <option value="en_camino" <?= $estadoEntrega === 'en_camino' ? 'selected' : '' ?>><?= $cotizacion['tipo_entrega'] === 'domicilio' ? 'En Camino' : 'Listo para Retiro' ?></option>
-                                        <option value="entregado" <?= $estadoEntrega === 'entregado' ? 'selected' : '' ?>>Entregado / Finalizado</option>
-                                    </select>
-                                    <button type="submit" class="px-4 py-1.5 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800">Actualizar Estado</button>
+                                    <?php foreach ($botonesDisponibles as $btn): ?>
+                                        <button type="submit" name="estado_pedido" value="<?= $btn['estado'] ?>"
+                                            class="px-4 py-2 rounded-lg text-sm font-bold transition-all <?= $btn['class'] ?>"
+                                            <?= str_contains($btn['label'], 'Cancelar') ? "onclick=\"return confirm('¿Seguro que deseas cancelar este pedido?')\"" : '' ?>>
+                                            <?= $btn['label'] ?>
+                                        </button>
+                                    <?php endforeach; ?>
                                 </form>
                             </div>
+                            <?php elseif ($estadoActual === 'entregado'): ?>
+                            <div class="p-3 bg-green-50 border border-green-100 rounded-lg text-xs font-semibold text-green-700">
+                                ✅ Pedido completado. No hay acciones pendientes.
+                            </div>
+                            <?php elseif ($estadoActual === 'cancelado'): ?>
+                            <div class="p-3 bg-red-50 border border-red-100 rounded-lg text-xs font-semibold text-red-700">
+                                Este pedido fue cancelado.
+                            </div>
+                            <?php elseif (in_array($estadoActual, ['pendiente_pago', 'pago_por_validar'])): ?>
+                            <div class="p-3 bg-yellow-50 border border-yellow-100 rounded-lg text-xs font-semibold text-yellow-700">
+                                ⏳ Esperando confirmación de pago antes de despachar.
+                            </div>
                             <?php endif; ?>
+
                         </div>
                     </div>
+                    <?php elseif (!empty($cotizacion['tipo_entrega'])): ?>
+                    <!-- Pedido sin registro en tabla pedidos aún (estado_id < 4) -->
+                    <div class="mt-4 bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+                        <h3 class="text-sm font-bold text-gray-900 mb-3">Método de Entrega</h3>
+                        <p class="text-sm text-gray-700"><?= ($cotizacion['tipo_entrega'] === 'domicilio') ? '🚚 Envío a Domicilio' : '🏪 Retiro en Tienda' ?></p>
+                        <?php if (!empty($cotizacion['direccion_envio'])): ?>
+                            <p class="mt-2 text-sm text-gray-600"><?= htmlspecialchars($cotizacion['direccion_envio']) ?></p>
+                        <?php endif; ?>
+                    </div>
                     <?php endif; ?>
+
 
                     <!-- Reporte de Pagos -->
                     <?php if (!empty($pagos)): ?>
@@ -308,12 +400,14 @@ if ($previewTotal < 0) $previewTotal = 0;
                     <?php endif; ?>
 
                     <!-- Next button -->
+                    <?php if (($cotizacion['tipo_flujo'] ?? '') !== 'compra_directa'): ?>
                     <div class="mt-6 flex justify-end">
                         <a href="?paso=2" class="inline-flex items-center px-6 py-2.5 bg-red-600 text-white text-sm font-semibold rounded-lg hover:bg-red-700 transition-colors shadow-sm gap-2">
                             Continuar
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                         </a>
                     </div>
+                    <?php endif; ?>
                 </div>
 
                 <!-- ════════ PASO 2: CONFIGURAR ════════ -->
@@ -327,19 +421,19 @@ if ($previewTotal < 0) $previewTotal = 0;
                             </h2>
                         </div>
                         <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-5">
+                            <?php 
+                            $hasProducts = false;
+                            $hasServices = false;
+                            foreach ($detalles as $item) {
+                                if (!empty($item['producto_id'])) $hasProducts = true;
+                                if (!empty($item['servicio_id'])) $hasServices = true;
+                            }
+                            ?>
                             <div>
                                 <label class="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1.5">Fecha de Vencimiento</label>
                                 <input type="date" name="fecha_vencimiento" value="<?= htmlspecialchars($cotizacion['fecha_vencimiento'] ?? '') ?>" class="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500">
                             </div>
-                            <div>
-                                <label class="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1.5">Método de Pago</label>
-                                <select name="id_metodo_pago" class="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500">
-                                    <option value="">Seleccionar...</option>
-                                    <?php foreach ($metodosPago as $mp): ?>
-                                    <option value="<?= $mp['id'] ?>" <?= ($cotizacion['id_metodo_pago'] ?? null) == $mp['id'] ? 'selected' : '' ?>><?= htmlspecialchars($mp['metodo']) ?></option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
+
                             <div>
                                 <label class="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1.5">Descuento <span class="text-gray-400 normal-case font-normal">($)</span></label>
                                 <input type="number" step="0.01" min="0" name="descuento" value="<?= number_format((float)($cotizacion['descuento'] ?? 0), 2, '.', '') ?>" class="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500">
@@ -348,14 +442,46 @@ if ($previewTotal < 0) $previewTotal = 0;
                                 <label class="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1.5">IVA / Impuestos <span class="text-gray-400 normal-case font-normal">($)</span></label>
                                 <input type="number" step="0.01" min="0" name="impuestos" value="<?= number_format((float)($cotizacion['impuestos'] ?? 0), 2, '.', '') ?>" class="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500">
                             </div>
-                            <?php if ($cotizacion['tipo_entrega'] === 'domicilio'): ?>
-                            <div>
-                                <label class="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1.5">Costo de Envío <span class="text-gray-400 normal-case font-normal">($)</span></label>
-                                <input type="number" step="0.01" min="0" name="costo_envio" value="<?= number_format((float)($cotizacion['costo_envio'] ?? 0), 2, '.', '') ?>" class="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500">
-                            </div>
-                            <?php else: ?>
-                            <input type="hidden" name="costo_envio" value="0">
+                            <?php if ($hasProducts): ?>
+                                <?php if ($cotizacion['tipo_entrega'] === 'domicilio'): ?>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1.5">Costo de Envío <span class="text-gray-400 normal-case font-normal">($)</span></label>
+                                    <input type="number" step="0.01" min="0" name="costo_envio" value="<?= number_format((float)($cotizacion['costo_envio'] ?? 0), 2, '.', '') ?>" class="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500">
+                                </div>
+                                <?php else: ?>
+                                <input type="hidden" name="costo_envio" value="0">
+                                <?php endif; ?>
                             <?php endif; ?>
+                            
+                            <?php if ($hasServices): ?>
+                            <div class="md:col-span-2 mt-4">
+                                <h3 class="text-sm font-bold text-gray-800 border-b pb-2 mb-4">Logística de Servicios</h3>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1.5">Ubicación del Servicio</label>
+                                <input type="text" name="ubicacion" value="<?= htmlspecialchars($cotizacion['ubicacion'] ?? '') ?>" placeholder="Ej: Planta baja, Edificio A" class="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1.5">Fecha Tentativa</label>
+                                <input type="date" name="fecha_tentativa" value="<?= htmlspecialchars($cotizacion['fecha_tentativa'] ?? '') ?>" class="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1.5">Nombre Responsable en Sitio</label>
+                                <input type="text" name="responsable_nombre" value="<?= htmlspecialchars($cotizacion['responsable_nombre'] ?? '') ?>" placeholder="Ej: Juan Pérez" class="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1.5">Teléfono Responsable</label>
+                                <input type="text" name="responsable_telefono" value="<?= htmlspecialchars($cotizacion['responsable_telefono'] ?? '') ?>" placeholder="Ej: 0414-1234567" class="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500">
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1.5">Observaciones Técnicas</label>
+                                <textarea name="observaciones_tecnicas" rows="2" class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500" placeholder="Detalles de instalación o requerimientos..."><?= htmlspecialchars($cotizacion['observaciones_tecnicas'] ?? '') ?></textarea>
+                            </div>
+                            <?php endif; ?>
+                            
+                            <div class="md:col-span-2 mt-4">
+                                <h3 class="text-sm font-bold text-gray-800 border-b pb-2 mb-4">Condiciones Generales</h3>
+                            </div>
                             <div class="md:col-span-2">
                                 <label class="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1.5">Condiciones de Pago</label>
                                 <input type="text" name="condiciones_pago" value="<?= htmlspecialchars($cotizacion['condiciones_pago'] ?? '') ?>" placeholder="Ej: 50% anticipo, 50% contra entrega" class="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500">
@@ -429,7 +555,7 @@ if ($previewTotal < 0) $previewTotal = 0;
                                 Resumen de Presupuesto
                             </h2>
                             <div class="flex gap-2">
-                                <a href="<?= $base_url ?? '' ?>/pedido/pdf/<?= $cotizacion['id'] ?>" target="_blank" class="px-3 py-1.5 border border-gray-200 rounded-lg text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors flex items-center gap-1">
+                                <a href="<?= $base_url ?? '' ?>/cotizacion/pdf/<?= $cotizacion['id'] ?>" target="_blank" class="px-3 py-1.5 border border-gray-200 rounded-lg text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors flex items-center gap-1.5">
                                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
                                     PDF
                                 </a>
@@ -467,7 +593,7 @@ if ($previewTotal < 0) $previewTotal = 0;
                         <div class="px-6 py-4 border-b border-gray-100">
                             <h2 class="text-base font-bold text-gray-900 flex items-center gap-1.5">
                                 <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-                                Estado del Pedido
+                                Estado de la Solicitud
                             </h2>
                         </div>
                         <div class="p-6">
@@ -484,39 +610,16 @@ if ($previewTotal < 0) $previewTotal = 0;
                                         Anular Solicitud
                                     </button>
                                 </div>
-                                <p class="text-xs text-gray-400 text-center mt-3">Al emitir la cotización, el cliente podrá proceder a pagar el pedido.</p>
+                                <p class="text-xs text-gray-400 text-center mt-3">Al emitir el presupuesto, el cliente podrá revisarlo y aceptarlo o rechazarlo en su panel.</p>
                             <?php elseif ($cotizacion['estado_id'] == 3): ?>
-                                <?php 
-                                    $estadoPago = 'pendiente';
-                                    if (isset($pedido)) {
-                                        $estadoPago = $pedido['estado_pedido'] === 'pago_por_validar' ? 'por_validar' : 
-                                                     ($pedido['estado_pedido'] === 'cancelado' ? 'rechazado' : 'pendiente');
-                                    }
-                                ?>
-                                <?php if ($estadoPago === 'pendiente'): ?>
-                                    <div class="bg-blue-50 border border-blue-100 rounded-lg p-4 text-center">
-                                        <p class="text-sm font-bold text-blue-800">Cotización Emitida</p>
-                                        <p class="text-xs text-blue-600 mt-1">Pendiente de pago del cliente.</p>
-                                    </div>
-                                <?php elseif ($estadoPago === 'por_validar'): ?>
-                                    <div class="bg-yellow-50 border border-yellow-100 rounded-lg p-4 text-center">
-                                        <p class="text-sm font-bold text-yellow-800">Pago reportado por el cliente</p>
-                                        <p class="text-xs text-yellow-600 mt-1">Validación pendiente en la sección de "Reportes de Pago".</p>
-                                    </div>
-                                <?php elseif ($estadoPago === 'rechazado'): ?>
-                                    <div class="bg-red-50 border border-red-100 rounded-lg p-4 text-center">
-                                        <p class="text-sm font-bold text-red-800">Pago Rechazado</p>
-                                        <p class="text-xs text-red-600 mt-1">Esperando un nuevo reporte de pago por parte del cliente.</p>
-                                    </div>
-                                <?php endif; ?>
+                                <div class="bg-blue-50 border border-blue-100 rounded-lg p-4 text-center">
+                                    <p class="text-sm font-bold text-blue-800">Presupuesto Emitido</p>
+                                    <p class="text-xs text-blue-600 mt-1">Esperando confirmación del cliente.</p>
+                                </div>
                             <?php elseif ($cotizacion['estado_id'] == 4): ?>
                                 <div class="bg-green-50 border border-green-100 rounded-lg p-4 text-center">
-                                    <p class="text-sm font-bold text-green-800">✅ Pago validado y factura generada</p>
-                                    <div class="mt-3">
-                                        <a href="<?= $base_url ?? '' ?>/factura/pdf/<?= $cotizacion['id'] ?>" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white text-sm font-semibold rounded-lg hover:bg-green-700 transition-colors shadow-sm">
-                                            Ver Factura PDF
-                                        </a>
-                                    </div>
+                                    <p class="text-sm font-bold text-green-800">✅ Aceptada por el cliente</p>
+                                    <p class="text-xs text-green-600 mt-1">El cliente ha confirmado esta solicitud. Ahora deberías procesarlo como un pedido.</p>
                                 </div>
                             <?php elseif ($cotizacion['estado_id'] == 5): ?>
                                 <div class="bg-red-50 border border-red-100 rounded-lg p-4 text-center">
@@ -595,28 +698,21 @@ function confirmarAccion(accion, id, nombre) {
         icon.innerHTML = '<svg class="w-7 h-7 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>';
         icon.className = 'w-14 h-14 rounded-full flex items-center justify-center bg-red-50';
         titulo.textContent = 'Eliminar ítem';
-        mensaje.textContent = nombre ? '¿Eliminar "' + nombre + '" de la presupuesto?' : '¿Eliminar este ítem?';
+        mensaje.textContent = nombre ? '¿Eliminar "' + nombre + '" de la solicitud?' : '¿Eliminar este ítem?';
         btnConfirmar.textContent = 'Eliminar';
         btnConfirmar.className = 'flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold text-white bg-red-600 hover:bg-red-700 transition-colors shadow-sm';
     } else if (accion === 'emitir') {
         icon.innerHTML = '<svg class="w-7 h-7 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>';
         icon.className = 'w-14 h-14 rounded-full flex items-center justify-center bg-blue-50';
-        titulo.textContent = 'Marcar como Listo para Pago';
-        mensaje.textContent = 'Se marcará el pedido como "Listo para Pago" y el cliente podrá proceder a pagar. ¿Continuar?';
+        titulo.textContent = 'Emitir Cotización';
+        mensaje.textContent = 'Se enviará la cotización al cliente para su revisión. ¿Continuar?';
         btnConfirmar.textContent = 'Confirmar';
         btnConfirmar.className = 'flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-colors shadow-sm';
-    } else if (accion === 'aprobar') {
-        icon.innerHTML = '<svg class="w-7 h-7 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>';
-        icon.className = 'w-14 h-14 rounded-full flex items-center justify-center bg-green-50';
-        titulo.textContent = 'Generar Factura';
-        mensaje.textContent = 'Se generará la factura de este pedido. ¿Confirmar?';
-        btnConfirmar.textContent = 'Generar';
-        btnConfirmar.className = 'flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold text-white bg-green-600 hover:bg-green-700 transition-colors shadow-sm';
     } else if (accion === 'rechazar') {
         icon.innerHTML = '<svg class="w-7 h-7 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>';
         icon.className = 'w-14 h-14 rounded-full flex items-center justify-center bg-red-50';
-        titulo.textContent = 'Anular Pedido';
-        mensaje.textContent = 'Indica el motivo de la anulación:';
+        titulo.textContent = 'Anular Solicitud';
+        mensaje.textContent = 'Indique el motivo por el cual se rechaza/anula esta solicitud:';
         btnConfirmar.textContent = 'Anular';
         btnConfirmar.className = 'flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold text-white bg-red-600 hover:bg-red-700 transition-colors shadow-sm';
         inputContainer.classList.remove('hidden');
@@ -628,26 +724,10 @@ function confirmarAccion(accion, id, nombre) {
 
 document.getElementById('modal-btn-confirmar').addEventListener('click', function() {
     const modal = document.getElementById('modal-confirmacion');
-    
-    if (accionPendiente === 'eliminar') {
-        const formData = new FormData();
-        formData.append('detalle_id', accionId);
-        fetch('<?= $base_url ?? '' ?>/dashboard/cotizaciones/eliminar-item', {
-            method: 'POST', body: formData
-        }).then(r => r.json()).then(d => { if (d.success) location.reload(); else alert('Error'); });
-    } else if (accionPendiente === 'emitir') {
+    if (accionPendiente === 'emitir') {
         const formData = new FormData();
         formData.append('cotizacion_id', accionId);
         fetch('<?= $base_url ?? '' ?>/dashboard/cotizaciones/emitir', {
-            method: 'POST', body: formData
-        }).then(r => {
-            if (r.redirected) { window.location.href = r.url; }
-            else { location.reload(); }
-        });
-    } else if (accionPendiente === 'aprobar') {
-        const formData = new FormData();
-        formData.append('cotizacion_id', accionId);
-        fetch('<?= $base_url ?? '' ?>/dashboard/cotizaciones/aprobar', {
             method: 'POST', body: formData
         }).then(r => {
             if (r.redirected) { window.location.href = r.url; }
@@ -682,24 +762,20 @@ document.getElementById('modal-confirmacion').addEventListener('click', function
     if (e.target === this) cerrarModal();
 });
 
-// ─── Actualizar precio/cantidad inline ───
-document.querySelectorAll('.item-precio, .item-cantidad').forEach(input => {
+// ─── Actualizar precio inline ───
+document.querySelectorAll('.item-precio').forEach(input => {
     let timeout;
     input.addEventListener('input', function() {
         clearTimeout(timeout);
         const val = parseFloat(this.value);
         if (isNaN(val) || val <= 0) return;
         
-        const isPrecio = this.classList.contains('item-precio');
-        const endpoint = isPrecio ? 'update-precio' : 'update-cantidad';
-        const field = isPrecio ? 'precio_unitario' : 'cantidad';
-        
         timeout = setTimeout(() => {
             const formData = new FormData();
             formData.append('detalle_id', this.dataset.detalleId);
-            formData.append(field, val);
+            formData.append('precio_unitario', val);
             
-            fetch('<?= $base_url ?? '' ?>/dashboard/cotizaciones/' + endpoint, {
+            fetch('<?= $base_url ?? '' ?>/dashboard/cotizaciones/update-precio', {
                 method: 'POST', body: formData
             })
             .then(r => r.json())

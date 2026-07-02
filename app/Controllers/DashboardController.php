@@ -201,86 +201,38 @@ class DashboardController extends Router
         ]);
     }
 
-    public function validarPago(): void
-    {
-        $this->requireAuth();
-        $pagoId = (int)($_POST['pago_id'] ?? 0);
-        $accion = $_POST['accion'] ?? '';
-        $obs = strip_tags(trim($_POST['observaciones_admin'] ?? ''));
-        $cotizacionId = (int)($_POST['cotizacion_id'] ?? 0);
-
-        if ($pagoId > 0 && in_array($accion, ['validado', 'rechazado'])) {
-            $pagosModel = new \App\Models\PagosModel();
-            $pagosModel->validarPago($pagoId, $accion, $obs);
-        }
-
-        header('Location: ' . $this->baseUrl() . '/dashboard/detalle-solicitud/' . $cotizacionId);
-        exit;
-    }
 
     public function actualizarLogistica(): void
     {
         $this->requireAuth();
         $cotizacionId = (int)($_POST['cotizacion_id'] ?? 0);
-        $estadoEntrega = strip_tags(trim($_POST['estado_entrega'] ?? ''));
+        $estadoPedido = strip_tags(trim($_POST['estado_pedido'] ?? ''));
 
-        // Mapear estado logístico a estado_pedido
-        $map = [
-            'pendiente' => 'procesando',
-            'en_camino' => 'despachado',
-            'entregado' => 'entregado'
-        ];
+        $allowed = ['procesando', 'despachado', 'entregado', 'cancelado'];
 
-        if ($cotizacionId > 0 && array_key_exists($estadoEntrega, $map)) {
-            $pedidosModel = new \App\Models\PedidosModel();
-            $pedido = $pedidosModel->getByCotizacionId($cotizacionId);
-            
-            if ($pedido) {
-                $db = \App\Core\Database::getInstance();
-                $stmt = $db->prepare('UPDATE pedidos SET estado_pedido = :estado WHERE id = :id');
-                $stmt->execute([
-                    ':estado' => $map[$estadoEntrega],
-                    ':id' => $pedido['id']
-                ]);
-                $_SESSION['success_msg'] = 'Estado logístico actualizado correctamente.';
-            } else {
-                $_SESSION['error_msg'] = 'No se encontró un pedido asociado para actualizar la logística.';
-            }
-        }
-
-        header('Location: ' . $this->baseUrl() . '/dashboard/detalle-solicitud/' . $cotizacionId);
-        exit;
-    }
-
-    public function procesarCotizacion(): void
-    {
-        $this->requireAuth();
-        $cotizacionId = (int)($_POST['cotizacion_id'] ?? 0);
-        $accion = $_POST['accion'] ?? '';
-
-        if ($cotizacionId > 0 && in_array($accion, ['preparar', 'anular'])) {
+        if ($cotizacionId > 0 && in_array($estadoPedido, $allowed)) {
             $db = \App\Core\Database::getInstance();
 
-            if ($accion === 'preparar') {
-                // De pendiente_revision (2) → listo_para_pago (3)
-                $stmt = $db->prepare("UPDATE cotizaciones SET estado_id = 3 WHERE id = :id AND estado_id = 2");
-            } else {
-                // De pendiente_revision (2) → anulado (5)
-                $stmt = $db->prepare("UPDATE cotizaciones SET estado_id = 5 WHERE id = :id AND estado_id = 2");
+            // Actualizar el estado en la tabla pedidos (fuente de verdad del timeline)
+            $extra = '';
+            if ($estadoPedido === 'despachado') {
+                $extra = ', fecha_despacho = CURRENT_TIMESTAMP';
+            } elseif ($estadoPedido === 'entregado') {
+                $extra = ', fecha_entrega = CURRENT_TIMESTAMP';
             }
-            
-            $stmt->execute([':id' => $cotizacionId]);
-            
-            if ($stmt->rowCount() > 0) {
-                $_SESSION['success_msg'] = 'Presupuesto actualizado exitosamente.';
-            } else {
-                $_SESSION['error_msg'] = 'No se pudo actualizar el presupuesto. Verifique el estado actual.';
-            }
+
+            $stmt = $db->prepare("UPDATE pedidos SET estado_pedido = :estado{$extra} WHERE cotizacion_id = :cid");
+            $stmt->execute([':estado' => $estadoPedido, ':cid' => $cotizacionId]);
+
+            $_SESSION['success_msg'] = 'Estado del pedido actualizado correctamente.';
+        } else {
+            $_SESSION['error_msg'] = 'Estado no válido.';
         }
-        
+
         header('Location: ' . $this->baseUrl() . '/dashboard/detalle-solicitud/' . $cotizacionId);
         exit;
     }
+
 
     public function updateItemPrecio(): void
     {
@@ -296,55 +248,6 @@ class DashboardController extends Router
         exit;
     }
 
-    public function updateItemCantidad(): void
-    {
-        $this->requireAuth();
-        $detalleId = (int)($_POST['detalle_id'] ?? 0);
-        $cantidad = (float)($_POST['cantidad'] ?? 0);
-
-        $model = new \App\Models\CotizacionesModel();
-        $res = $model->updateItemQuantity($detalleId, $cantidad);
-
-        header('Content-Type: application/json');
-        echo json_encode(['success' => $res]);
-        exit;
-    }
-
-    public function eliminarItemAdmin(): void
-    {
-        $this->requireAuth();
-        $detalleId = (int)($_POST['detalle_id'] ?? 0);
-
-        $model = new \App\Models\CotizacionesModel();
-        $res = $model->removeItem($detalleId);
-
-        header('Content-Type: application/json');
-        echo json_encode(['success' => $res]);
-        exit;
-    }
-
-    public function agregarItemAdmin(): void
-    {
-        $this->requireAuth();
-        $cotizacionId = (int)($_POST['cotizacion_id'] ?? 0);
-        $productoId = !empty($_POST['producto_id']) ? (int)$_POST['producto_id'] : null;
-        $servicioId = !empty($_POST['servicio_id']) ? (int)$_POST['servicio_id'] : null;
-        $cantidad = (float)($_POST['cantidad'] ?? 1);
-        $precio = (float)($_POST['precio_unitario'] ?? 0);
-
-        if (!$cotizacionId || (!$productoId && !$servicioId)) {
-            header('Content-Type: application/json');
-            echo json_encode(['success' => false, 'error' => 'Datos incompletos.']);
-            exit;
-        }
-
-        $model = new \App\Models\CotizacionesModel();
-        $res = $model->addItem($cotizacionId, $productoId, $servicioId, $cantidad, $precio);
-
-        header('Content-Type: application/json');
-        echo json_encode(['success' => $res]);
-        exit;
-    }
 
     public function actualizarComercial(): void
     {
@@ -365,8 +268,6 @@ class DashboardController extends Router
             $data['impuestos'] = (float)$_POST['impuestos'];
         if (isset($_POST['descuento'])) 
             $data['descuento'] = (float)$_POST['descuento'];
-        if (isset($_POST['id_metodo_pago'])) 
-            $data['id_metodo_pago'] = !empty($_POST['id_metodo_pago']) ? (int)$_POST['id_metodo_pago'] : null;
         if (isset($_POST['condiciones_pago'])) 
             $data['condiciones_pago'] = strip_tags(trim($_POST['condiciones_pago']));
         if (isset($_POST['notas_internas'])) 
@@ -377,10 +278,18 @@ class DashboardController extends Router
             $data['proyecto_referencia'] = strip_tags(trim($_POST['proyecto_referencia']));
         if (isset($_POST['direccion_envio'])) 
             $data['direccion_envio'] = strip_tags(trim($_POST['direccion_envio']));
-        if (isset($_POST['direccion_facturacion'])) 
-            $data['direccion_facturacion'] = strip_tags(trim($_POST['direccion_facturacion']));
         if (isset($_POST['costo_envio'])) 
             $data['costo_envio'] = (float)$_POST['costo_envio'];
+        if (isset($_POST['ubicacion'])) 
+            $data['ubicacion'] = strip_tags(trim($_POST['ubicacion']));
+        if (isset($_POST['fecha_tentativa'])) 
+            $data['fecha_tentativa'] = strip_tags(trim($_POST['fecha_tentativa'])) ?: null;
+        if (isset($_POST['responsable_nombre'])) 
+            $data['responsable_nombre'] = strip_tags(trim($_POST['responsable_nombre']));
+        if (isset($_POST['responsable_telefono'])) 
+            $data['responsable_telefono'] = strip_tags(trim($_POST['responsable_telefono']));
+        if (isset($_POST['observaciones_tecnicas'])) 
+            $data['observaciones_tecnicas'] = strip_tags(trim($_POST['observaciones_tecnicas']));
 
         $model = new \App\Models\CotizacionesModel();
         $res = $model->updateComercialFields($cotizacionId, $data);
@@ -440,32 +349,6 @@ class DashboardController extends Router
     }
 
 
-    public function prepararPedidoAdmin(): void
-    {
-        $this->requireAuth();
-        $cotizacionId = (int)($_POST['cotizacion_id'] ?? 0);
-
-        if (!$cotizacionId) {
-            $_SESSION['error_msg'] = 'ID de pedido no válido.';
-            header('Location: ' . $_SERVER['HTTP_REFERER']);
-            exit;
-        }
-
-        $db = \App\Core\Database::getInstance();
-        // De pendiente_revision (2) a listo_para_pago (3)
-        $stmt = $db->prepare("UPDATE cotizaciones SET estado_id = 3 WHERE id = :id AND estado_id = 2");
-        $stmt->execute([':id' => $cotizacionId]);
-
-        if ($stmt->rowCount() > 0) {
-            $_SESSION['success_msg'] = 'Pedido marcado como Listo para Pago exitosamente.';
-        } else {
-            $_SESSION['error_msg'] = 'No se pudo preparar el pedido. Verifique que esté en estado "Pendiente de revisión".';
-        }
-
-        header('Location: ' . $this->baseUrl() . '/dashboard/detalle-solicitud/' . $cotizacionId);
-        exit;
-    }
-
     public function anularPedidoAdmin(): void
     {
         $this->requireAuth();
@@ -492,33 +375,59 @@ class DashboardController extends Router
         exit;
     }
 
-    public function generarFacturaAdmin(): void
+    public function validarPago(): void
     {
         $this->requireAuth();
+        $pagoId = (int)($_POST['pago_id'] ?? 0);
         $cotizacionId = (int)($_POST['cotizacion_id'] ?? 0);
+        $observacionesAdmin = strip_tags(trim($_POST['observaciones_admin'] ?? ''));
+        $accion = $_POST['accion'] ?? ''; // 'validado' o 'rechazado'
 
-        if (!$cotizacionId) {
-            $_SESSION['error_msg'] = 'ID de pedido no válido.';
+        if (!$pagoId || !$cotizacionId || !in_array($accion, ['validado', 'rechazado'])) {
+            $_SESSION['error_msg'] = 'Parámetros no válidos.';
             header('Location: ' . $_SERVER['HTTP_REFERER']);
             exit;
         }
 
         $db = \App\Core\Database::getInstance();
-        // De listo_para_pago (3) a facturado (4) - manual
-        $tasaData = \App\Core\TasaBCV::getTasa();
-        $tasabcv = $tasaData['tasa'];
+        try {
+            $db->beginTransaction();
 
-        $stmt = $db->prepare("UPDATE cotizaciones SET estado_id = 4, tasabcv = :tasa, montousd = total * :tasa2 WHERE id = :id AND estado_id = 3");
-        $stmt->execute([':id' => $cotizacionId, ':tasa' => $tasabcv, ':tasa2' => $tasabcv]);
+            // 1. Actualizar el estado del pago
+            $stmtPago = $db->prepare('UPDATE pagos SET estado = :estado, observaciones_admin = :obs, fecha_validacion = CURRENT_TIMESTAMP WHERE id = :id');
+            $stmtPago->execute([
+                ':estado' => $accion,
+                ':obs'    => $observacionesAdmin,
+                ':id'     => $pagoId
+            ]);
 
-        if ($stmt->rowCount() > 0) {
-            // Generar factura automáticamente
-            $facturasModel = new \App\Models\FacturasModel();
-            $facturasModel->crearFactura($cotizacionId);
-            
-            $_SESSION['success_msg'] = 'Factura generada exitosamente.';
-        } else {
-            $_SESSION['error_msg'] = 'No se pudo facturar. Verifique que esté "Listo para Pago".';
+            // 2. Obtener el pedido asociado
+            $stmtPed = $db->prepare('SELECT id FROM pedidos WHERE cotizacion_id = :cid');
+            $stmtPed->execute([':cid' => $cotizacionId]);
+            $pedidoId = $stmtPed->fetchColumn();
+
+            if ($pedidoId) {
+                if ($accion === 'validado') {
+                    // Actualizar el estado del pedido a 'procesando'
+                    $stmtUpdatePed = $db->prepare('UPDATE pedidos SET estado_pedido = "procesando", fecha_pago_validado = CURRENT_TIMESTAMP WHERE id = :pid');
+                    $stmtUpdatePed->execute([':pid' => $pedidoId]);
+
+                    // Generar factura para el cliente!
+                    $facturasModel = new \App\Models\FacturasModel();
+                    $facturasModel->crearFactura((int)$pedidoId);
+                } else {
+                    // Si se rechaza, el pedido vuelve a 'pendiente_pago'
+                    $stmtUpdatePed = $db->prepare('UPDATE pedidos SET estado_pedido = "pendiente_pago" WHERE id = :pid');
+                    $stmtUpdatePed->execute([':pid' => $pedidoId]);
+                }
+            }
+
+            $db->commit();
+            $_SESSION['success_msg'] = 'Pago ' . ($accion === 'validado' ? 'validado y factura generada' : 'rechazado') . ' exitosamente.';
+        } catch (\PDOException $e) {
+            $db->rollBack();
+            error_log("Error en validarPago: " . $e->getMessage());
+            $_SESSION['error_msg'] = 'Ocurrió un error al procesar el pago.';
         }
 
         header('Location: ' . $this->baseUrl() . '/dashboard/detalle-solicitud/' . $cotizacionId);

@@ -182,9 +182,10 @@ class CotizacionesModel
             $params = [':id' => $cotizacionId];
             
             $allowedFields = [
-                'fecha_vencimiento', 'impuestos', 'descuento', 'id_metodo_pago',
+                'fecha_vencimiento', 'impuestos', 'descuento',
                 'condiciones_pago', 'notas_internas', 'notas_tecnicas',
-                'proyecto_referencia', 'direccion_envio', 'direccion_facturacion', 'costo_envio'
+                'proyecto_referencia', 'direccion_envio', 'costo_envio',
+                'ubicacion', 'fecha_tentativa', 'responsable_nombre', 'responsable_telefono', 'observaciones_tecnicas'
             ];
             
             foreach ($allowedFields as $field) {
@@ -281,16 +282,71 @@ class CotizacionesModel
     public function sendCotizacion(int $cotizacionId, string $notas, ?string $tipo_entrega = null, ?string $direccion_envio = null): bool
     {
         try {
-            // estado 2 = pendiente_revision
-            $sql = 'UPDATE cotizaciones SET estado_id = 2, notas_tecnicas = :notas, tipo_entrega = :tipo_entrega, direccion_envio = :direccion, fecha_solicitud = CURRENT_TIMESTAMP WHERE id = :id AND estado_id = 1';
+            $this->db->beginTransaction();
+
+            // Obtener total actual para calcular Bs
+            $stmtCheckTot = $this->db->prepare('SELECT total FROM cotizaciones WHERE id = :id');
+            $stmtCheckTot->execute([':id' => $cotizacionId]);
+            $totalUsd = (float)$stmtCheckTot->fetchColumn();
+
+            // Obtener tasa BCV
+            $tasaData = \App\Core\TasaBCV::getTasa();
+            $tasabcv = $tasaData['tasa'] ?? null;
+            $montoBs = null;
+            if ($tasabcv > 0 && $totalUsd > 0) {
+                $montoBs = round($totalUsd * $tasabcv, 2);
+            }
+
+            $sql = "UPDATE cotizaciones 
+                    SET estado_id = 4, 
+                        tipo_flujo = 'compra_directa', 
+                        notas_tecnicas = :notas, 
+                        tipo_entrega = :tipo_entrega, 
+                        direccion_envio = :direccion, 
+                        fecha_solicitud = CURRENT_TIMESTAMP,
+                        tasabcv = :tasabcv,
+                        montousd = :montousd
+                    WHERE id = :id AND estado_id = 1";
             $stmt = $this->db->prepare($sql);
-            return $stmt->execute([
+            $stmt->execute([
                 ':notas'         => $notas,
                 ':tipo_entrega'  => $tipo_entrega,
                 ':direccion'     => $direccion_envio,
+                ':tasabcv'       => $tasabcv,
+                ':montousd'      => $montoBs,
                 ':id'            => $cotizacionId
             ]);
+
+            if ($stmt->rowCount() === 0) {
+                $this->db->rollBack();
+                return false;
+            }
+
+            $stmtCot = $this->db->prepare('SELECT usuario_id, total, costo_envio FROM cotizaciones WHERE id = :id');
+            $stmtCot->execute([':id' => $cotizacionId]);
+            $cot = $stmtCot->fetch(PDO::FETCH_ASSOC);
+
+            // Verificar si ya existe el pedido para no duplicar (por si acaso)
+            $stmtCheck = $this->db->prepare('SELECT id FROM pedidos WHERE cotizacion_id = :id');
+            $stmtCheck->execute([':id' => $cotizacionId]);
+            if (!$stmtCheck->fetch()) {
+                $sqlPed = "INSERT INTO pedidos (cotizacion_id, usuario_id, total, costo_envio, estado_pedido, direccion_envio, tipo_entrega) 
+                           VALUES (:cot_id, :usr_id, :tot, :envio, 'pendiente_pago', :dir, :tipo)";
+                $stmtPed = $this->db->prepare($sqlPed);
+                $stmtPed->execute([
+                    ':cot_id' => $cotizacionId,
+                    ':usr_id' => $cot['usuario_id'],
+                    ':tot'    => $cot['total'],
+                    ':envio'  => $cot['costo_envio'],
+                    ':dir'    => $direccion_envio,
+                    ':tipo'   => $tipo_entrega
+                ]);
+            }
+
+            $this->db->commit();
+            return true;
         } catch (PDOException $e) {
+            $this->db->rollBack();
             error_log("Error en CotizacionesModel::sendCotizacion - " . $e->getMessage());
             return false;
         }
@@ -299,9 +355,12 @@ class CotizacionesModel
     public function getHistoryByUserId(int $userId): array
     {
         try {
-            $sql = 'SELECT c.*, e.nombre as estado_nombre 
+            $sql = 'SELECT c.*, 
+                           COALESCE(p.estado_pedido, e.nombre) as estado_nombre, 
+                           p.id as pedido_id, p.estado_pedido 
                     FROM cotizaciones c
                     JOIN estados_cotizacion e ON c.estado_id = e.id
+                    LEFT JOIN pedidos p ON c.id = p.cotizacion_id
                     WHERE c.usuario_id = :userId AND c.estado_id != 1
                     ORDER BY c.fecha_solicitud DESC';
             $stmt = $this->db->prepare($sql);
@@ -318,10 +377,11 @@ class CotizacionesModel
     public function getById(int $cotizacionId, int $userId): ?array
     {
         try {
-            $sql = 'SELECT c.*, e.nombre as estado_nombre, u.nombre as cliente_nombre, u.apellido as cliente_apellido, u.email as cliente_email, u.telefono as cliente_telefono, u.cedula as cliente_cedula, u.empresa as cliente_empresa 
+            $sql = 'SELECT c.*, COALESCE(p.estado_pedido, e.nombre) as estado_nombre, u.nombre as cliente_nombre, u.apellido as cliente_apellido, u.email as cliente_email, u.telefono as cliente_telefono, u.cedula as cliente_cedula, u.empresa as cliente_empresa 
                     FROM cotizaciones c
                     JOIN estados_cotizacion e ON c.estado_id = e.id
                     JOIN usuarios u ON c.usuario_id = u.id
+                    LEFT JOIN pedidos p ON c.id = p.cotizacion_id
                     WHERE c.id = :id AND c.usuario_id = :userId';
             $stmt = $this->db->prepare($sql);
             $stmt->execute([':id' => $cotizacionId, ':userId' => $userId]);
@@ -337,10 +397,11 @@ class CotizacionesModel
     public function getAllAdmin(): array
     {
         try {
-            $sql = 'SELECT c.*, e.nombre as estado_nombre, u.nombre as cliente_nombre, u.apellido as cliente_apellido, u.email as cliente_email, u.telefono as cliente_telefono 
+            $sql = 'SELECT c.*, COALESCE(p.estado_pedido, e.nombre) as estado_nombre, u.nombre as cliente_nombre, u.apellido as cliente_apellido, u.email as cliente_email, u.telefono as cliente_telefono 
                     FROM cotizaciones c
                     JOIN estados_cotizacion e ON c.estado_id = e.id
                     JOIN usuarios u ON c.usuario_id = u.id
+                    LEFT JOIN pedidos p ON c.id = p.cotizacion_id
                     WHERE c.estado_id != 1
                     ORDER BY c.fecha_solicitud DESC';
             $stmt = $this->db->prepare($sql);
@@ -355,10 +416,11 @@ class CotizacionesModel
     public function getByIdAdmin(int $id): ?array
     {
         try {
-            $sql = 'SELECT c.*, e.nombre as estado_nombre, u.nombre as cliente_nombre, u.apellido as cliente_apellido, u.email as cliente_email, u.telefono as cliente_telefono, u.cedula as cliente_cedula, u.empresa as cliente_empresa 
+            $sql = 'SELECT c.*, COALESCE(p.estado_pedido, e.nombre) as estado_nombre, u.nombre as cliente_nombre, u.apellido as cliente_apellido, u.email as cliente_email, u.telefono as cliente_telefono, u.cedula as cliente_cedula, u.empresa as cliente_empresa 
                     FROM cotizaciones c
                     JOIN estados_cotizacion e ON c.estado_id = e.id
                     JOIN usuarios u ON c.usuario_id = u.id
+                    LEFT JOIN pedidos p ON c.id = p.cotizacion_id
                     WHERE c.id = :id AND c.estado_id != 1';
             $stmt = $this->db->prepare($sql);
             $stmt->execute([':id' => $id]);

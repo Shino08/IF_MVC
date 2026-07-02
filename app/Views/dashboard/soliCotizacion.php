@@ -59,7 +59,7 @@
                 <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Cliente (Email)</th>
                 <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Teléfono</th>
                 <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Fecha Solicitud</th>
-                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Prioridad</th>
+
                 <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Estado</th>
                 <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Acciones</th>
               </tr>
@@ -84,11 +84,7 @@
                     <td class="px-6 py-4 whitespace-nowrap">
                       <span class="text-sm text-gray-700"><?= date('Y-m-d', strtotime($solicitud['fecha_solicitud'])) ?></span>
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-800">
-                        Media
-                      </span>
-                    </td>
+
                     <td class="px-6 py-4 whitespace-nowrap">
                       <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold <?php 
                         if($solicitud['estado_id'] == 2) echo 'bg-yellow-100 text-yellow-800';

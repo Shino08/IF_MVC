@@ -43,15 +43,28 @@
 
                 <!-- Product Info & Actions -->
                 <div class="flex flex-col">
-                    <p class="text-sm text-gray-500 font-semibold uppercase tracking-wider mb-2">SKU: <?= htmlspecialchars($producto['sku'] ?? 'N/A') ?></p>
+
                     <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4"><?= htmlspecialchars($producto['nombre'] ?? '') ?></h1>
                     
                     <?php if (!empty($producto['marca'])): ?>
-                    <p class="text-base text-gray-600 mb-6">Marca: <span class="font-semibold text-gray-900"><?= htmlspecialchars($producto['marca']) ?></span></p>
+                    <p class="text-base text-gray-600 mb-2">Marca: <span class="font-semibold text-gray-900"><?= htmlspecialchars($producto['marca']) ?></span></p>
                     <?php endif; ?>
 
-                    <div class="prose prose-sm text-gray-600 mb-8 max-w-none">
-                        <p><?= nl2br(htmlspecialchars($producto['descripcion'] ?? 'No hay descripción disponible.')) ?></p>
+                    <!-- Precio del producto -->
+                    <div class="mb-6">
+                        <span class="text-2xl font-black text-red-600">
+                            $<?= number_format((float)($producto['precio'] ?? 0), 2) ?>
+                        </span>
+                    </div>
+
+                    <div class="bg-gray-50 p-5 rounded-xl border border-gray-100 mb-8 mt-2">
+                        <h3 class="text-sm font-bold text-gray-900 uppercase tracking-wider mb-3 flex items-center gap-2">
+                            <svg class="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            Descripción Técnica
+                        </h3>
+                        <div class="prose prose-sm text-gray-700 max-w-none leading-relaxed">
+                            <p><?= nl2br(htmlspecialchars($producto['descripcion'] ?? 'No hay descripción técnica disponible.')) ?></p>
+                        </div>
                     </div>
 
                     <div class="mt-auto">
@@ -59,15 +72,24 @@
                             <input type="hidden" name="producto_id" value="<?= htmlspecialchars((string)($producto['id'] ?? '')) ?>">
                             <input type="hidden" name="precio" value="<?= htmlspecialchars((string)($producto['precio'] ?? '0')) ?>">
 
+                            <?php if (!empty($producto['estado_disponibilidad'])): ?>
+                            <div class="mb-4">
+                                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold <?= $producto['estado_disponibilidad'] === 'En Stock' ? 'bg-green-100 text-green-800' : 'bg-orange-100 text-orange-800' ?>">
+                                    <span class="w-1.5 h-1.5 rounded-full <?= $producto['estado_disponibilidad'] === 'En Stock' ? 'bg-green-500' : 'bg-orange-500' ?>"></span>
+                                    <?= htmlspecialchars($producto['estado_disponibilidad']) ?>
+                                </span>
+                            </div>
+                            <?php endif; ?>
+
                             <div class="flex items-end gap-4">
                                 <div class="w-24">
-                                    <label for="cantidad" class="block text-sm font-semibold text-gray-700 mb-2">Cantidad</label>
-                                    <input type="number" id="cantidad" name="cantidad" value="1" min="1" class="input-elegant text-center font-bold px-2 py-3">
+                                    <label for="cantidad" class="block text-sm font-semibold text-gray-700 mb-2">Cantidad <?= !empty($producto['cantidad_minima_pedido']) ? '<span class="text-[10px] text-gray-400 font-normal block">(Mín. ' . $producto['cantidad_minima_pedido'] . ')</span>' : '' ?></label>
+                                    <input type="number" id="cantidad" name="cantidad" value="<?= htmlspecialchars((string)($producto['cantidad_minima_pedido'] ?? '1')) ?>" min="<?= htmlspecialchars((string)($producto['cantidad_minima_pedido'] ?? '1')) ?>" class="input-elegant text-center font-bold px-2 py-3 w-full">
                                 </div>
                                 <div class="flex-1">
                                     <button type="submit" class="w-full btn-primary flex items-center justify-center gap-2 h-[46px]">
                                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                                        Agregar a Solicitud de Presupuesto
+                                        Agregar al Carrito
                                     </button>
                                 </div>
                             </div>
@@ -83,10 +105,10 @@
             </div>
 
             <!-- Additional Details Tabs -->
-            <?php if (!empty($producto['ficha_tecnica_pdf']) || !empty($producto['certificaciones'])): ?>
+            <?php if (!empty($producto['ficha_tecnica_pdf']) || !empty($producto['certificaciones']) || !empty($producto['dimensiones']) || !empty($producto['info_garantia']) || !empty($producto['info_envio'])): ?>
             <div class="border-t border-gray-100 p-8 md:p-12 bg-gray-50">
-                <h3 class="text-xl font-bold text-gray-900 mb-6">Especificaciones Técnicas</h3>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <h3 class="text-xl font-bold text-gray-900 mb-6">Información Detallada</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     <?php if (!empty($producto['certificaciones'])): ?>
                     <div class="bg-white p-6 rounded-xl border border-gray-200">
                         <h4 class="font-bold text-gray-900 mb-2">Certificaciones</h4>
@@ -94,15 +116,78 @@
                     </div>
                     <?php endif; ?>
                     
+                    <?php if (!empty($producto['dimensiones'])): ?>
+                    <div class="bg-white p-6 rounded-xl border border-gray-200">
+                        <h4 class="font-bold text-gray-900 mb-2">Dimensiones</h4>
+                        <p class="text-sm text-gray-600"><?= htmlspecialchars($producto['dimensiones']) ?></p>
+                    </div>
+                    <?php endif; ?>
+
+                    <?php if (!empty($producto['info_garantia'])): ?>
+                    <div class="bg-white p-6 rounded-xl border border-gray-200">
+                        <h4 class="font-bold text-gray-900 mb-2">Garantía</h4>
+                        <p class="text-sm text-gray-600"><?= htmlspecialchars($producto['info_garantia']) ?></p>
+                    </div>
+                    <?php endif; ?>
+
+                    <?php if (!empty($producto['info_envio'])): ?>
+                    <div class="bg-white p-6 rounded-xl border border-gray-200">
+                        <h4 class="font-bold text-gray-900 mb-2">Info de Envío</h4>
+                        <p class="text-sm text-gray-600"><?= htmlspecialchars($producto['info_envio']) ?></p>
+                    </div>
+                    <?php endif; ?>
+
                     <?php if (!empty($producto['ficha_tecnica_pdf'])): ?>
-                    <div class="bg-white p-6 rounded-xl border border-gray-200 flex items-center justify-between">
-                        <div>
+                    <div class="bg-white p-6 rounded-xl border border-gray-200 flex flex-col justify-between">
+                        <div class="mb-4">
                             <h4 class="font-bold text-gray-900 mb-1">Ficha Técnica</h4>
                             <p class="text-sm text-gray-500">Documento PDF detallado</p>
                         </div>
-                        <a href="<?= $base_url ?? '' ?>/docs/<?= htmlspecialchars($producto['ficha_tecnica_pdf']) ?>" target="_blank" class="text-red-600 hover:text-red-800 font-bold bg-red-50 px-4 py-2 rounded-lg transition-colors">Descargar</a>
+                        <a href="<?= $base_url ?? '' ?>/docs/<?= htmlspecialchars($producto['ficha_tecnica_pdf']) ?>" target="_blank" class="text-center text-red-600 hover:text-red-800 font-bold bg-red-50 px-4 py-2 rounded-lg transition-colors w-full">Descargar PDF</a>
                     </div>
                     <?php endif; ?>
+                </div>
+            </div>
+            <?php endif; ?>
+
+            <!-- Similar Products -->
+            <?php if (!empty($productos_similares)): ?>
+            <div class="border-t border-gray-100 p-8 md:p-12 bg-white rounded-b-2xl">
+                <h3 class="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+                    <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+                    Productos Similares
+                </h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                    <?php foreach ($productos_similares as $sim): ?>
+                        <?php 
+                            $simImg = !empty($sim['imagen_principal']) 
+                                ? ($base_url ?? '') . '/img/productos/' . htmlspecialchars($sim['imagen_principal'])
+                                : ($base_url ?? '') . '/img/Photoroom-20251106_165742.png'; 
+                        ?>
+                        <a href="<?= $base_url ?? '' ?>/producto/<?= $sim['id'] ?>" class="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl hover:border-red-200 transition-all duration-300 flex flex-col h-full relative overflow-hidden">
+                            <div class="absolute top-3 right-3 bg-red-50 text-red-700 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider z-10 border border-red-100">
+                                Producto
+                            </div>
+                            <div class="w-full aspect-square bg-white p-6 flex items-center justify-center border-b border-gray-50">
+                                <img src="<?= $simImg ?>" alt="<?= htmlspecialchars($sim['nombre']) ?>" class="max-w-full max-h-full object-contain group-hover:scale-105 transition-transform duration-500">
+                            </div>
+                            <div class="p-5 flex flex-col flex-grow bg-gray-50/50">
+
+                                <h3 class="font-bold text-gray-900 text-sm mb-3 group-hover:text-red-600 transition-colors line-clamp-2"><?= htmlspecialchars($sim['nombre']) ?></h3>
+                                
+                                <div class="mb-3">
+                                    <span class="text-sm font-extrabold text-red-600">
+                                        $<?= number_format((float)($sim['precio'] ?? 0), 2) ?>
+                                    </span>
+                                </div>
+                                
+                                <div class="mt-auto pt-3 flex items-center justify-between border-t border-gray-100/50">
+                                    <span class="text-sm font-semibold text-red-600 group-hover:text-red-700 transition-colors">Ver Detalles</span>
+                                    <svg class="w-5 h-5 text-red-500 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+                                </div>
+                            </div>
+                        </a>
+                    <?php endforeach; ?>
                 </div>
             </div>
             <?php endif; ?>

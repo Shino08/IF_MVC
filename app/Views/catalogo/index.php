@@ -65,7 +65,7 @@ if (isset($_SESSION['user_id']) && (!isset($_SESSION['rol_id']) || $_SESSION['ro
             <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-6">
                 <div>
                     <h1 class="text-4xl font-extrabold text-gray-900 tracking-tight">Catálogo Técnico</h1>
-                    <p class="text-gray-500 mt-2 text-sm max-w-xl">Explora nuestros equipos y sistemas certificados. Añade los productos a tu solicitud y obtén una presupuesto formal.</p>
+                    <p class="text-gray-500 mt-2 text-sm max-w-xl">Explora nuestros equipos y sistemas certificados. Añade los productos a tu carrito de compras.</p>
                 </div>
                 
                 <div class="w-full md:w-80 relative">
@@ -92,7 +92,7 @@ if (isset($_SESSION['user_id']) && (!isset($_SESSION['rol_id']) || $_SESSION['ro
                 
                 <button class="catalog-filter flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold text-gray-600 bg-white border border-gray-200 hover:border-red-300 hover:text-red-700 hover:bg-red-50 hover:shadow-md transition-all duration-300" data-filter="added">
                     <svg class="w-4 h-4 text-red-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd"/></svg>
-                    En mi solicitud
+                    En mi carrito
                 </button>
             </div>
 
@@ -249,6 +249,22 @@ if (isset($_SESSION['user_id']) && (!isset($_SESSION['rol_id']) || $_SESSION['ro
                                 </h3>
                             </a>
                             
+                            <!-- Precio / Precio Referencial -->
+                            <div class="mb-4">
+                                <?php if ($isProduct): ?>
+                                    <span class="text-lg font-extrabold text-red-600">
+                                        $<?= number_format((float)($item['precio'] ?? 0), 2) ?>
+                                    </span>
+                                <?php else: ?>
+                                    <span class="text-lg font-extrabold text-red-600">
+                                        $<?= number_format((float)($item['precio_referencial'] ?? 0), 2) ?>
+                                    </span>
+                                    <span class="text-[10px] text-gray-400 font-semibold block uppercase tracking-wider mt-0.5">
+                                        Precio Referencial (<?= htmlspecialchars($item['tipo_cobro_nombre'] ?? 'Servicio') ?>)
+                                    </span>
+                                <?php endif; ?>
+                            </div>
+                            
                             <div class="mt-auto pt-4 border-t border-gray-100 flex items-center justify-between gap-3 opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all duration-300">
                                 <?php if (isset($_SESSION['user_id']) && (!isset($_SESSION['rol_id']) || $_SESSION['rol_id'] != 1)): ?>
                                     <button type="button" 
@@ -256,9 +272,9 @@ if (isset($_SESSION['user_id']) && (!isset($_SESSION['rol_id']) || $_SESSION['ro
                                             data-id="<?= $itemId ?>" 
                                             data-tipo="<?= $tipo ?>"
                                             <?= $isAdded ? 'disabled' : '' ?>
-                                            title="<?= $isAdded ? 'Ya está en tu solicitud' : 'Añadir a solicitud de presupuesto' ?>">
+                                            title="<?= $isAdded ? 'Ya está en tu carrito' : 'Añadir al carrito' ?>">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
-                                        <span class="btn-text"><?= $isAdded ? 'Añadido' : 'Cotizar' ?></span>
+                                        <span class="btn-text"><?= $isAdded ? 'Añadido' : 'Agregar' ?></span>
                                     </button>
                                 <?php else: ?>
                                     <a href="<?= $base_url ?? '' ?>/login" class="flex-1 bg-gray-900 text-white hover:bg-gray-800 transition-colors text-sm font-bold py-2.5 px-4 rounded-xl flex items-center justify-center text-center">
@@ -308,7 +324,7 @@ if (isset($_SESSION['user_id']) && (!isset($_SESSION['rol_id']) || $_SESSION['ro
         <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
     </div>
     <div>
-        <h4 class="text-sm font-bold">¡Agregado a tu solicitud!</h4>
+        <h4 class="text-sm font-bold">¡Agregado al carrito!</h4>
         <p class="text-xs text-gray-400">Puedes seguir explorando o ver tu lista.</p>
     </div>
 </div>
@@ -324,10 +340,19 @@ document.addEventListener('DOMContentLoaded', function() {
     const toast = document.getElementById('toast');
     const paginationContainer = document.getElementById('paginationContainer');
     const paginationInfo = document.getElementById('paginationInfo');
+    const urlParams = new URLSearchParams(window.location.search);
+    const paramCategoria = urlParams.get('categoria');
+    const paramTipo = urlParams.get('tipo');
     
-    let currentFilter = 'all';
-    let currentType = 'all';
-    let searchTerm = '';
+    const paramSearch = urlParams.get('search');
+    
+    let currentFilter = paramCategoria ? paramCategoria : 'all';
+    let currentType = paramTipo ? paramTipo : 'all';
+    let searchTerm = paramSearch ? paramSearch.toLowerCase().trim() : '';
+
+    if (paramSearch && searchInput) {
+        searchInput.value = paramSearch;
+    }
     
     // Configuración de Paginación
     const itemsPerPage = 8;
@@ -484,9 +509,20 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
+    // Marcar los botones activos de la URL al cargar
+    if (paramCategoria) {
+        filters.forEach(f => f.classList.remove('catalog-filter--active'));
+        const activeBtn = Array.from(filters).find(btn => btn.getAttribute('data-filter') === paramCategoria);
+        if (activeBtn) activeBtn.classList.add('catalog-filter--active');
+    }
+    if (paramTipo) {
+        typeFilters.forEach(f => f.classList.remove('type-filter--active'));
+        const activeBtn = Array.from(typeFilters).find(btn => btn.getAttribute('data-type') === paramTipo);
+        if (activeBtn) activeBtn.classList.add('type-filter--active');
+    }
+
     // Inicializar vista
     applyFilters();
-
     // Agregar a presupuesto vía AJAX
     document.querySelectorAll('.js-add-to-quote').forEach(btn => {
         btn.addEventListener('click', function() {

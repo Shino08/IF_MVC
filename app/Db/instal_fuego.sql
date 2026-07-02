@@ -5,6 +5,7 @@ USE `instal_fuego`;
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
 SET time_zone = "+00:00";
+SET NAMES utf8mb4;
 
 -- --------------------------------------------------------
 -- 1. TABLAS MAESTRAS (Sin dependencias ni ENUMs)
@@ -103,8 +104,8 @@ CREATE TABLE `usuarios` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 INSERT INTO `usuarios` (`id`, `nombre`, `apellido`, `empresa`, `telefono`, `cedula`, `email`, `contrasena`, `rol_id`) VALUES
-(2, 'Deiber', 'Vasquez', 'IF', '04244572397', 'V-30947692', 'deiberjvc@gmail.com', '$2y$10$ptUA6xe7uIT5v8s5qmAGZexKKjSUyn7gSpWOAG7YxLOWNEUe/leWu', 2),
-(3, 'Admin', 'Admin', 'IF', '04244572397', 'V-12345678', 'admin@correo.com', '$2y$10$DIRAMGmhm3uf3DUeBLEeLO4qfP07qV/vyRYQXiSjOTu.FjCGg0H/C', 1);
+(2, 'Deiber', 'Vasquez', 'IF', '04244572397', 'V-30947692', 'deiberjvc@gmail.com', '$2y$10$HT7w1/E.JA9MYp5Ge4RKC.AIyq2vnm2Dr3EovZpJGjw/5kChEr3Q6', 2),
+(3, 'Admin', 'Admin', 'IF', '04244572397', 'V-12345678', 'admin@correo.com', '$2y$10$HT7w1/E.JA9MYp5Ge4RKC.AIyq2vnm2Dr3EovZpJGjw/5kChEr3Q6', 1);
 
 CREATE TABLE `productos` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -195,6 +196,12 @@ CREATE TABLE `cotizaciones` (
   `notas_tecnicas` text DEFAULT NULL,
   `tipo_entrega` enum('domicilio','retiro_tienda') DEFAULT NULL,
   `direccion_envio` text DEFAULT NULL,
+  `ubicacion` varchar(255) DEFAULT NULL,
+  `fecha_tentativa` date DEFAULT NULL,
+  `responsable_nombre` varchar(255) DEFAULT NULL,
+  `responsable_telefono` varchar(50) DEFAULT NULL,
+  `observaciones_tecnicas` text DEFAULT NULL,
+  `estado_logistico` enum('pendiente','en_proceso','completado') DEFAULT 'pendiente',
   `tasabcv` decimal(10,4) DEFAULT NULL,
   `montousd` decimal(10,2) DEFAULT NULL,
   `tipo_flujo` enum('presupuesto','compra_directa') NOT NULL DEFAULT 'presupuesto',

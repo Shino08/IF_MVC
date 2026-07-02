@@ -73,6 +73,28 @@ class ServiciosModel
         }
     }
 
+    // ── Obtener servicios similares ───────────────────────────────────
+    public function getSimilares(int $categoriaId, int $excludeId, int $limit = 4): array
+    {
+        try {
+            $stmt = $this->db->prepare(
+                'SELECT s.*, c.nombre AS categoria_nombre
+                 FROM servicios s
+                 LEFT JOIN categorias c ON s.categoria_id = c.id
+                 WHERE s.categoria_id = :cat_id AND s.id != :id
+                 ORDER BY RAND() LIMIT :limit'
+            );
+            $stmt->bindValue(':cat_id', $categoriaId, PDO::PARAM_INT);
+            $stmt->bindValue(':id', $excludeId, PDO::PARAM_INT);
+            $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log("Error en ServiciosModel::getSimilares - " . $e->getMessage());
+            return [];
+        }
+    }
+
     // ── Todos los tipos de cobro ──────────────────────────────────────
     public function getTiposCobro(): array
     {

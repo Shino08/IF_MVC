@@ -16,7 +16,7 @@ $fecha = date('d/m/Y', strtotime($cotizacion['fecha_solicitud']));
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Cotización #<?= $cotizacion['id'] ?></title>
+    <title>Pedido #<?= $cotizacion['id'] ?></title>
     <style>
         body { font-family: Arial, sans-serif; font-size: 12px; color: #333; }
         .header { width: 100%; border-bottom: 2px solid #eee; padding-bottom: 20px; margin-bottom: 20px; }
@@ -68,8 +68,8 @@ if (file_exists($logoFile)) {
                 <p>contacto@instalfuego.com | +58 412-1234567</p>
             </td>
             <td class="quote-info">
-                <h1>Cotización</h1>
-                <p><strong>Nro:</strong> #COT-<?= $year ?>-<?= $cotizacionNum ?></p>
+                <h1>Pedido</h1>
+                <p><strong>Nro:</strong> #PED-<?= $year ?>-<?= $cotizacionNum ?></p>
                 <p><strong>Fecha:</strong> <?= $fecha ?></p>
                 <p><strong>Validez:</strong> 15 días hábiles</p>
                 <p><strong>Estado:</strong> <?= strtoupper($cotizacion['estado_nombre']) ?></p>
@@ -79,7 +79,7 @@ if (file_exists($logoFile)) {
 </div>
 
 <div class="client-info">
-    <h3>Cotización para:</h3>
+    <h3>Facturado a:</h3>
     <table class="client-table">
         <tr>
             <td>
@@ -112,9 +112,6 @@ if (file_exists($logoFile)) {
         <tr>
             <td>
                 <strong><?= htmlspecialchars(!empty($item['producto_id']) ? $item['producto_nombre'] : $item['servicio_nombre']) ?></strong><br>
-                <span style="color:#777; font-size: 10px;">
-                    <?= !empty($item['producto_id']) ? 'SKU: ' . htmlspecialchars($item['sku'] ?? 'N/A') : 'COD: ' . htmlspecialchars($item['codigo'] ?? 'N/A') ?>
-                </span>
             </td>
             <td class="text-center"><?= !empty($item['producto_id']) ? 'Prod' : 'Serv' ?></td>
             <td class="text-center"><?= $item['cantidad'] ?></td>
