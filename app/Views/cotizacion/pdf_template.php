@@ -172,7 +172,6 @@ if (file_exists($logoFile)) {
         <h4>Términos y Condiciones</h4>
         <ul>
             <li>Los precios están expresados en dólares americanos (USD).</li>
-            <li>La validez de esta cotización es de 15 días hábiles a partir de su emisión.</li>
             <li>Formas de pago aceptadas: Transferencia bancaria, Pago Móvil, efectivo, divisas.</li>
             <li>La entrega se realizará en los plazos acordados tras la confirmación de pago.</li>
             <li>Garantía aplicable según especificaciones del fabricante.</li>

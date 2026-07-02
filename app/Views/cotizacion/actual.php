@@ -9,7 +9,7 @@ foreach ($detalles as $item) {
 ?>
 
 <div class="bg-gray-50 min-h-screen py-10">
-    <div class="max-w-7xl mx-auto px-4">
+    <div class="max-w-5xl mx-auto px-4">
 
         <!-- Header -->
         <div class="mb-8">

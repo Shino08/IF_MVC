@@ -97,9 +97,6 @@ class PagosModel
                         $sql3 = 'UPDATE pedidos SET estado_pedido = "procesando", fecha_pago_validado = CURRENT_TIMESTAMP WHERE id = :pedido_id';
                         $stmt3 = $this->db->prepare($sql3);
                         $stmt3->execute([':pedido_id' => $pedidoId]);
-
-                        // Enviar correo (simplified for refactor)
-                        // TODO: Re-add invoice generation here if necessary
                     } elseif ($estado === 'rechazado') {
                         $sql3 = 'UPDATE pedidos SET estado_pedido = "pendiente_pago" WHERE id = :pedido_id';
                         $stmt3 = $this->db->prepare($sql3);
@@ -114,6 +111,20 @@ class PagosModel
             $this->db->rollBack();
             error_log("Error en PagosModel::validarPago - " . $e->getMessage());
             return false;
+        }
+    }
+
+    public function getPedidoIdByPagoId(int $pagoId): ?int
+    {
+        try {
+            $stmt = $this->db->prepare("SELECT pedido_id FROM pagos WHERE id = :id LIMIT 1");
+            $stmt->execute([':id' => $pagoId]);
+            $pedidoId = $stmt->fetchColumn();
+
+            return $pedidoId ? (int)$pedidoId : null;
+        } catch (PDOException $e) {
+            error_log('Error en PagosModel::getPedidoIdByPagoId - ' . $e->getMessage());
+            return null;
         }
     }
 }

@@ -239,6 +239,8 @@ CREATE TABLE `pedidos` (
   `referencia_pago` varchar(255) DEFAULT NULL,
   `fecha_pago_reportado` datetime DEFAULT NULL,
   `fecha_pago_validado` datetime DEFAULT NULL,
+  `fecha_despacho` datetime DEFAULT NULL,
+  `fecha_entrega` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
   CONSTRAINT `fk_pedido_cotizacion` FOREIGN KEY (`cotizacion_id`) REFERENCES `cotizaciones` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_pedido_usuario` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`) ON DELETE RESTRICT,
@@ -307,3 +309,10 @@ CREATE TABLE `password_resets` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 COMMIT;
+CREATE TABLE `servicio_imagenes` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `servicio_id` int(11) NOT NULL,
+  `ruta_imagen` varchar(255) NOT NULL,
+  PRIMARY KEY (`id`),
+  CONSTRAINT `fk_srv_imagenes_servicio` FOREIGN KEY (`servicio_id`) REFERENCES `servicios` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

@@ -144,26 +144,61 @@ $active_nav   = 'servicios';
                             </div>
                             <?php endif; ?>
 
-                            <!-- ── Subir imagen nueva ──────────────── -->
+                            <?php if ($modoEditar && !empty($imagenes)): ?>
+                            <div class="mb-6">
+                                <label class="block text-sm font-semibold text-gray-900 mb-3 flex items-center">
+                                    <svg class="w-5 h-5 text-gray-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                    </svg>
+                                    Galería Actual
+                                </label>
+                                <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
+
+                                    <!-- IMÁGENES DE GALERÍA -->
+                                    <?php foreach ($imagenes ?? [] as $img): ?>
+                                    <div class="relative group" id="img-galeria-<?= $img['id'] ?>">
+                                        <div class="aspect-square bg-white border border-gray-200 rounded-xl overflow-hidden">
+                                            <img src="<?= $imgDir . htmlspecialchars($img['ruta_imagen']) ?>"
+                                                 alt="Galería" class="w-full h-full object-contain p-1">
+                                        </div>
+                                        <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl flex flex-col items-center justify-center gap-2">
+                                            <label class="cursor-pointer bg-white text-gray-800 text-xs font-bold px-2 py-1 rounded-lg hover:bg-gray-100 transition">
+                                                Cambiar
+                                                <input type="file" accept="image/*" class="hidden img-replace-input"
+                                                       data-tipo="galeria" data-image-id="<?= $img['id'] ?>"
+                                                       data-servicio-id="<?= $servicioId ?>" data-codigo="<?= htmlspecialchars($servicio['codigo']) ?>">
+                                            </label>
+                                            <button type="button" class="img-delete-btn bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-lg hover:bg-red-700 transition"
+                                                    data-tipo="galeria" data-image-id="<?= $img['id'] ?>" data-servicio-id="<?= $servicioId ?>">
+                                                Borrar
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <?php endforeach; ?>
+
+                                </div>
+                            </div>
+                            <?php endif; ?>
+
+                            <!-- ── SUBIR NUEVAS IMÁGENES ──────────────────────────────── -->
                             <div class="mb-6">
                                 <label class="block text-sm font-semibold text-gray-900 mb-2">
-                                    <?= $modoEditar ? 'Reemplazar imagen' : 'Imagen del Servicio' ?>
-                                    <span class="text-gray-500 font-normal">(1 imagen)</span>
+                                    <?= $modoEditar ? 'Agregar más imágenes' : 'Imágenes del Servicio' ?>
+                                    <span class="text-gray-500 font-normal">(Máximo 5 en total)</span>
                                 </label>
                                 <div class="relative border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:bg-gray-50 transition-colors cursor-pointer"
                                      onclick="document.getElementById('file-upload').click()">
                                     <svg class="w-10 h-10 text-gray-400 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                                     </svg>
-                                    <p class="text-sm text-gray-600 font-medium">Haz clic para seleccionar una imagen</p>
-                                    <input type="file" id="file-upload" name="imagen" accept="image/jpeg,image/png,image/webp" class="hidden">
-                                </div>
-                                <div id="preview-nueva" class="hidden mt-4 relative w-40 h-40 border border-gray-200 rounded-xl overflow-hidden bg-white mx-auto">
-                                    <img id="preview-nueva-img" src="" alt="Preview" class="w-full h-full object-contain p-1">
-                                    <button type="button" id="btn-quitar-preview"
-                                            class="absolute top-1 right-1 bg-red-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-700">✕</button>
+                                    <p class="text-sm text-gray-600 font-medium">Haz clic para seleccionar imágenes</p>
+                                    <p class="text-xs text-gray-500 mt-2"><?= $modoEditar ? 'La primera imagen seleccionada reemplazará la imagen principal.' : 'La primera imagen seleccionada será la Principal.' ?></p>
+                                    <input type="file" id="file-upload" name="imagenes[]" accept="image/jpeg, image/png, image/webp" multiple class="hidden">
                                 </div>
                             </div>
+
+                            <!-- Vista previa de nuevas imágenes seleccionadas -->
+                            <div id="preview-container" class="grid grid-cols-2 gap-3 mb-6 hidden"></div>
 
                             <div class="pt-4 border-t border-gray-100 flex justify-end">
                                 <button type="submit" id="btn-save"
@@ -184,21 +219,23 @@ $active_nav   = 'servicios';
                     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 sticky top-8">
                         <h2 class="text-xl font-bold text-gray-900 mb-6">Vista Previa</h2>
 
-                        <div id="sidebar-preview-wrap">
+                        <div id="preview-section" class="mb-6">
+                            <div id="image-placeholder" class="border-2 border-dashed border-gray-200 rounded-2xl aspect-square flex flex-col items-center justify-center p-4 text-center <?= ($modoEditar && !empty($servicio['imagen_principal'])) ? 'hidden' : '' ?>">
+                                <svg class="w-12 h-12 text-gray-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                </svg>
+                                <p class="text-gray-400 text-xs px-4">Selecciona hasta 5 imágenes para visualizarlas aquí.</p>
+                            </div>
+
                             <?php if ($modoEditar && !empty($servicio['imagen_principal'])): ?>
-                                <div id="sidebar-preview-img-wrap" class="aspect-square bg-white border border-gray-200 rounded-2xl overflow-hidden mb-4">
-                                    <img src="<?= $imgDir . htmlspecialchars($servicio['imagen_principal']) ?>"
-                                         id="sidebar-preview-img"
-                                         alt="Imagen" class="w-full h-full object-contain p-2">
-                                </div>
-                            <?php else: ?>
-                                <div id="sidebar-placeholder" class="border-2 border-dashed border-gray-200 rounded-2xl aspect-square flex flex-col items-center justify-center p-4 text-center mb-4">
-                                    <svg class="w-12 h-12 text-gray-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                                    </svg>
-                                    <p class="text-gray-400 text-xs">Selecciona una imagen para previsualizarla.</p>
-                                </div>
+                            <div id="preview-principal-edit" class="aspect-square bg-white border border-gray-200 rounded-2xl overflow-hidden mb-4">
+                                <img src="<?= $imgDir . htmlspecialchars($servicio['imagen_principal']) ?>"
+                                     id="preview-principal-img"
+                                     alt="Principal" class="w-full h-full object-contain p-2">
+                            </div>
                             <?php endif; ?>
+
+                            <div id="preview-nuevas" class="grid grid-cols-2 gap-3 hidden mt-3"></div>
                         </div>
 
                         <div class="bg-gray-50 rounded-xl p-4 border border-gray-100">
@@ -255,6 +292,6 @@ $active_nav   = 'servicios';
     const MODO_EDITAR = <?= $modoEditar ? 'true' : 'false' ?>;
     const SERVICIO_ID = <?= $servicioId ?>;
 </script>
-<script src="<?= $base_url ?? '' ?>/js/servicioForm.js"></script>
+<script src="<?= $base_url ?? '' ?>/js/servicioForm.js?v=<?= time() ?>"></script>
 </body>
 </html>

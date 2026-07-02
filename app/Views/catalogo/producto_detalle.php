@@ -30,15 +30,75 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8 p-8 md:p-12">
                 
                 <!-- Product Image Gallery -->
-                <div class="flex flex-col items-center">
+                <div class="flex flex-col w-full">
                     <?php 
-                        $img = !empty($producto['imagen_principal']) 
-                            ? ($base_url ?? '') . '/img/productos/' . htmlspecialchars($producto['imagen_principal'])
-                            : ($base_url ?? '') . '/img/user.png'; 
+                        $allImages = [];
+                        if (!empty($producto['imagen_principal'])) {
+                            $allImages[] = ($base_url ?? '') . '/img/productos/' . $producto['imagen_principal'];
+                        }
+                        foreach ($imagenes ?? [] as $imgObj) {
+                            $allImages[] = ($base_url ?? '') . '/img/productos/' . $imgObj['ruta_imagen'];
+                        }
+                        if (empty($allImages)) {
+                            $allImages[] = ($base_url ?? '') . '/img/user.png';
+                        }
                     ?>
-                    <div class="w-full aspect-square bg-gray-50 rounded-xl p-8 flex items-center justify-center border border-gray-100 mb-4">
-                        <img src="<?= $img ?>" alt="<?= htmlspecialchars($producto['nombre'] ?? '') ?>" class="max-w-full max-h-full object-contain">
+                    <div class="w-full aspect-square bg-white rounded-xl p-2 flex items-center justify-center border border-gray-200 mb-4 relative group">
+                        <img id="main-product-image" src="<?= htmlspecialchars($allImages[0]) ?>" alt="<?= htmlspecialchars($producto['nombre'] ?? '') ?>" class="max-w-full max-h-full object-contain transition-all duration-300">
+                        <?php if (count($allImages) > 1): ?>
+                            <button onclick="prevImage()" type="button" class="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 p-2 rounded-full shadow hover:bg-white text-gray-800 focus:outline-none opacity-0 group-hover:opacity-100 transition-opacity">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+                            </button>
+                            <button onclick="nextImage()" type="button" class="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 p-2 rounded-full shadow hover:bg-white text-gray-800 focus:outline-none opacity-0 group-hover:opacity-100 transition-opacity">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                            </button>
+                        <?php endif; ?>
                     </div>
+                    <?php if (count($allImages) > 1): ?>
+                    <div class="flex gap-2 overflow-x-auto pb-2 custom-scrollbar">
+                        <?php foreach ($allImages as $idx => $imgSrc): ?>
+                            <button onclick="setImage(<?= $idx ?>)" type="button" class="shrink-0 w-20 h-20 bg-white border-2 <?= $idx === 0 ? 'border-red-600' : 'border-transparent' ?> rounded-lg overflow-hidden focus:outline-none transition-colors thumb-btn" data-idx="<?= $idx ?>">
+                                <img src="<?= htmlspecialchars($imgSrc) ?>" class="w-full h-full object-contain p-1">
+                            </button>
+                        <?php endforeach; ?>
+                    </div>
+                    <script>
+                        const allImages = <?= json_encode($allImages) ?>;
+                        let currentImgIdx = 0;
+                        const mainImageEl = document.getElementById('main-product-image');
+                        const thumbs = document.querySelectorAll('.thumb-btn');
+
+                        function updateImage(idx) {
+                            currentImgIdx = idx;
+                            mainImageEl.src = allImages[currentImgIdx];
+                            thumbs.forEach((el, i) => {
+                                if (i === currentImgIdx) {
+                                    el.classList.add('border-red-600');
+                                    el.classList.remove('border-transparent');
+                                } else {
+                                    el.classList.remove('border-red-600');
+                                    el.classList.add('border-transparent');
+                                }
+                            });
+                        }
+
+                        function nextImage() {
+                            let nextIdx = currentImgIdx + 1;
+                            if (nextIdx >= allImages.length) nextIdx = 0;
+                            updateImage(nextIdx);
+                        }
+
+                        function prevImage() {
+                            let prevIdx = currentImgIdx - 1;
+                            if (prevIdx < 0) prevIdx = allImages.length - 1;
+                            updateImage(prevIdx);
+                        }
+
+                        function setImage(idx) {
+                            updateImage(idx);
+                        }
+                    </script>
+                    <?php endif; ?>
                 </div>
 
                 <!-- Product Info & Actions -->

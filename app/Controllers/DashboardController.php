@@ -389,44 +389,29 @@ class DashboardController extends Router
             exit;
         }
 
-        $db = \App\Core\Database::getInstance();
-        try {
-            $db->beginTransaction();
+        $pagosModel = new \App\Models\PagosModel();
+        $ok = $pagosModel->validarPago($pagoId, $accion, $observacionesAdmin);
 
-            // 1. Actualizar el estado del pago
-            $stmtPago = $db->prepare('UPDATE pagos SET estado = :estado, observaciones_admin = :obs, fecha_validacion = CURRENT_TIMESTAMP WHERE id = :id');
-            $stmtPago->execute([
-                ':estado' => $accion,
-                ':obs'    => $observacionesAdmin,
-                ':id'     => $pagoId
-            ]);
-
-            // 2. Obtener el pedido asociado
-            $stmtPed = $db->prepare('SELECT id FROM pedidos WHERE cotizacion_id = :cid');
-            $stmtPed->execute([':cid' => $cotizacionId]);
-            $pedidoId = $stmtPed->fetchColumn();
-
-            if ($pedidoId) {
-                if ($accion === 'validado') {
-                    // Actualizar el estado del pedido a 'procesando'
-                    $stmtUpdatePed = $db->prepare('UPDATE pedidos SET estado_pedido = "procesando", fecha_pago_validado = CURRENT_TIMESTAMP WHERE id = :pid');
-                    $stmtUpdatePed->execute([':pid' => $pedidoId]);
-
-                    // Generar factura para el cliente!
+        if ($ok) {
+            if ($accion === 'validado') {
+                $pedidoId = $pagosModel->getPedidoIdByPagoId($pagoId);
+                
+                if ($pedidoId) {
+                    // Generar factura
                     $facturasModel = new \App\Models\FacturasModel();
                     $facturasModel->crearFactura((int)$pedidoId);
-                } else {
-                    // Si se rechaza, el pedido vuelve a 'pendiente_pago'
-                    $stmtUpdatePed = $db->prepare('UPDATE pedidos SET estado_pedido = "pendiente_pago" WHERE id = :pid');
-                    $stmtUpdatePed->execute([':pid' => $pedidoId]);
+
+                    // Enviar correo
+                    $pedidosModel = new \App\Models\PedidosModel();
+                    $pedido = $pedidosModel->getById((int)$pedidoId);
+
+                    if ($pedido) {
+                        \App\Core\MailerService::enviarCorreoPagoValidado($pedido);
+                    }
                 }
             }
-
-            $db->commit();
             $_SESSION['success_msg'] = 'Pago ' . ($accion === 'validado' ? 'validado y factura generada' : 'rechazado') . ' exitosamente.';
-        } catch (\PDOException $e) {
-            $db->rollBack();
-            error_log("Error en validarPago: " . $e->getMessage());
+        } else {
             $_SESSION['error_msg'] = 'Ocurrió un error al procesar el pago.';
         }
 
@@ -471,6 +456,7 @@ class DashboardController extends Router
             'title'      => 'Editar Servicio',
             'modo'       => 'editar',
             'servicio'   => $servicio,
+            'imagenes'   => $model->getImages($id),
             'categorias' => (new CategoriasModel())->getAll(),
             'tiposCobro' => $model->getTiposCobro(),
         ]);

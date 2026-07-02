@@ -44,8 +44,14 @@
                     <ul class="list-disc list-inside space-y-2">
                         <li><strong>Pago Móvil:</strong><br>Banesco (0134)<br>V-12345678<br>0412-1234567</li>
                         <li><strong>Transferencia:</strong><br>Consultar cuentas disponibles.</li>
-                        <li><strong>Efectivo o Divisas:</strong><br>Se coordinará al entregar.</li>
                     </ul>
+                    <div class="mt-4 pt-4 border-t border-blue-200">
+                        <p class="font-semibold mb-2">¿Deseas pagar en divisas o efectivo?</p>
+                        <a href="https://wa.me/584121234567?text=Hola,%20quiero%20coordinar%20el%20pago%20en%20divisas%20del%20pedido%20PED-<?= date('Y', strtotime($cotizacion['fecha_solicitud'])) ?>-<?= str_pad((string)$cotizacion['id'], 4, '0', STR_PAD_LEFT) ?>" target="_blank" class="inline-flex items-center justify-center w-full px-4 py-2.5 bg-[#25D366] text-white font-bold rounded-lg hover:bg-[#20b858] transition-colors shadow-sm">
+                            <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.006c.106.005.249-.04.39.298.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86s.274.072.376-.043c.101-.116.433-.506.549-.68.116-.173.231-.145.39-.087s1.011.477 1.184.564.289.13.332.202c.045.072.045.419-.099.824zm-3.423-14.416c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm.029 18.88c-1.161 0-2.305-.292-3.318-.844l-3.677.964.984-3.595c-.607-1.052-.927-2.246-.926-3.468.001-5.824 4.737-10.56 10.566-10.56 2.82 0 5.47 1.098 7.464 3.092 1.993 1.994 3.093 4.643 3.092 7.464-.001 5.825-4.739 10.56-10.563 10.561z"/></svg>
+                            Coordinar Pago en Divisas
+                        </a>
+                    </div>
                 </div>
             </div>
 
@@ -55,25 +61,24 @@
                     <h2 class="text-lg font-bold text-gray-900 mb-6 border-b border-gray-100 pb-3">Detalles del Pago</h2>
                     
                     <form action="<?= $base_url ?? '' ?>/pedido/pagar/<?= $cotizacion['id'] ?>" method="POST" enctype="multipart/form-data">
+                        <input type="hidden" name="moneda" value="VES">
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-6">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Método de Pago *</label>
                                 <select name="metodo_pago_id" class="input-elegant" required>
                                     <option value="">Seleccione...</option>
-                                    <?php foreach ($metodos as $m): ?>
+                                    <?php foreach ($metodos as $m): 
+                                        $nombre = strtolower($m['metodo'] ?? $m['nombre'] ?? '');
+                                        if (strpos($nombre, 'efectivo') !== false || strpos($nombre, 'divisas') !== false) {
+                                            continue;
+                                        }
+                                    ?>
                                         <option value="<?= $m['id'] ?>"><?= htmlspecialchars($m['metodo'] ?? $m['nombre'] ?? 'Método') ?></option>
                                     <?php endforeach; ?>
                                 </select>
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Moneda *</label>
-                                <select name="moneda" class="input-elegant" required>
-                                    <option value="USD">USD ($)</option>
-                                    <option value="VES">Bolívares (Bs)</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Monto Pagado *</label>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Monto Pagado (Bs.) *</label>
                                 <input type="number" step="0.01" name="monto" class="input-elegant" required>
                             </div>
                             <div id="container-referencia">
@@ -107,37 +112,7 @@
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const selectMetodo = document.querySelector('select[name="metodo_pago_id"]');
-    const containerReferencia = document.getElementById('container-referencia');
-    const inputReferencia = document.getElementById('input-referencia');
-    const containerComprobante = document.getElementById('container-comprobante');
-    const inputComprobante = document.getElementById('input-comprobante');
-    const containerBanco = document.getElementById('container-banco');
-
-    function toggleCamposPago() {
-        const metodoId = selectMetodo.value;
-        // 3 = Efectivo, 4 = Divisas (Pago Presencial)
-        if (metodoId === '3' || metodoId === '4') {
-            containerReferencia.style.display = 'none';
-            inputReferencia.removeAttribute('required');
-            containerComprobante.style.display = 'none';
-            inputComprobante.removeAttribute('required');
-            if (containerBanco) containerBanco.style.display = 'none';
-        } else {
-            containerReferencia.style.display = 'block';
-            inputReferencia.setAttribute('required', 'required');
-            containerComprobante.style.display = 'block';
-            inputComprobante.setAttribute('required', 'required');
-            if (containerBanco) containerBanco.style.display = 'block';
-        }
-    }
-
-    if (selectMetodo) {
-        selectMetodo.addEventListener('change', toggleCamposPago);
-        toggleCamposPago(); // Ejecutar al inicio
-    }
-});
+// Lógica extra si es necesaria, pero ya no se requiere toggle de campos de efectivo
 </script>
 
 <?php require_once dirname(__DIR__) . '/layouts/footer.php'; ?>

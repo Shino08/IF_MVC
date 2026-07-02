@@ -47,7 +47,8 @@ class CatalogoController extends Router
         $data = [
             'title' => htmlspecialchars($producto['nombre']) . ' — InstalFuego',
             'producto' => $producto,
-            'productos_similares' => $productos_similares
+            'productos_similares' => $productos_similares,
+            'imagenes' => $productsModel->getImages((int)$id)
         ];
 
         $this->view('catalogo/producto_detalle', $data);
@@ -71,7 +72,8 @@ class CatalogoController extends Router
         $data = [
             'title' => htmlspecialchars($servicio['nombre']) . ' — InstalFuego',
             'servicio' => $servicio,
-            'servicios_similares' => $servicios_similares
+            'servicios_similares' => $servicios_similares,
+            'imagenes' => $serviciosModel->getImages((int)$id)
         ];
 
         $this->view('catalogo/servicio_detalle', $data);

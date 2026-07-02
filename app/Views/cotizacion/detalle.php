@@ -214,7 +214,7 @@
                     <?php elseif ($currentStep === 'procesando'): ?>
                         📦 Pago validado. Tu pedido está siendo preparado.
                     <?php elseif ($currentStep === 'despachado' && $esDomicilio): ?>
-                        🚚 Tu pedido salió del almacén. Está en ruta hacia ti.
+                        Tu pedido salió del almacén. Está en ruta hacia ti.
                     <?php elseif ($currentStep === 'despachado'): ?>
                         🏪 Tu pedido está listo. Puedes pasar a retirarlo por nuestra tienda.
                     <?php else: ?>

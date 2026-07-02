@@ -20,44 +20,44 @@ class ServicioController extends Router
         return rtrim(str_replace('/index.php', '', $_SERVER['SCRIPT_NAME']), '/');
     }
 
-    // ─── Subir un único archivo de imagen ────────────────────────────
-    private function uploadSingle(string $codigo, string $inputName = 'imagen'): ?string
+    // ─── Helper: procesar MÚLTIPLES archivos subidos ─────────────────
+    private function processUploads(string $codigo, string $inputName = 'imagenes'): array
     {
-        $dir = $this->imgDir();
-        if (!is_dir($dir)) mkdir($dir, 0777, true);
+        $imagenesSubidas   = [];
+        $directorioDestino = $this->imgDir();
 
-        if (!isset($_FILES[$inputName])) {
-            error_log("ServicioController::uploadSingle — \$_FILES['{$inputName}'] no existe.");
-            return null;
+        if (!is_dir($directorioDestino)) {
+            mkdir($directorioDestino, 0777, true);
         }
 
-        $errorCode = $_FILES[$inputName]['error'] ?? UPLOAD_ERR_NO_FILE;
-        if ($errorCode !== UPLOAD_ERR_OK) {
-            if ($errorCode !== UPLOAD_ERR_NO_FILE) {
-                error_log("ServicioController::uploadSingle — error de subida: código {$errorCode}");
+        if (!isset($_FILES[$inputName]) || empty($_FILES[$inputName]['name'][0])) {
+            return [];
+        }
+
+        $files      = $_FILES[$inputName];
+        $totalFiles = count($files['name']);
+
+        for ($i = 0; $i < $totalFiles; $i++) {
+            if ($files['error'][$i] !== UPLOAD_ERR_OK) continue;
+
+            $extension  = strtolower(pathinfo($files['name'][$i], PATHINFO_EXTENSION));
+            $permitidas = ['jpg', 'jpeg', 'png', 'webp'];
+
+            if (!in_array($extension, $permitidas)) {
+                header('Content-Type: application/json');
+                echo json_encode(['success' => false, 'error' => "El archivo {$files['name'][$i]} no es una imagen válida."]);
+                exit;
             }
-            return null;
+
+            $nuevoNombre  = "{$codigo}_" . time() . "_{$i}.{$extension}";
+            $rutaCompleta = $directorioDestino . $nuevoNombre;
+
+            if (move_uploaded_file($files['tmp_name'][$i], $rutaCompleta)) {
+                $imagenesSubidas[] = $nuevoNombre;
+            }
         }
 
-        $file       = $_FILES[$inputName];
-        $ext        = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-        $permitidas = ['jpg', 'jpeg', 'png', 'webp'];
-
-        if (!in_array($ext, $permitidas)) {
-            header('Content-Type: application/json');
-            echo json_encode(['success' => false, 'error' => 'Formato de imagen no permitido (jpg, png, webp).']);
-            exit;
-        }
-
-        $nombre = $codigo . '_' . time() . '.' . $ext;
-        $dest   = $dir . $nombre;
-
-        if (move_uploaded_file($file['tmp_name'], $dest)) {
-            return $nombre;
-        }
-
-        error_log("ServicioController::uploadSingle — move_uploaded_file falló. tmp={$file['tmp_name']} dest={$dest} dir_writable=" . (is_writable($dir) ? 'si' : 'no'));
-        return null;
+        return $imagenesSubidas;
     }
 
     // ─── Borrar archivo físico si existe ─────────────────────────────
@@ -99,17 +99,24 @@ class ServicioController extends Router
             exit;
         }
 
-        $imagen = $this->uploadSingle($codigo);
+        if (isset($_FILES['imagenes']) && is_array($_FILES['imagenes']['name']) && count($_FILES['imagenes']['name']) > 5) {
+            echo json_encode(['success' => false, 'error' => 'No puedes subir más de 5 imágenes.']);
+            exit;
+        }
+
+        $imagenes = $this->processUploads($codigo);
 
         try {
-            $id = $model->create($codigo, $nombre, $catId ?: null, $precio, $tipoCobro ?: null, $desc, $imagen);
+            $id = $model->create($codigo, $nombre, $catId ?: null, $precio, $tipoCobro ?: null, $desc, $imagenes);
             echo json_encode([
                 'success'  => true,
                 'message'  => 'Servicio creado correctamente.',
                 'redirect' => $this->baseUrl() . '/dashboard/servicios',
             ]);
         } catch (\Exception $e) {
-            $this->removeFile($imagen);
+            foreach ($imagenes as $img) {
+                $this->removeFile($img);
+            }
             echo json_encode(['success' => false, 'error' => 'Error al guardar el servicio.']);
         }
         exit;
@@ -141,14 +148,18 @@ class ServicioController extends Router
             exit;
         }
 
-        // Subir nueva imagen si se envió
-        $nuevaImagen = $this->uploadSingle($codigo);
-        if ($nuevaImagen) {
-            // Borrar la anterior
-            $this->removeFile($model->getImagen($id));
+        // Validar máximo 5 imágenes
+        if (isset($_FILES['imagenes']) && is_array($_FILES['imagenes']['name']) && count($_FILES['imagenes']['name']) > 5) {
+            echo json_encode(['success' => false, 'error' => 'No puedes subir más de 5 imágenes.']);
+            exit;
         }
 
-        $ok = $model->update($id, $codigo, $nombre, $catId ?: null, $precio, $tipoCobro ?: null, $desc, $nuevaImagen);
+        // Subir nuevas imágenes si se enviaron
+        $nuevasImagenes = $this->processUploads($codigo);
+        // Opcional: borrar las viejas? No, update solo reemplaza si se enviaron.
+        // wait, the previous code only replaced the principal one if sent.
+        // Actually the model update now handles logic if you send an array. It replaces principal and adds to gallery.
+        $ok = $model->update($id, $codigo, $nombre, $catId ?: null, $precio, $tipoCobro ?: null, $desc, $nuevasImagenes);
 
         echo json_encode($ok
             ? ['success' => true, 'message' => 'Servicio actualizado.', 'redirect' => $this->baseUrl() . '/dashboard/servicios']
@@ -210,55 +221,29 @@ class ServicioController extends Router
     }
 
     // ═══════════════════════════════════════════════════════════════
-    // REEMPLAZAR IMAGEN del servicio
+    // ELIMINAR imagen de galería
     // ═══════════════════════════════════════════════════════════════
-    public function reemplazarImagen(): void
+    public function deleteImage(): void
     {
         header('Content-Type: application/json');
 
-        $id     = (int)($_POST['servicio_id'] ?? 0);
-        $codigo = strtoupper(strip_tags(trim($_POST['codigo'] ?? '')));
+        $imageId = (int)($_POST['image_id'] ?? 0);
+        $servicioId = (int)($_POST['servicio_id'] ?? 0);
 
-        if ($id === 0 || empty($codigo)) {
+        if ($imageId === 0 || $servicioId === 0) {
             echo json_encode(['success' => false, 'error' => 'Datos inválidos.']);
             exit;
         }
 
-        $nueva = $this->uploadSingle($codigo);
-        if (!$nueva) {
-            echo json_encode(['success' => false, 'error' => 'No se recibió ninguna imagen válida.']);
-            exit;
-        }
-
         $model = new ServiciosModel();
-        $vieja = $model->getImagen($id);
+        $ruta = $model->deleteImage($imageId, $servicioId);
 
-        $ok = $this->db_updateImagen($id, $nueva);
-        if ($ok) {
-            $this->removeFile($vieja);
-            echo json_encode([
-                'success'   => true,
-                'nueva_url' => $this->baseUrl() . '/img/servicios/' . $nueva,
-            ]);
+        if ($ruta) {
+            $this->removeFile($ruta);
+            echo json_encode(['success' => true]);
         } else {
-            // No se pudo actualizar BD, borrar el archivo que subimos
-            $this->removeFile($nueva);
-            echo json_encode(['success' => false, 'error' => 'Error al actualizar la imagen.']);
+            echo json_encode(['success' => false, 'error' => 'No se pudo eliminar la imagen.']);
         }
         exit;
-    }
-
-    // Mini helper para actualizar sólo imagen_principal
-    private function db_updateImagen(int $id, string $imagen): bool
-    {
-        try {
-            $db = \App\Core\Database::getInstance();
-            $db->prepare('UPDATE servicios SET imagen_principal=:img WHERE id=:id')
-               ->execute([':img' => $imagen, ':id' => $id]);
-            return true;
-        } catch (\PDOException $e) {
-            error_log('ServicioController::db_updateImagen — ' . $e->getMessage());
-            return false;
-        }
     }
 }

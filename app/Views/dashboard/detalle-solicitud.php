@@ -252,9 +252,9 @@ if ($previewTotal < 0) $previewTotal = 0;
                                     <span class="text-gray-400 text-xs uppercase tracking-wider font-semibold">Método de Entrega</span>
                                     <p class="mt-1 font-semibold text-gray-900">
                                         <?php if (($cotizacion['tipo_entrega'] ?? '') === 'domicilio'): ?>
-                                            🚚 Envío a Domicilio
+                                            Envío a Domicilio
                                         <?php elseif (($cotizacion['tipo_entrega'] ?? '') === 'retiro_tienda'): ?>
-                                            🏪 Retiro en Tienda
+                                            Retiro en Tienda
                                         <?php else: ?>
                                             <span class="text-gray-400">No especificado</span>
                                         <?php endif; ?>
@@ -299,7 +299,7 @@ if ($previewTotal < 0) $previewTotal = 0;
                             // Mostrar sólo las transiciones válidas desde el estado actual
                             $transiciones = [
                                 'procesando' => [
-                                    ['estado' => 'despachado', 'label' => '🚚 Marcar como Despachado',   'class' => 'bg-indigo-600 hover:bg-indigo-700 text-white'],
+                                    ['estado' => 'despachado', 'label' => 'Marcar como Despachado',   'class' => 'bg-indigo-600 hover:bg-indigo-700 text-white'],
                                     ['estado' => 'cancelado',  'label' => '✕ Cancelar Pedido',           'class' => 'bg-red-50 hover:bg-red-100 text-red-700 border border-red-200'],
                                 ],
                                 'despachado' => [
@@ -332,7 +332,7 @@ if ($previewTotal < 0) $previewTotal = 0;
                             </div>
                             <?php elseif (in_array($estadoActual, ['pendiente_pago', 'pago_por_validar'])): ?>
                             <div class="p-3 bg-yellow-50 border border-yellow-100 rounded-lg text-xs font-semibold text-yellow-700">
-                                ⏳ Esperando confirmación de pago antes de despachar.
+                                Esperando confirmación de pago antes de despachar.
                             </div>
                             <?php endif; ?>
 
@@ -342,7 +342,7 @@ if ($previewTotal < 0) $previewTotal = 0;
                     <!-- Pedido sin registro en tabla pedidos aún (estado_id < 4) -->
                     <div class="mt-4 bg-white rounded-xl shadow-sm border border-gray-200 p-5">
                         <h3 class="text-sm font-bold text-gray-900 mb-3">Método de Entrega</h3>
-                        <p class="text-sm text-gray-700"><?= ($cotizacion['tipo_entrega'] === 'domicilio') ? '🚚 Envío a Domicilio' : '🏪 Retiro en Tienda' ?></p>
+                        <p class="text-sm text-gray-700"><?= ($cotizacion['tipo_entrega'] === 'domicilio') ? 'Envío a Domicilio' : 'Retiro en Tienda' ?></p>
                         <?php if (!empty($cotizacion['direccion_envio'])): ?>
                             <p class="mt-2 text-sm text-gray-600"><?= htmlspecialchars($cotizacion['direccion_envio']) ?></p>
                         <?php endif; ?>
@@ -618,8 +618,8 @@ if ($previewTotal < 0) $previewTotal = 0;
                                 </div>
                             <?php elseif ($cotizacion['estado_id'] == 4): ?>
                                 <div class="bg-green-50 border border-green-100 rounded-lg p-4 text-center">
-                                    <p class="text-sm font-bold text-green-800">✅ Aceptada por el cliente</p>
-                                    <p class="text-xs text-green-600 mt-1">El cliente ha confirmado esta solicitud. Ahora deberías procesarlo como un pedido.</p>
+                                    <p class="text-sm font-bold text-green-800">✅ Facturado</p>
+                                    <p class="text-xs text-green-600 mt-1">El cliente ha confirmado esta solicitud y ha sido facturada.</p>
                                 </div>
                             <?php elseif ($cotizacion['estado_id'] == 5): ?>
                                 <div class="bg-red-50 border border-red-100 rounded-lg p-4 text-center">

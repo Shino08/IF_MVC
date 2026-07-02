@@ -88,11 +88,19 @@ if ($esPdf):
                     <td>
                         <?php
                         $cls = 'estado-other';
-                        if ($row['estado_id'] == 3) $cls = 'estado-procesada';
-                        else if ($row['estado_id'] == 4) $cls = 'estado-rechazada';
-                        else if ($row['estado_id'] == 2) $cls = 'estado-pendiente';
+                        if (isset($row['estado_id'])) {
+                            if ($row['estado_id'] == 3) $cls = 'estado-procesada';
+                            else if ($row['estado_id'] == 4) $cls = 'estado-procesada'; // Facturado
+                            else if ($row['estado_id'] == 5 || $row['estado_id'] == 6) $cls = 'estado-rechazada';
+                            else if ($row['estado_id'] == 2) $cls = 'estado-pendiente';
+                        }
+                        
+                        $estadoName = ucfirst(str_replace('_', ' ', $row['estado'] ?? ''));
+                        if (strtolower($estadoName) === 'aceptada por el cliente' || strtolower($estadoName) === 'aceptada') {
+                            $estadoName = 'Procesada';
+                        }
                         ?>
-                        <span class="estado-badge <?= $cls ?>"><?= htmlspecialchars(ucfirst(str_replace('_', ' ', $row['estado'] ?? ''))) ?></span>
+                        <span class="estado-badge <?= $cls ?>"><?= htmlspecialchars($estadoName) ?></span>
                     </td>
                     <td class="text-right">Bs. <?= number_format((float)($row['total'] ?? 0), 2, ',', '.') ?></td>
                     <?php else: ?>
@@ -257,12 +265,17 @@ require_once __DIR__ . '/../layouts/_head.php'; ?>
                             $bg = 'bg-gray-100 text-gray-800';
                             if (isset($row['estado_id'])) {
                                 if ($row['estado_id'] == 3) $bg = 'bg-green-100 text-green-800'; // Procesada
-                                else if ($row['estado_id'] == 4) $bg = 'bg-red-100 text-red-800'; // Rechazada
+                                else if ($row['estado_id'] == 4) $bg = 'bg-blue-100 text-blue-800'; // Facturado
+                                else if ($row['estado_id'] == 5 || $row['estado_id'] == 6) $bg = 'bg-red-100 text-red-800'; // Anulado
                                 else if ($row['estado_id'] == 2) $bg = 'bg-yellow-100 text-yellow-800'; // Pendiente
+                            }
+                            $estadoName = ucfirst(str_replace('_', ' ', $row['estado'] ?? ''));
+                            if (strtolower($estadoName) === 'aceptada por el cliente' || strtolower($estadoName) === 'aceptada') {
+                                $estadoName = 'Procesada';
                             }
                           ?>
                           <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold <?= $bg ?>">
-                            <?= htmlspecialchars(ucfirst(str_replace('_', ' ', $row['estado'] ?? ''))) ?>
+                            <?= htmlspecialchars($estadoName) ?>
                           </span>
                         </td>
                         <td class="px-4 py-3 text-sm font-semibold text-gray-900 text-right">Bs. <?= number_format((float)($row['total'] ?? 0), 2, ',', '.') ?></td>

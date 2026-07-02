@@ -110,9 +110,11 @@ class ServiciosModel
     // ── Crear servicio ────────────────────────────────────────────────
     public function create(
         string $codigo, string $nombre, ?int $catId, float $precio,
-        ?int $tipoCobro, string $desc, ?string $imagen
+        ?int $tipoCobro, string $desc, array $imagenes
     ): int {
         try {
+            $this->db->beginTransaction();
+            $principal = !empty($imagenes) ? $imagenes[0] : null;
             $sql  = 'INSERT INTO servicios
                      (codigo, nombre, categoria_id, precio_referencial, tipo_cobro_id, descripcion, imagen_principal)
                      VALUES (:cod, :nom, :cat, :pre, :tc, :desc, :img)';
@@ -124,10 +126,24 @@ class ServiciosModel
                 ':pre'  => $precio,
                 ':tc'   => $tipoCobro ?: null,
                 ':desc' => $desc,
-                ':img'  => $imagen,
+                ':img'  => $principal,
             ]);
-            return (int)$this->db->lastInsertId();
+            $servicioId = (int)$this->db->lastInsertId();
+
+            if (count($imagenes) > 1) {
+                $sqlImg = "INSERT INTO servicio_imagenes (servicio_id, ruta_imagen) VALUES (:sid, :ruta)";
+                $stmtImg = $this->db->prepare($sqlImg);
+                for ($i = 1; $i < count($imagenes); $i++) {
+                    $stmtImg->execute([
+                        ':sid'  => $servicioId,
+                        ':ruta' => $imagenes[$i]
+                    ]);
+                }
+            }
+            $this->db->commit();
+            return $servicioId;
         } catch (PDOException $e) {
+            $this->db->rollBack();
             error_log('ServiciosModel::create — ' . $e->getMessage());
             throw $e;
         }
@@ -136,9 +152,10 @@ class ServiciosModel
     // ── Actualizar servicio ───────────────────────────────────────────
     public function update(
         int $id, string $codigo, string $nombre, ?int $catId, float $precio,
-        ?int $tipoCobro, string $desc, ?string $nuevaImagen
+        ?int $tipoCobro, string $desc, array $nuevasImagenes
     ): bool {
         try {
+            $this->db->beginTransaction();
             $sql = 'UPDATE servicios SET
                     codigo=:cod, nombre=:nom, categoria_id=:cat,
                     precio_referencial=:pre, tipo_cobro_id=:tc, descripcion=:desc
@@ -154,12 +171,21 @@ class ServiciosModel
             ];
             $this->db->prepare($sql)->execute($params);
 
-            if ($nuevaImagen !== null) {
+            if (!empty($nuevasImagenes)) {
                 $this->db->prepare('UPDATE servicios SET imagen_principal=:img WHERE id=:id')
-                         ->execute([':img' => $nuevaImagen, ':id' => $id]);
+                         ->execute([':img' => $nuevasImagenes[0], ':id' => $id]);
+
+                if (count($nuevasImagenes) > 1) {
+                    $stmtImg = $this->db->prepare("INSERT INTO servicio_imagenes (servicio_id, ruta_imagen) VALUES (:sid, :ruta)");
+                    for ($i = 1; $i < count($nuevasImagenes); $i++) {
+                        $stmtImg->execute([':sid' => $id, ':ruta' => $nuevasImagenes[$i]]);
+                    }
+                }
             }
+            $this->db->commit();
             return true;
         } catch (PDOException $e) {
+            $this->db->rollBack();
             error_log('ServiciosModel::update — ' . $e->getMessage());
             return false;
         }
@@ -176,6 +202,18 @@ class ServiciosModel
         } catch (PDOException $e) {
             error_log('ServiciosModel::getImagen — ' . $e->getMessage());
             return null;
+        }
+    }
+
+    public function getImages(int $id): array
+    {
+        try {
+            $stmt = $this->db->prepare('SELECT * FROM servicio_imagenes WHERE servicio_id = :id ORDER BY id ASC');
+            $stmt->execute([':id' => $id]);
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log("Error en ServiciosModel::getImages - " . $e->getMessage());
+            return [];
         }
     }
 
@@ -203,6 +241,58 @@ class ServiciosModel
         } catch (PDOException $e) {
             error_log('ServiciosModel::delete — ' . $e->getMessage());
             return false;
+        }
+    }
+
+    public function deleteImage(int $imageId, int $servicioId): ?string
+    {
+        try {
+            $stmt = $this->db->prepare('SELECT ruta_imagen FROM servicio_imagenes WHERE id=:id AND servicio_id=:sid');
+            $stmt->execute([':id' => $imageId, ':sid' => $servicioId]);
+            $img = $stmt->fetch(PDO::FETCH_ASSOC);
+            if (!$img) return null;
+
+            $this->db->prepare('DELETE FROM servicio_imagenes WHERE id=:id')->execute([':id' => $imageId]);
+            return $img['ruta_imagen'];
+        } catch (PDOException $e) {
+            error_log("Error en ServiciosModel::deleteImage - " . $e->getMessage());
+            return null;
+        }
+    }
+
+    public function replaceImage(int $imageId, int $servicioId, string $nuevaRuta): ?string
+    {
+        try {
+            $stmt = $this->db->prepare('SELECT ruta_imagen FROM servicio_imagenes WHERE id=:id AND servicio_id=:sid');
+            $stmt->execute([':id' => $imageId, ':sid' => $servicioId]);
+            $img = $stmt->fetch(PDO::FETCH_ASSOC);
+            if (!$img) return null;
+
+            $old = $img['ruta_imagen'];
+            $this->db->prepare('UPDATE servicio_imagenes SET ruta_imagen=:ruta WHERE id=:id')
+                ->execute([':ruta' => $nuevaRuta, ':id' => $imageId]);
+            return $old;
+        } catch (PDOException $e) {
+            error_log("Error en ServiciosModel::replaceImage - " . $e->getMessage());
+            return null;
+        }
+    }
+
+    public function replacePrincipal(int $servicioId, string $nuevaRuta): ?string
+    {
+        try {
+            $stmt = $this->db->prepare('SELECT imagen_principal FROM servicios WHERE id=:id');
+            $stmt->execute([':id' => $servicioId]);
+            $prod = $stmt->fetch(PDO::FETCH_ASSOC);
+            if (!$prod) return null;
+
+            $old = $prod['imagen_principal'];
+            $this->db->prepare('UPDATE servicios SET imagen_principal=:img WHERE id=:id')
+                ->execute([':img' => $nuevaRuta, ':id' => $servicioId]);
+            return $old;
+        } catch (PDOException $e) {
+            error_log("Error en ServiciosModel::replacePrincipal - " . $e->getMessage());
+            return null;
         }
     }
 }
