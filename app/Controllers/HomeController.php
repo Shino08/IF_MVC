@@ -39,6 +39,7 @@ class HomeController extends Router
             'logged_in' => $sesionIniciada,
             'destacados'=> $destacados,
             'ultimos'   => $ultimos,
+            'servicios' => array_slice($serviciosModel->getAll(), 0, 4),
         ];
 
         $this->view('home', $data);

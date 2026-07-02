@@ -97,6 +97,23 @@ class PagosModel
                         $sql3 = 'UPDATE pedidos SET estado_pedido = "procesando", fecha_pago_validado = CURRENT_TIMESTAMP WHERE id = :pedido_id';
                         $stmt3 = $this->db->prepare($sql3);
                         $stmt3->execute([':pedido_id' => $pedidoId]);
+
+                        // Descontar stock de productos (los servicios NO descuentan stock)
+                        $sqlDetalles = 'SELECT cd.producto_id, cd.cantidad
+                                        FROM cotizacion_detalles cd
+                                        JOIN pedidos p ON p.cotizacion_id = cd.cotizacion_id
+                                        WHERE p.id = :pedido_id AND cd.producto_id IS NOT NULL';
+                        $stmtDetalles = $this->db->prepare($sqlDetalles);
+                        $stmtDetalles->execute([':pedido_id' => $pedidoId]);
+                        $detalles = $stmtDetalles->fetchAll(PDO::FETCH_ASSOC);
+
+                        if (!empty($detalles)) {
+                            require_once __DIR__ . '/ProductsModel.php';
+                            $productsModel = new ProductsModel();
+                            foreach ($detalles as $item) {
+                                $productsModel->descontarStock((int)$item['producto_id'], (int)$item['cantidad']);
+                            }
+                        }
                     } elseif ($estado === 'rechazado') {
                         $sql3 = 'UPDATE pedidos SET estado_pedido = "pendiente_pago" WHERE id = :pedido_id';
                         $stmt3 = $this->db->prepare($sql3);

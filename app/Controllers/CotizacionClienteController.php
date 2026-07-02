@@ -520,10 +520,12 @@ class CotizacionClienteController extends Router
 
         $referencia = $isCash ? 'EFECTIVO_PRESENCIAL' : strip_tags(trim($_POST['referencia'] ?? ''));
 
+        $montoEsperado = isset($cotizacion['tasabcv']) ? round($cotizacion['total'] * $cotizacion['tasabcv'], 2) : 0;
+
         $data = [
             'pedido_id'        => $pedido['id'],
             'metodo_pago_id'   => $metodoPagoId,
-            'monto'            => (float)$_POST['monto'],
+            'monto'            => $montoEsperado,
             'moneda'           => $_POST['moneda'] ?? 'VES',
             'referencia'       => $referencia,
             'banco_origen'     => strip_tags(trim($_POST['banco_origen'] ?? '')),

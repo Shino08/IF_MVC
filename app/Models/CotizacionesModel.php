@@ -181,28 +181,23 @@ class CotizacionesModel
             $fields = [];
             $params = [':id' => $cotizacionId];
             
-            $allowedFields = [
-                'fecha_vencimiento', 'impuestos', 'descuento',
-                'condiciones_pago', 'notas_internas', 'notas_tecnicas',
-                'proyecto_referencia', 'direccion_envio', 'costo_envio',
-                'ubicacion', 'fecha_tentativa', 'responsable_nombre', 'responsable_telefono', 'observaciones_tecnicas'
-            ];
+            $allowed = ['descuento', 'impuestos', 'costo_envio', 'fecha_vencimiento', 'ubicacion', 'fecha_tentativa', 'responsable_nombre', 'responsable_telefono', 'observaciones_tecnicas', 'aplica_iva', 'tasa_iva', 'motivo_exento'];
             
-            foreach ($allowedFields as $field) {
-                if (array_key_exists($field, $data)) {
-                    $fields[] = "`$field` = :$field";
-                    $params[":$field"] = $data[$field];
+            foreach ($data as $k => $v) {
+                if (in_array($k, $allowed)) {
+                    $fields[] = "$k = :$k";
+                    $params[":$k"] = $v;
                 }
             }
             
-            if (empty($fields)) return false;
+            if (empty($fields)) return true;
             
             $sql = 'UPDATE cotizaciones SET ' . implode(', ', $fields) . ' WHERE id = :id';
             $stmt = $this->db->prepare($sql);
             $res = $stmt->execute($params);
             
-            // Recalcular total si cambió descuento o impuestos o costo_envio
-            if (array_key_exists('descuento', $data) || array_key_exists('impuestos', $data) || array_key_exists('costo_envio', $data)) {
+            // Recalcular total si cambió descuento o impuestos o costo_envio o aplica_iva
+            if (array_key_exists('descuento', $data) || array_key_exists('impuestos', $data) || array_key_exists('costo_envio', $data) || array_key_exists('aplica_iva', $data) || array_key_exists('tasa_iva', $data)) {
                 $this->updateCotizacionTotals($cotizacionId);
             }
             
@@ -254,23 +249,27 @@ class CotizacionesModel
             $subtotal = $stmt->fetchColumn() ?: 0;
 
             // Obtener descuento, impuestos y costo_envio actuales
-            $sqlC = 'SELECT descuento, impuestos, costo_envio FROM cotizaciones WHERE id = :id';
+            $sqlC = 'SELECT descuento, aplica_iva, tasa_iva, costo_envio FROM cotizaciones WHERE id = :id';
             $stmtC = $this->db->prepare($sqlC);
             $stmtC->execute([':id' => $cotizacionId]);
             $cot = $stmtC->fetch(PDO::FETCH_ASSOC);
             
             $descuento = (float)($cot['descuento'] ?? 0);
-            $impuestos = (float)($cot['impuestos'] ?? 0);
+            $aplica_iva = $cot['aplica_iva'];
+            $tasa_iva = (float)($cot['tasa_iva'] ?? 16.00);
             $costo_envio = (float)($cot['costo_envio'] ?? 0);
+            
+            $impuestos = ($aplica_iva == 1) ? round($subtotal * ($tasa_iva / 100), 2) : 0.00;
             
             // Total = subtotal + impuestos + costo_envio - descuento
             $total = $subtotal + $impuestos + $costo_envio - $descuento;
             if ($total < 0) $total = 0;
 
-            $sqlUpdate = 'UPDATE cotizaciones SET subtotal = :sub, total = :tot WHERE id = :id';
+            $sqlUpdate = 'UPDATE cotizaciones SET subtotal = :sub, impuestos = :imp, total = :tot WHERE id = :id';
             $stmtUpd = $this->db->prepare($sqlUpdate);
             $stmtUpd->execute([
                 ':sub' => $subtotal,
+                ':imp' => $impuestos,
                 ':tot' => $total,
                 ':id'  => $cotizacionId
             ]);

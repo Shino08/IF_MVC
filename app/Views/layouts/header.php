@@ -75,7 +75,7 @@ if (class_exists('\App\Models\CategoriasModel')) {
                                         <p class="text-sm font-bold text-gray-900 truncate"><?= htmlspecialchars($_SESSION['user_name'] ?? 'Usuario') ?></p>
                                     </div>
                                     <a href="<?= $base_url ?? '' ?>/cuenta" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-red-600 transition-colors">Mi Perfil</a>
-                                    <a href="<?= $base_url ?? '' ?>/mis-pedidos" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-red-600 transition-colors">Mis Pedidos / Presupuestos</a>
+                                    <a href="<?= $base_url ?? '' ?>/mis-pedidos" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-red-600 transition-colors">Mis Pedidos</a>
                                     <a href="<?= $base_url ?? '' ?>/logout" class="block px-4 py-2 text-sm text-red-600 hover:bg-red-50 font-medium transition-colors border-t border-gray-50 mt-1">Cerrar Sesión</a>
                                 </div>
                             </div>
@@ -112,7 +112,7 @@ if (class_exists('\App\Models\CategoriasModel')) {
                     <?php if (isset($_SESSION['rol_id']) && $_SESSION['rol_id'] == 1): ?>
                         <a href="<?= $base_url ?? '' ?>/dashboard" class="text-red-700 font-semibold pl-2">Panel Admin</a>
                     <?php else: ?>
-                        <a href="<?= $base_url ?? '' ?>/mis-pedidos" class="text-gray-700 font-medium hover:text-red-600 pl-2">Mis Presupuestos</a>
+                        <a href="<?= $base_url ?? '' ?>/mis-pedidos" class="text-gray-700 font-medium hover:text-red-600 pl-2">Mis Pedidos</a>
                     <?php endif; ?>
                     <a href="<?= $base_url ?? '' ?>/logout" class="text-red-600 font-semibold pl-2 pt-2 border-t border-gray-100">Cerrar Sesión</a>
                 <?php else: ?>

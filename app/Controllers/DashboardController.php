@@ -264,8 +264,14 @@ class DashboardController extends Router
         
         if (isset($_POST['fecha_vencimiento'])) 
             $data['fecha_vencimiento'] = $_POST['fecha_vencimiento'] ?: null;
-        if (isset($_POST['impuestos'])) 
-            $data['impuestos'] = (float)$_POST['impuestos'];
+        
+        if (isset($_POST['aplica_iva'])) 
+            $data['aplica_iva'] = (int)$_POST['aplica_iva'];
+        if (isset($_POST['tasa_iva'])) 
+            $data['tasa_iva'] = (float)$_POST['tasa_iva'];
+        if (isset($_POST['motivo_exento'])) 
+            $data['motivo_exento'] = strip_tags(trim($_POST['motivo_exento']));
+            
         if (isset($_POST['descuento'])) 
             $data['descuento'] = (float)$_POST['descuento'];
         if (isset($_POST['condiciones_pago'])) 
@@ -325,11 +331,31 @@ class DashboardController extends Router
         $tasaData = TasaBCV::getTasa();
         $tasabcv  = $tasaData['tasa'];
 
-        // Calcular monto en USD a partir del total en Bs
+        // Calcular monto en USD a partir del total en Bs y validar envío e IVA
         $db = \App\Core\Database::getInstance();
-        $stmt = $db->prepare('SELECT total FROM cotizaciones WHERE id = :id');
+        $stmt = $db->prepare('SELECT total, tipo_entrega, costo_envio, aplica_iva FROM cotizaciones WHERE id = :id');
         $stmt->execute([':id' => $cotizacionId]);
-        $totalUsd = (float)$stmt->fetchColumn();
+        $row = $stmt->fetch(\PDO::FETCH_ASSOC);
+
+        if (!$row) {
+            $_SESSION['error_msg'] = 'Cotización no encontrada.';
+            header('Location: ' . $_SERVER['HTTP_REFERER']);
+            exit;
+        }
+
+        if ($row['aplica_iva'] === null) {
+            $_SESSION['error_msg'] = 'Debe definir si la cotización aplica IVA o es Exenta antes de emitir. (Pestaña Logística / Configuración Comercial)';
+            header('Location: ' . $_SERVER['HTTP_REFERER']);
+            exit;
+        }
+
+        if ($row['tipo_entrega'] === 'domicilio' && (float)$row['costo_envio'] <= 0) {
+            $_SESSION['error_msg'] = 'Para entregas a domicilio, debe cargar el Costo de Envío antes de emitir. (Pestaña Logística)';
+            header('Location: ' . $_SERVER['HTTP_REFERER']);
+            exit;
+        }
+
+        $totalUsd = (float)$row['total'];
         $montoBs = null;
         if ($tasabcv > 0 && $totalUsd > 0) {
             $montoBs = round($totalUsd * $tasabcv, 2);
@@ -482,82 +508,114 @@ class DashboardController extends Router
             'cotizaciones_procesadas' => 0
         ];
 
-        if ($tipo === 'cotizaciones') {
-            $sql = "SELECT c.id, c.fecha_solicitud, CONCAT(u.nombre, ' ', u.apellido) as cliente, 
-                           e.nombre as estado, c.total, c.estado_id
-                    FROM cotizaciones c
-                    JOIN usuarios u ON c.usuario_id = u.id
-                    JOIN estados_cotizacion e ON c.estado_id = e.id
-                    WHERE c.estado_id != 1 AND DATE(c.fecha_solicitud) BETWEEN :inicio AND :fin";
-            
-            $params = [':inicio' => $fechaInicio, ':fin' => $fechaFin];
-            
-            if ($estado !== '') {
-                $sql .= " AND c.estado_id = :estado";
-                $params[':estado'] = $estado;
-            }
-            
-            $sql .= " ORDER BY c.fecha_solicitud DESC";
-            
-            $stmt = $db->prepare($sql);
-            $stmt->execute($params);
-            $data = $stmt->fetchAll(\PDO::FETCH_ASSOC);
-
-            foreach ($data as $row) {
-                $totales['estimado'] += $row['total'];
-                $totales['total_cotizaciones']++;
-                if ($row['estado_id'] == 3) { // 3: Procesada/Aprobada
-                    $totales['procesado'] += $row['total'];
-                    $totales['cotizaciones_procesadas']++;
+        switch ($tipo) {
+            case 'pedidos':
+                $sql = "SELECT p.id, p.fecha_creacion as fecha_solicitud, CONCAT(u.nombre, ' ', u.apellido) as cliente, 
+                               p.estado_pedido as estado, p.total_pedido as total
+                        FROM pedidos p
+                        JOIN usuarios u ON p.usuario_id = u.id
+                        WHERE DATE(p.fecha_creacion) BETWEEN :inicio AND :fin";
+                
+                $params = [':inicio' => $fechaInicio, ':fin' => $fechaFin];
+                
+                if ($estado !== '') {
+                    $sql .= " AND p.estado_pedido = :estado";
+                    $params[':estado'] = $estado;
                 }
-                if ($row['estado_id'] == 2) { // 2: Pendiente
-                    $totales['pendiente'] += $row['total'];
-                }
-            }
+                
+                $sql .= " ORDER BY p.fecha_creacion DESC";
+                
+                $stmt = $db->prepare($sql);
+                $stmt->execute($params);
+                $data = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 
-            if ($exportar === 'csv') {
-                header('Content-Type: text/csv; charset=utf-8');
-                header('Content-Disposition: attachment; filename="reporte_cotizaciones.csv"');
-                $output = fopen('php://output', 'w');
-                fputs($output, $bom =(chr(0xEF) . chr(0xBB) . chr(0xBF)));
-                fputcsv($output, ['ID', 'Fecha', 'Cliente', 'Estado', 'Total']);
                 foreach ($data as $row) {
-                    fputcsv($output, [$row['id'], $row['fecha_solicitud'], $row['cliente'], $row['estado'], $row['total']]);
+                    $totales['estimado'] += $row['total'];
+                    $totales['total_cotizaciones']++;
                 }
-                fclose($output);
-                exit;
-            }
-        } elseif ($tipo === 'mas_solicitados') {
-            $sql = "SELECT 'Producto' as tipo_item, p.nombre, SUM(cd.cantidad) as total_solicitado
-                    FROM cotizacion_detalles cd
-                    JOIN productos p ON cd.producto_id = p.id
-                    JOIN cotizaciones c ON cd.cotizacion_id = c.id
-                    WHERE c.estado_id != 1 AND DATE(c.fecha_solicitud) BETWEEN :inicio AND :fin
-                    GROUP BY p.id
-                    UNION ALL
-                    SELECT 'Servicio' as tipo_item, s.nombre, SUM(cd.cantidad) as total_solicitado
-                    FROM cotizacion_detalles cd
-                    JOIN servicios s ON cd.servicio_id = s.id
-                    JOIN cotizaciones c ON cd.cotizacion_id = c.id
-                    WHERE c.estado_id != 1 AND DATE(c.fecha_solicitud) BETWEEN :inicio AND :fin
-                    GROUP BY s.id
-                    ORDER BY total_solicitado DESC";
-            $stmt = $db->prepare($sql);
-            $stmt->execute([':inicio' => $fechaInicio, ':fin' => $fechaFin]);
-            $data = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+                break;
+                
+            case 'pagos':
+                $sql = "SELECT p.id, p.fecha_reporte as fecha_solicitud, 
+                               CONCAT('Pedido #', p.pedido_id) as cliente,
+                               p.estado as estado, p.monto as total
+                        FROM pagos p
+                        WHERE DATE(p.fecha_reporte) BETWEEN :inicio AND :fin
+                        ORDER BY p.fecha_reporte DESC";
+                $stmt = $db->prepare($sql);
+                $stmt->execute([':inicio' => $fechaInicio, ':fin' => $fechaFin]);
+                $data = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+                
+                foreach ($data as $row) {
+                    $totales['estimado'] += $row['total'];
+                    $totales['total_cotizaciones']++;
+                }
+                break;
+                
+            case 'facturas':
+                $sql = "SELECT f.id, f.fecha_emision as fecha_solicitud, CONCAT(u.nombre, ' ', u.apellido) as cliente,
+                               'emitida' as estado, f.total as total
+                        FROM facturas f
+                        JOIN pedidos p ON f.pedido_id = p.id
+                        JOIN usuarios u ON p.usuario_id = u.id
+                        WHERE DATE(f.fecha_emision) BETWEEN :inicio AND :fin
+                        ORDER BY f.fecha_emision DESC";
+                $stmt = $db->prepare($sql);
+                $stmt->execute([':inicio' => $fechaInicio, ':fin' => $fechaFin]);
+                $data = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+                
+                foreach ($data as $row) {
+                    $totales['estimado'] += $row['total'];
+                    $totales['total_cotizaciones']++;
+                }
+                break;
+                
+            case 'productos_solicitados':
+                $sql = "SELECT 'Producto' as tipo_item, pr.nombre, SUM(cd.cantidad) as total_solicitado
+                        FROM cotizacion_detalles cd
+                        JOIN productos pr ON cd.producto_id = pr.id
+                        JOIN pedidos p ON cd.cotizacion_id = p.cotizacion_id
+                        WHERE DATE(p.fecha_creacion) BETWEEN :inicio AND :fin
+                        GROUP BY pr.id
+                        ORDER BY total_solicitado DESC";
+                $stmt = $db->prepare($sql);
+                $stmt->execute([':inicio' => $fechaInicio, ':fin' => $fechaFin]);
+                $data = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+                break;
+                
+            case 'servicios_solicitados':
+                $sql = "SELECT 'Servicio' as tipo_item, s.nombre, SUM(cd.cantidad) as total_solicitado
+                        FROM cotizacion_detalles cd
+                        JOIN servicios s ON cd.servicio_id = s.id
+                        JOIN pedidos p ON cd.cotizacion_id = p.cotizacion_id
+                        WHERE DATE(p.fecha_creacion) BETWEEN :inicio AND :fin
+                        GROUP BY s.id
+                        ORDER BY total_solicitado DESC";
+                $stmt = $db->prepare($sql);
+                $stmt->execute([':inicio' => $fechaInicio, ':fin' => $fechaFin]);
+                $data = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+                break;
+        }
 
-            if ($exportar === 'csv') {
-                header('Content-Type: text/csv; charset=utf-8');
-                header('Content-Disposition: attachment; filename="reporte_mas_solicitados.csv"');
-                $output = fopen('php://output', 'w');
-                fputs($output, $bom =(chr(0xEF) . chr(0xBB) . chr(0xBF)));
+        if ($exportar === 'csv') {
+            header('Content-Type: text/csv; charset=utf-8');
+            header('Content-Disposition: attachment; filename="reporte_' . $tipo . '.csv"');
+            $output = fopen('php://output', 'w');
+            fputs($output, $bom =(chr(0xEF) . chr(0xBB) . chr(0xBF)));
+            
+            if (in_array($tipo, ['productos_solicitados', 'servicios_solicitados'])) {
                 fputcsv($output, ['Tipo', 'Nombre', 'Total Solicitado']);
                 foreach ($data as $row) {
                     fputcsv($output, [$row['tipo_item'], $row['nombre'], $row['total_solicitado']]);
                 }
-                fclose($output);
-                exit;
+            } else {
+                fputcsv($output, ['ID', 'Fecha', 'Cliente/Ref', 'Estado', 'Total']);
+                foreach ($data as $row) {
+                    fputcsv($output, [$row['id'], $row['fecha_solicitud'], $row['cliente'], $row['estado'], $row['total']]);
+                }
             }
+            fclose($output);
+            exit;
         }
 
         // ── PDF export ──────────────────────────────────────────

@@ -65,9 +65,9 @@
     <div class="max-w-7xl mx-auto px-4">
         <div class="flex flex-col md:flex-row justify-between items-center mb-8 text-center md:text-left">
             <div class="mb-4 md:mb-0">
-                <h2 class="text-2xl md:text-3xl font-bold text-gray-900 mb-2">DETECTOR DE HUMO</h2>
+                <h2 class="text-2xl md:text-3xl font-bold text-gray-900 mb-2">NUESTROS SERVICIOS</h2>
                 <p class="text-gray-600 text-sm md:text-base">
-                    Prevención <span class="text-red-600 font-bold">temprana de incendios</span>
+                    Soluciones <span class="text-red-600 font-bold">técnicas y operativas</span>
                 </p>
             </div>
             <a href="<?= $base_url ?? '' ?>/catalogo" class="inline-flex items-center text-gray-700 font-semibold hover:text-red-600 transition-colors group">
@@ -78,33 +78,22 @@
 
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             <?php
-            // Filtrar productos de categorías de detección o mostrar primeros 4
-            $detectores = [];
-            foreach (($destacados ?? []) as $p) {
-                $cat = mb_strtolower($p['categoria_nombre'] ?? '');
-                if (strpos($cat, 'deteccion') !== false || strpos($cat, 'detección') !== false || strpos($cat, 'detector') !== false || strpos($cat, 'humo') !== false) {
-                    $detectores[] = $p;
-                }
-            }
-            if (empty($detectores)) {
-                $detectores = array_slice($destacados ?? [], 0, 4);
-            }
-            foreach ($detectores as $d): 
-                $dImgFile = $d['imagen_principal'] ?? '';
-                $dImgPath = !empty($dImgFile) ? (dirname(__DIR__,2) . '/public/img/productos/' . $dImgFile) : '';
-                $dExists = !empty($dImgFile) && file_exists($dImgPath);
-                $dSrc = $dExists ? ($base_url ?? '') . '/img/productos/' . htmlspecialchars($dImgFile) : ($base_url ?? '') . '/img/Photoroom-20251106_165742.png';
+            foreach ($servicios ?? [] as $s): 
+                $sImgFile = $s['imagen_principal'] ?? '';
+                $sImgPath = !empty($sImgFile) ? (dirname(__DIR__,2) . '/public/img/servicios/' . $sImgFile) : '';
+                $sExists = !empty($sImgFile) && file_exists($sImgPath);
+                $sSrc = $sExists ? ($base_url ?? '') . '/img/servicios/' . htmlspecialchars($sImgFile) : ($base_url ?? '') . '/img/Photoroom-20251106_165742.png';
             ?>
             <div class="bg-white rounded-lg p-6 hover:shadow-xl transition-shadow flex flex-col justify-between border border-gray-100">
                 <div>
-                    <img src="<?= $dSrc ?>"
-                         alt="<?= htmlspecialchars($d['nombre']) ?>"
+                    <img src="<?= $sSrc ?>"
+                         alt="<?= htmlspecialchars($s['nombre']) ?>"
                          class="w-full h-32 object-contain mb-4 hover:scale-105 transition-transform duration-300">
                     <p class="text-sm font-bold text-gray-900 mb-4 text-center">
-                        <?= htmlspecialchars($d['nombre']) ?>
+                        <?= htmlspecialchars($s['nombre']) ?>
                     </p>
                 </div>
-                <a href="<?= $base_url ?? '' ?>/producto/<?= $d['id'] ?>" class="inline-block text-center border-2 border-gray-200 rounded-full px-6 py-2.5 text-sm font-bold text-gray-700 hover:bg-red-600 hover:text-white hover:border-red-600 transition-all w-full shadow-sm">
+                <a href="<?= $base_url ?? '' ?>/servicio/<?= $s['id'] ?>" class="inline-block text-center border-2 border-gray-200 rounded-full px-6 py-2.5 text-sm font-bold text-gray-700 hover:bg-red-600 hover:text-white hover:border-red-600 transition-all w-full shadow-sm">
                     Ver Detalles
                 </a>
             </div>

@@ -1,12 +1,10 @@
 <?php
 // Template for PDF generation
-$subtotal = 0;
-foreach ($detalles as $item) {
-    $subtotal += $item['cantidad'] * $item['precio_unitario'];
-}
-$iva = $subtotal * 0.16;
-$descuento = 0.00;
-$totalFinal = $subtotal + $iva - $descuento;
+$subtotal = (float)$factura['subtotal'];
+$iva = (float)$factura['impuestos'];
+$descuento = (float)$factura['descuento'];
+$costoEnvio = (float)$factura['costo_envio'];
+$totalFinal = (float)$factura['total'];
 
 $cotizacionNum = str_pad((string)$cotizacion['id'], 4, '0', STR_PAD_LEFT);
 $year = date('Y', strtotime($cotizacion['fecha_solicitud']));
@@ -113,7 +111,7 @@ if (file_exists($logoFile)) {
                 <strong><?= htmlspecialchars(!empty($item['producto_id']) ? $item['producto_nombre'] : $item['servicio_nombre']) ?></strong><br>
             </td>
             <td class="text-center"><?= !empty($item['producto_id']) ? 'Prod' : 'Serv' ?></td>
-            <td class="text-center"><?= $item['cantidad'] ?></td>
+            <td class="text-center"><?= !empty($item['producto_id']) ? (int)$item['cantidad'] : 'N/A' ?></td>
             <td class="text-right"><?= number_format((float)$item['precio_unitario'], 2) ?></td>
             <td class="text-right"><?= number_format((float)$lineTotal, 2) ?></td>
         </tr>
@@ -127,10 +125,17 @@ if (file_exists($logoFile)) {
             <td>Subtotal:</td>
             <td class="text-right">$<?= number_format((float)$factura['subtotal'], 2) ?></td>
         </tr>
+        <?php if ((float)$factura['impuestos'] > 0): ?>
         <tr>
             <td>IVA (16%):</td>
             <td class="text-right">$<?= number_format((float)$factura['impuestos'], 2) ?></td>
         </tr>
+        <?php else: ?>
+        <tr>
+            <td>IVA / Impuestos:</td>
+            <td class="text-right">Exento ($0.00)</td>
+        </tr>
+        <?php endif; ?>
         <?php if((float)$factura['descuento'] > 0): ?>
         <tr>
             <td style="color:red;">Descuento:</td>
@@ -177,10 +182,12 @@ if (file_exists($logoFile)) {
         <h4>Términos y Condiciones</h4>
         <ul>
             <li>Los precios están expresados en dólares americanos (USD).</li>
-            <li>Formas de pago recibidas: Transferencia bancaria, Pago Móvil, efectivo, divisas.</li>
-            <li>La entrega se realizará en los plazos acordados tras la confirmación de pago.</li>
+            <li>Formas de pago recibidas: Transferencia bancaria y Pago Móvil.</li>
+            <li>El monto total incluye impuestos aplicables y, cuando corresponda, costo de envío o domicilio.</li>
+            <li>El costo de entrega a domicilio será determinado según la ubicación y coordinado previamente con el cliente.</li>
+            <li>La ejecución de la entrega o servicio se realizará una vez confirmado el pago.</li>
             <li>Garantía aplicable según especificaciones del fabricante.</li>
-            <li>Para coordinar el pago, contáctenos vía WhatsApp: <?= \App\Core\Config::WHATSAPP_DISPLAY ?></li>
+            <li>Para coordinar pagos en divisas, comuníquese con soporte vía WhatsApp: <?= \App\Core\Config::WHATSAPP_DISPLAY ?></li>
         </ul>
     </div>
 

@@ -51,7 +51,16 @@ if ($esPdf):
         </div>
         <div class="right">
             <h1>REPORTE</h1>
-            <p><strong>Tipo:</strong> <?= $tipo === 'cotizaciones' ? 'Solicitudes de Presupuesto' : 'Más Solicitados' ?></p>
+            <p><strong>Tipo:</strong> <?php
+                $nombres = [
+                    'pedidos' => 'Pedidos',
+                    'pagos' => 'Pagos',
+                    'facturas' => 'Facturas',
+                    'productos_solicitados' => 'Productos más solicitados',
+                    'servicios_solicitados' => 'Servicios más solicitados'
+                ];
+                echo $nombres[$tipo] ?? 'Reporte';
+            ?></p>
             <p><strong>Período:</strong> <?= date('d/m/Y', strtotime($fechaInicio)) ?> - <?= date('d/m/Y', strtotime($fechaFin)) ?></p>
             <p><strong>Generado:</strong> <?= date('d/m/Y') ?></p>
         </div>
@@ -102,7 +111,7 @@ if ($esPdf):
                         ?>
                         <span class="estado-badge <?= $cls ?>"><?= htmlspecialchars($estadoName) ?></span>
                     </td>
-                    <td class="text-right">Bs. <?= number_format((float)($row['total'] ?? 0), 2, ',', '.') ?></td>
+                    <td class="text-right">$<?= number_format((float)($row['total'] ?? 0), 2, ',', '.') ?></td>
                     <?php else: ?>
                     <td><?= htmlspecialchars($row['tipo_item']) ?></td>
                     <td><?= htmlspecialchars($row['nombre']) ?></td>
@@ -114,12 +123,12 @@ if ($esPdf):
         </tbody>
     </table>
 
-    <?php if ($tipo === 'cotizaciones'): ?>
+    <?php if (!in_array($tipo, ['productos_solicitados', 'servicios_solicitados'])): ?>
     <div class="totals-box">
-        <div class="row"><span>Total Presupuestos:</span><strong><?= $totales['total_cotizaciones'] ?></strong></div>
-        <div class="row"><span>Monto Total Estimado:</span><strong>Bs. <?= number_format($totales['estimado'], 2, ',', '.') ?></strong></div>
-        <div class="row"><span>Monto Procesado:</span><strong style="color:#28a745;">Bs. <?= number_format($totales['procesado'], 2, ',', '.') ?></strong></div>
-        <div class="row"><span>Monto Pendiente:</span><strong style="color:#ffc107;">Bs. <?= number_format($totales['pendiente'], 2, ',', '.') ?></strong></div>
+        <div class="row"><span>Total Registros:</span><strong><?= $totales['total_cotizaciones'] ?></strong></div>
+        <div class="row"><span>Monto Total Estimado:</span><strong>$<?= number_format($totales['estimado'], 2, ',', '.') ?></strong></div>
+        <div class="row"><span>Monto Procesado:</span><strong style="color:#28a745;">$<?= number_format($totales['procesado'], 2, ',', '.') ?></strong></div>
+        <div class="row"><span>Monto Pendiente:</span><strong style="color:#ffc107;">$<?= number_format($totales['pendiente'], 2, ',', '.') ?></strong></div>
         <div class="row total-final"><span>Tasa de Conversión:</span><?= $totales['total_cotizaciones'] > 0 ? round(($totales['cotizaciones_procesadas'] / $totales['total_cotizaciones']) * 100) : 0 ?>%</div>
     </div>
     <?php endif; ?>
@@ -157,8 +166,11 @@ require_once __DIR__ . '/../layouts/_head.php'; ?>
             <div>
               <label class="block text-sm font-semibold text-gray-900 mb-2">Tipo de Reporte</label>
               <select name="tipo" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500">
-                <option value="cotizaciones" <?= $tipo === 'cotizaciones' ? 'selected' : '' ?>>Solicitudes de Presupuesto</option>
-                <option value="mas_solicitados" <?= $tipo === 'mas_solicitados' ? 'selected' : '' ?>>Más Solicitados</option>
+                <option value="pedidos" <?= $tipo === 'pedidos' ? 'selected' : '' ?>>Pedidos</option>
+                <option value="pagos" <?= $tipo === 'pagos' ? 'selected' : '' ?>>Pagos</option>
+                <option value="facturas" <?= $tipo === 'facturas' ? 'selected' : '' ?>>Facturas</option>
+                <option value="productos_solicitados" <?= $tipo === 'productos_solicitados' ? 'selected' : '' ?>>Productos más solicitados</option>
+                <option value="servicios_solicitados" <?= $tipo === 'servicios_solicitados' ? 'selected' : '' ?>>Servicios más solicitados</option>
               </select>
             </div>
 
@@ -225,7 +237,16 @@ require_once __DIR__ . '/../layouts/_head.php'; ?>
               </div>
               <div class="text-right">
                 <h1 class="text-3xl font-bold text-gray-900 mb-2">REPORTE</h1>
-                <p class="text-sm text-gray-600 mb-1"><span class="font-semibold">Tipo:</span> <?= $tipo === 'cotizaciones' ? 'Solicitudes de Presupuesto' : 'Más Solicitados' ?></p>
+                <p class="text-sm text-gray-600 mb-1"><span class="font-semibold">Tipo:</span> <?php
+                    $nombres = [
+                        'pedidos' => 'Pedidos',
+                        'pagos' => 'Pagos',
+                        'facturas' => 'Facturas',
+                        'productos_solicitados' => 'Productos más solicitados',
+                        'servicios_solicitados' => 'Servicios más solicitados'
+                    ];
+                    echo $nombres[$tipo] ?? 'Reporte';
+                ?></p>
                 <p class="text-sm text-gray-600 mb-1"><span class="font-semibold">Período:</span> <?= date('d/m/Y', strtotime($fechaInicio)) ?> - <?= date('d/m/Y', strtotime($fechaFin)) ?></p>
                 <p class="text-sm text-gray-600 mb-1"><span class="font-semibold">Generado:</span> <?= date('d/m/Y') ?></p>
               </div>
@@ -278,7 +299,7 @@ require_once __DIR__ . '/../layouts/_head.php'; ?>
                             <?= htmlspecialchars($estadoName) ?>
                           </span>
                         </td>
-                        <td class="px-4 py-3 text-sm font-semibold text-gray-900 text-right">Bs. <?= number_format((float)($row['total'] ?? 0), 2, ',', '.') ?></td>
+                        <td class="px-4 py-3 text-sm font-semibold text-gray-900 text-right">$<?= number_format((float)($row['total'] ?? 0), 2, ',', '.') ?></td>
                         <?php else: ?>
                         <td class="px-4 py-3 text-sm font-semibold text-gray-900"><?= htmlspecialchars($row['tipo_item']) ?></td>
                         <td class="px-4 py-3 text-sm text-gray-900"><?= htmlspecialchars($row['nombre']) ?></td>
@@ -291,26 +312,26 @@ require_once __DIR__ . '/../layouts/_head.php'; ?>
               </table>
             </div>
 
-            <?php if ($tipo === 'cotizaciones'): ?>
+            <?php if (!in_array($tipo, ['productos_solicitados', 'servicios_solicitados'])): ?>
             <!-- Totals Section -->
             <div class="flex justify-end mb-8">
               <div class="w-96">
                 <div class="bg-gray-50 rounded-lg p-4">
                   <div class="flex justify-between py-2 text-sm border-b border-gray-200">
-                    <span class="text-gray-600">Total Presupuestos:</span>
+                    <span class="text-gray-600">Total Registros:</span>
                     <span class="font-bold text-gray-900"><?= $totales['total_cotizaciones'] ?></span>
                   </div>
                   <div class="flex justify-between py-2 text-sm border-b border-gray-200">
                     <span class="text-gray-600">Monto Total Estimado:</span>
-                    <span class="font-bold text-gray-900">Bs. <?= number_format($totales['estimado'], 2, ',', '.') ?></span>
+                    <span class="font-bold text-gray-900">$<?= number_format($totales['estimado'], 2, ',', '.') ?></span>
                   </div>
                   <div class="flex justify-between py-2 text-sm border-b border-gray-200">
                     <span class="text-gray-600">Monto Procesado:</span>
-                    <span class="font-semibold text-green-700">Bs. <?= number_format($totales['procesado'], 2, ',', '.') ?></span>
+                    <span class="font-semibold text-green-700">$<?= number_format($totales['procesado'], 2, ',', '.') ?></span>
                   </div>
                   <div class="flex justify-between py-2 text-sm border-b border-gray-200">
                     <span class="text-gray-600">Monto Pendiente:</span>
-                    <span class="font-semibold text-yellow-700">Bs. <?= number_format($totales['pendiente'], 2, ',', '.') ?></span>
+                    <span class="font-semibold text-yellow-700">$<?= number_format($totales['pendiente'], 2, ',', '.') ?></span>
                   </div>
                   <div class="flex justify-between py-3 border-t-2 border-gray-300 mt-2">
                     <span class="text-base font-bold text-gray-900">Tasa de Conversión:</span>

@@ -43,13 +43,15 @@
                             $allImages[] = ($base_url ?? '') . '/img/user.png';
                         }
                     ?>
-                    <div class="w-full aspect-square bg-white rounded-xl p-2 flex items-center justify-center border border-gray-200 mb-4 relative group">
-                        <img id="main-product-image" src="<?= htmlspecialchars($allImages[0]) ?>" alt="<?= htmlspecialchars($producto['nombre'] ?? '') ?>" class="max-w-full max-h-full object-contain transition-all duration-300">
+                    <div class="w-full aspect-square bg-white rounded-xl p-2 flex items-center justify-center border border-gray-200 mb-4 relative group overflow-hidden"
+                         onmousemove="zoomImage(event, this)" 
+                         onmouseleave="resetZoom(this)">
+                        <img id="main-product-image" src="<?= htmlspecialchars($allImages[0]) ?>" alt="<?= htmlspecialchars($producto['nombre'] ?? '') ?>" class="max-w-full max-h-full object-contain transition-transform duration-200 group-hover:scale-[1.75] cursor-zoom-in" style="transform-origin: center center;">
                         <?php if (count($allImages) > 1): ?>
-                            <button onclick="prevImage()" type="button" class="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 p-2 rounded-full shadow hover:bg-white text-gray-800 focus:outline-none opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button onclick="prevImage()" type="button" class="absolute top-1/2 -translate-y-1/2 bg-white/80 p-2 rounded-full shadow hover:bg-white text-gray-800 focus:outline-none transition-colors z-10" style="left: 10px;">
                                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
                             </button>
-                            <button onclick="nextImage()" type="button" class="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 p-2 rounded-full shadow hover:bg-white text-gray-800 focus:outline-none opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button onclick="nextImage()" type="button" class="absolute top-1/2 -translate-y-1/2 bg-white/80 p-2 rounded-full shadow hover:bg-white text-gray-800 focus:outline-none transition-colors z-10" style="right: 10px;">
                                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                             </button>
                         <?php endif; ?>
@@ -92,6 +94,19 @@
                             let prevIdx = currentImgIdx - 1;
                             if (prevIdx < 0) prevIdx = allImages.length - 1;
                             updateImage(prevIdx);
+                        }
+
+                        function zoomImage(e, container) {
+                            const img = container.querySelector('img');
+                            const rect = container.getBoundingClientRect();
+                            const x = ((e.clientX - rect.left) / rect.width) * 100;
+                            const y = ((e.clientY - rect.top) / rect.height) * 100;
+                            img.style.transformOrigin = `${x}% ${y}%`;
+                        }
+
+                        function resetZoom(container) {
+                            const img = container.querySelector('img');
+                            img.style.transformOrigin = 'center center';
                         }
 
                         function setImage(idx) {

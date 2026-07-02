@@ -162,7 +162,7 @@ if ($previewTotal < 0) $previewTotal = 0;
                                             </td>
                                             <td class="px-4 py-3 text-center">
                                                 <span class="text-sm font-semibold text-gray-700">
-                                                    <?= !empty($item['producto_id']) ? (int)$item['cantidad'] : number_format((float)$item['cantidad'], 2) ?>
+                                                    <?= !empty($item['producto_id']) ? (int)$item['cantidad'] : 'N/A' ?>
                                                 </span>
                                             </td>
                                             <td class="px-4 py-3 text-right">
@@ -439,8 +439,20 @@ if ($previewTotal < 0) $previewTotal = 0;
                                 <input type="number" step="0.01" min="0" name="descuento" value="<?= number_format((float)($cotizacion['descuento'] ?? 0), 2, '.', '') ?>" class="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500">
                             </div>
                             <div>
-                                <label class="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1.5">IVA / Impuestos <span class="text-gray-400 normal-case font-normal">($)</span></label>
-                                <input type="number" step="0.01" min="0" name="impuestos" value="<?= number_format((float)($cotizacion['impuestos'] ?? 0), 2, '.', '') ?>" class="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500">
+                                <label class="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1.5">¿Aplica IVA?</label>
+                                <select name="aplica_iva" id="aplica_iva" class="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500">
+                                    <option value="" disabled <?= is_null($cotizacion['aplica_iva']) ? 'selected' : '' ?>>Seleccionar...</option>
+                                    <option value="1" <?= (isset($cotizacion['aplica_iva']) && $cotizacion['aplica_iva'] == 1) ? 'selected' : '' ?>>Sí (Gravado)</option>
+                                    <option value="0" <?= (isset($cotizacion['aplica_iva']) && $cotizacion['aplica_iva'] == 0) ? 'selected' : '' ?>>No (Exento)</option>
+                                </select>
+                            </div>
+                            <div id="tasa_iva_container" class="<?= (isset($cotizacion['aplica_iva']) && $cotizacion['aplica_iva'] == 1) ? 'block' : 'hidden' ?>">
+                                <label class="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1.5">Tasa IVA (%)</label>
+                                <input type="number" step="0.01" min="0" name="tasa_iva" id="tasa_iva" value="<?= number_format((float)($cotizacion['tasa_iva'] ?? 16.00), 2, '.', '') ?>" class="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500" <?= $_SESSION['role'] === 'admin' ? '' : 'readonly' ?>>
+                            </div>
+                            <div id="motivo_exento_container" class="<?= (isset($cotizacion['aplica_iva']) && $cotizacion['aplica_iva'] == 0) ? 'block' : 'hidden' ?>">
+                                <label class="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1.5">Motivo de Exención</label>
+                                <input type="text" name="motivo_exento" id="motivo_exento" value="<?= htmlspecialchars($cotizacion['motivo_exento'] ?? '') ?>" placeholder="Ej: Zona Libre, Ente Gubernamental" class="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500">
                             </div>
                             <?php if ($hasProducts): ?>
                                 <?php if ($cotizacion['tipo_entrega'] === 'domicilio'): ?>
@@ -791,5 +803,22 @@ document.querySelectorAll('.item-precio').forEach(input => {
 .w-22 { width: 5.5rem; }
 </style>
 
+<script>
+document.getElementById('aplica_iva').addEventListener('change', function() {
+    if (this.value === '1') {
+        document.getElementById('tasa_iva_container').classList.remove('hidden');
+        document.getElementById('tasa_iva_container').classList.add('block');
+        document.getElementById('motivo_exento_container').classList.add('hidden');
+        document.getElementById('motivo_exento_container').classList.remove('block');
+        document.getElementById('motivo_exento').required = false;
+    } else if (this.value === '0') {
+        document.getElementById('tasa_iva_container').classList.add('hidden');
+        document.getElementById('tasa_iva_container').classList.remove('block');
+        document.getElementById('motivo_exento_container').classList.remove('hidden');
+        document.getElementById('motivo_exento_container').classList.add('block');
+        document.getElementById('motivo_exento').required = true;
+    }
+});
+</script>
 </body>
 </html>

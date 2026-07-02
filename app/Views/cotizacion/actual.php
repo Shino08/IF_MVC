@@ -9,7 +9,7 @@ foreach ($detalles as $item) {
 ?>
 
 <div class="bg-gray-50 min-h-screen py-10">
-    <div class="max-w-5xl mx-auto px-4">
+    <div class="max-w-2xl mx-auto px-4">
 
         <!-- Header -->
         <div class="mb-8">
@@ -46,10 +46,10 @@ foreach ($detalles as $item) {
                 </a>
             </div>
         <?php else: ?>
-            <div class="flex flex-col lg:flex-row gap-8 items-start">
+            <div class="flex flex-col gap-8 items-start w-full">
 
                 <!-- ===== COLUMNA IZQUIERDA: Items ===== -->
-                <div class="flex-1 min-w-0">
+                <div class="w-full" id="step-1">
                     <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
                         <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
                             <h2 class="font-bold text-gray-900 text-lg">
@@ -77,56 +77,60 @@ foreach ($detalles as $item) {
                                     $cantidad  = (float)$item['cantidad'];
                                     $subtotalItem = $precio * $cantidad;
                                 ?>
-                                <li class="p-5 flex items-center gap-5 hover:bg-gray-50/60 transition-colors group">
-                                    <!-- Imagen -->
-                                    <div class="flex-shrink-0 w-18 h-18 bg-gray-50 rounded-xl p-2 border border-gray-100 hidden sm:block" style="width:72px;height:72px;">
-                                        <img src="<?= $imgUrl ?>" alt="<?= htmlspecialchars($nombre) ?>" class="w-full h-full object-contain mix-blend-multiply">
-                                    </div>
-
-                                    <!-- Info -->
-                                    <div class="flex-1 min-w-0">
-                                        <div class="flex items-center gap-2 mb-0.5">
-                                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wider <?= $esProducto ? 'bg-blue-50 text-blue-700' : 'bg-purple-50 text-purple-700' ?>">
-                                                <?= $esProducto ? 'PRODUCTO' : 'SERVICIO' ?>
-                                            </span>
+                                <li class="p-3 sm:p-5 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-5 hover:bg-gray-50/60 transition-colors group">
+                                    <div class="flex items-center gap-3 flex-1 min-w-0">
+                                        <!-- Imagen -->
+                                        <div class="flex-shrink-0 w-16 h-16 bg-gray-50 rounded-xl p-1.5 border border-gray-100 hidden sm:block">
+                                            <img src="<?= $imgUrl ?>" alt="<?= htmlspecialchars($nombre) ?>" class="w-full h-full object-contain mix-blend-multiply">
                                         </div>
-                                        <h4 class="text-sm font-bold text-gray-900 truncate"><?= htmlspecialchars($nombre) ?></h4>
-                                        <p class="text-xs text-gray-400 mt-0.5">$<?= number_format($precio, 2) ?> c/u</p>
-                                    </div>
 
-                                    <!-- Cantidad -->
-                                    <div class="flex items-center gap-2 flex-shrink-0">
-                                        <?php if ($esProducto): ?>
-                                            <form action="<?= $base_url ?? '' ?>/pedido/item/actualizar" method="POST" class="flex items-center form-actualizar-cantidad">
-                                                <input type="hidden" name="detalle_id" value="<?= $item['id'] ?>">
-                                                <div class="flex items-center border border-gray-200 rounded-lg overflow-hidden bg-white w-28">
-                                                    <button type="button" class="btn-qty-dec w-8 h-9 flex items-center justify-center text-gray-500 hover:bg-gray-100 transition-colors text-base font-bold">−</button>
-                                                    <input type="number" name="cantidad" value="<?= (int)$cantidad ?>" class="w-10 text-center text-gray-900 font-bold text-sm py-2 focus:outline-none border-none bg-transparent" min="1" step="1" id="qty-<?= $item['id'] ?>">
-                                                    <button type="button" class="btn-qty-inc w-8 h-9 flex items-center justify-center text-gray-500 hover:bg-gray-100 transition-colors text-base font-bold">+</button>
-                                                </div>
-                                                <button type="submit" class="ml-1.5 p-1.5 text-gray-300 hover:text-blue-600 transition-colors" title="Guardar cantidad">
-                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
-                                                </button>
-                                            </form>
-                                        <?php else: ?>
-                                            <div class="flex items-center justify-center w-28 h-9 bg-gray-50 rounded-lg border border-gray-200 text-gray-400 text-xs font-medium">
-                                                Servicio fijo
+                                        <!-- Info -->
+                                        <div class="flex-1 min-w-0">
+                                            <div class="flex items-center gap-2 mb-0.5">
+                                                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wider <?= $esProducto ? 'bg-blue-50 text-blue-700' : 'bg-purple-50 text-purple-700' ?>">
+                                                    <?= $esProducto ? 'PRODUCTO' : 'SERVICIO' ?>
+                                                </span>
                                             </div>
-                                        <?php endif; ?>
+                                            <h4 class="text-sm font-bold text-gray-900 truncate"><?= htmlspecialchars($nombre) ?></h4>
+                                            <p class="text-xs text-gray-400 mt-0.5">$<?= number_format($precio, 2) ?> c/u</p>
+                                        </div>
                                     </div>
 
-                                    <!-- Subtotal -->
-                                    <div class="text-right flex-shrink-0 w-20">
-                                        <p class="text-sm font-bold text-gray-900">$<?= number_format($subtotalItem, 2) ?></p>
-                                    </div>
+                                    <div class="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto mt-1 sm:mt-0">
+                                        <!-- Cantidad -->
+                                        <div class="flex items-center gap-2 flex-shrink-0">
+                                            <?php if ($esProducto): ?>
+                                                <form action="<?= $base_url ?? '' ?>/pedido/item/actualizar" method="POST" class="flex items-center form-actualizar-cantidad">
+                                                    <input type="hidden" name="detalle_id" value="<?= $item['id'] ?>">
+                                                    <div class="flex items-center border border-gray-200 rounded-lg overflow-hidden bg-white h-9 w-24">
+                                                        <button type="button" class="btn-qty-dec w-7 h-full flex items-center justify-center text-gray-500 hover:bg-gray-100 transition-colors text-base font-bold">−</button>
+                                                        <input type="number" name="cantidad" value="<?= (int)$cantidad ?>" class="w-10 text-center text-gray-900 font-bold text-sm h-full focus:outline-none border-none bg-transparent p-0 m-0" min="1" step="1" id="qty-<?= $item['id'] ?>">
+                                                        <button type="button" class="btn-qty-inc w-7 h-full flex items-center justify-center text-gray-500 hover:bg-gray-100 transition-colors text-base font-bold">+</button>
+                                                    </div>
+                                                    <button type="submit" class="ml-1 p-1 text-gray-300 hover:text-blue-600 transition-colors" title="Guardar cantidad">
+                                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                                                    </button>
+                                                </form>
+                                            <?php else: ?>
+                                                <div class="flex items-center justify-center w-24 h-9 bg-gray-50 rounded-lg border border-gray-200 text-gray-400 text-xs font-medium">
+                                                    Servicio fijo
+                                                </div>
+                                            <?php endif; ?>
+                                        </div>
 
-                                    <!-- Eliminar -->
-                                    <form action="<?= $base_url ?? '' ?>/pedido/item/eliminar" method="POST" class="form-eliminar-item flex-shrink-0">
-                                        <input type="hidden" name="detalle_id" value="<?= $item['id'] ?>">
-                                        <button type="submit" class="p-1.5 text-gray-300 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100" title="Eliminar">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                                        </button>
-                                    </form>
+                                        <!-- Subtotal -->
+                                        <div class="text-right flex-shrink-0 min-w-[70px]">
+                                            <p class="text-sm font-bold text-gray-900">$<?= number_format($subtotalItem, 2) ?></p>
+                                        </div>
+
+                                        <!-- Eliminar -->
+                                        <form action="<?= $base_url ?? '' ?>/pedido/item/eliminar" method="POST" class="form-eliminar-item flex-shrink-0">
+                                            <input type="hidden" name="detalle_id" value="<?= $item['id'] ?>">
+                                            <button type="submit" class="p-1.5 text-gray-300 hover:text-red-500 transition-colors sm:opacity-0 group-hover:opacity-100" title="Eliminar">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                            </button>
+                                        </form>
+                                    </div>
                                 </li>
                             <?php endforeach; ?>
                         </ul>
@@ -136,10 +140,20 @@ foreach ($detalles as $item) {
                             <span class="text-lg font-extrabold text-gray-900" id="subtotal-display">$<?= number_format($subtotalCart, 2) ?></span>
                         </div>
                     </div>
+                    <div class="mt-6 flex justify-end">
+                        <button type="button" id="btn-continuar" class="px-8 py-3 bg-red-600 text-white font-bold rounded-xl shadow hover:bg-red-700 transition-colors">
+                            Continuar &rarr;
+                        </button>
+                    </div>
                 </div>
 
                 <!-- ===== COLUMNA DERECHA: Checkout ===== -->
-                <div class="w-full lg:w-[420px] flex-shrink-0">
+                <div class="w-full flex-shrink-0 hidden" id="step-2">
+                    <div class="mb-4">
+                        <button type="button" id="btn-volver" class="text-sm text-gray-500 hover:text-red-600 font-medium flex items-center gap-1 transition-colors">
+                            &larr; Volver a los ítems
+                        </button>
+                    </div>
                     <form action="<?= $base_url ?? '' ?>/pedido/enviar" method="POST" id="checkout-form">
 
                         <!-- Sección 1: Método de Entrega -->
@@ -292,6 +306,27 @@ foreach ($detalles as $item) {
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+    const btnContinuar = document.getElementById('btn-continuar');
+    const btnVolver = document.getElementById('btn-volver');
+    const step1 = document.getElementById('step-1');
+    const step2 = document.getElementById('step-2');
+
+    if (btnContinuar) {
+        btnContinuar.addEventListener('click', () => {
+            step1.classList.add('hidden');
+            step2.classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    }
+
+    if (btnVolver) {
+        btnVolver.addEventListener('click', () => {
+            step2.classList.add('hidden');
+            step1.classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    }
+
     const radios = document.querySelectorAll('input[name="tipo_entrega"]');
     const divDireccion = document.getElementById('div_direccion');
     const estadoEnvio = document.getElementById('estado_envio');

@@ -110,9 +110,9 @@ $active_nav   = 'servicios';
                             </div>
 
                             <div class="mb-6">
-                                <label for="descripcion" class="block text-sm font-semibold text-gray-900 mb-2">Descripción del Servicio</label>
+                                <label for="descripcion" class="block text-sm font-semibold text-gray-900 mb-2">Alcance Técnico / Observaciones</label>
                                 <textarea id="descripcion" name="descripcion" rows="4"
-                                          placeholder="Detalla qué incluye el servicio, condiciones, tiempos, etc."
+                                          placeholder="Detalla qué incluye el servicio, alcance, condiciones, tiempos, etc."
                                           class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 resize-none"><?= htmlspecialchars($servicio['descripcion'] ?? '') ?></textarea>
                             </div>
 

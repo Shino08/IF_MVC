@@ -208,17 +208,17 @@
             ?>">
                 <p class="text-xs font-semibold">
                     <?php if ($currentStep === 'pendiente_pago'): ?>
-                        💳 Tu pedido está confirmado. Reporta tu pago para que lo procesemos.
+                        Tu pedido está confirmado. Reporta tu pago para que lo procesemos.
                     <?php elseif ($currentStep === 'pago_por_validar'): ?>
-                        🔍 Recibimos tu comprobante. Lo estamos verificando — te notificaremos pronto.
+                        Recibimos tu comprobante. Lo estamos verificando — te notificaremos pronto.
                     <?php elseif ($currentStep === 'procesando'): ?>
-                        📦 Pago validado. Tu pedido está siendo preparado.
+                        Pago validado. Tu pedido está siendo preparado.
                     <?php elseif ($currentStep === 'despachado' && $esDomicilio): ?>
                         Tu pedido salió del almacén. Está en ruta hacia ti.
                     <?php elseif ($currentStep === 'despachado'): ?>
-                        🏪 Tu pedido está listo. Puedes pasar a retirarlo por nuestra tienda.
+                        Tu pedido está listo. Puedes pasar a retirarlo por nuestra tienda.
                     <?php else: ?>
-                        ✅ ¡Pedido completado! Gracias por tu compra.
+                        ¡Pedido completado! Gracias por tu compra.
                     <?php endif; ?>
                 </p>
             </div>
@@ -230,6 +230,39 @@
         <p class="text-sm font-semibold text-red-700">Este pedido fue cancelado. Contacta a soporte si necesitas asistencia.</p>
     </div>
     <?php endif; ?>
+
+    <?php
+    $estadoLabels = [
+        'borrador'               => ['label' => 'Borrador',            'color' => 'border-gray-200 bg-gray-50 text-gray-600'],
+        'pendiente_revision'     => ['label' => 'Recibido',             'color' => 'border-blue-200 bg-blue-50 text-blue-800'],
+        'enviada'                => ['label' => 'Recibido',             'color' => 'border-blue-200 bg-blue-50 text-blue-800'],
+        'aceptada por el cliente'=> ['label' => 'Pendiente de Pago',   'color' => 'border-yellow-200 bg-yellow-50 text-yellow-800'],
+        'rechazada'              => ['label' => 'Cancelado',            'color' => 'border-red-200 bg-red-50 text-red-800'],
+        'vencida'                => ['label' => 'Cancelado',            'color' => 'border-red-200 bg-red-50 text-red-800'],
+    ];
+    $estadoPedidoLabels = [
+        'pendiente_pago'   => ['label' => 'Pendiente de Pago',  'color' => 'border-yellow-200 bg-yellow-50 text-yellow-800'],
+        'pago_por_validar' => ['label' => 'Pago en Revisión',   'color' => 'border-blue-200 bg-blue-50 text-blue-800'],
+        'procesando'       => ['label' => 'Preparando Pedido',  'color' => 'border-purple-200 bg-purple-50 text-purple-800'],
+        'despachado'       => ['label' => 'En Camino',          'color' => 'border-indigo-200 bg-indigo-50 text-indigo-800'],
+        'entregado'        => ['label' => 'Entregado',          'color' => 'border-green-200 bg-green-50 text-green-800'],
+        'cancelado'        => ['label' => 'Cancelado',          'color' => 'border-red-200 bg-red-50 text-red-800'],
+    ];
+    $estadoPedido = $pedido['estado_pedido'] ?? null;
+    if ($estadoPedido && isset($estadoPedidoLabels[$estadoPedido])) {
+        $estadoInfo = $estadoPedidoLabels[$estadoPedido];
+    } else {
+        $key = strtolower($cotizacion['estado_nombre'] ?? '');
+        $estadoInfo = $estadoLabels[$key] ?? ['label' => strtoupper($key), 'color' => 'border-gray-200 bg-gray-50 text-gray-800'];
+    }
+    ?>
+
+    <div class="mb-4 flex items-center justify-end print:hidden">
+        <div class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border <?= $estadoInfo['color'] ?> shadow-sm">
+            <span class="text-sm font-bold">Estado actual:</span>
+            <span class="text-sm uppercase tracking-wide font-black"><?= htmlspecialchars($estadoInfo['label']) ?></span>
+        </div>
+    </div>
 
         <!-- Document -->
         <div class="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden print:shadow-none print:border-none print:rounded-none">
@@ -244,38 +277,9 @@
                     <p class="text-sm text-gray-500">contacto@instalfuego.com | +58 412-1234567</p>
                 </div>
                 <div class="text-left md:text-right">
-                    <?php
-                    $estadoLabels = [
-                        'borrador'               => ['label' => 'Borrador',            'color' => 'border-gray-200 bg-gray-50 text-gray-600'],
-                        'pendiente_revision'     => ['label' => 'Recibido',             'color' => 'border-blue-200 bg-blue-50 text-blue-800'],
-                        'enviada'                => ['label' => 'Recibido',             'color' => 'border-blue-200 bg-blue-50 text-blue-800'],
-                        'aceptada por el cliente'=> ['label' => 'Pendiente de Pago',   'color' => 'border-yellow-200 bg-yellow-50 text-yellow-800'],
-                        'rechazada'              => ['label' => 'Cancelado',            'color' => 'border-red-200 bg-red-50 text-red-800'],
-                        'vencida'                => ['label' => 'Cancelado',            'color' => 'border-red-200 bg-red-50 text-red-800'],
-                    ];
-                    // Estado del pedido (más preciso que el estado de cotización)
-                    $estadoPedidoLabels = [
-                        'pendiente_pago'   => ['label' => 'Pendiente de Pago',  'color' => 'border-yellow-200 bg-yellow-50 text-yellow-800'],
-                        'pago_por_validar' => ['label' => 'Pago en Revisión',   'color' => 'border-blue-200 bg-blue-50 text-blue-800'],
-                        'procesando'       => ['label' => 'Preparando Pedido',  'color' => 'border-purple-200 bg-purple-50 text-purple-800'],
-                        'despachado'       => ['label' => 'En Camino',          'color' => 'border-indigo-200 bg-indigo-50 text-indigo-800'],
-                        'entregado'        => ['label' => 'Entregado',          'color' => 'border-green-200 bg-green-50 text-green-800'],
-                        'cancelado'        => ['label' => 'Cancelado',          'color' => 'border-red-200 bg-red-50 text-red-800'],
-                    ];
-                    $estadoPedido = $pedido['estado_pedido'] ?? null;
-                    if ($estadoPedido && isset($estadoPedidoLabels[$estadoPedido])) {
-                        $estadoInfo = $estadoPedidoLabels[$estadoPedido];
-                    } else {
-                        $key = strtolower($cotizacion['estado_nombre'] ?? '');
-                        $estadoInfo = $estadoLabels[$key] ?? ['label' => strtoupper($key), 'color' => 'border-gray-200 bg-gray-50 text-gray-800'];
-                    }
-                    ?>
                     <h1 class="text-3xl font-black text-gray-900 uppercase tracking-wider mb-2">Pedido</h1>
                     <p class="text-sm text-gray-600"><span class="font-bold">Nro:</span> #PED-<?= date('Y', strtotime($cotizacion['fecha_solicitud'])) ?>-<?= str_pad((string)$cotizacion['id'], 4, '0', STR_PAD_LEFT) ?></p>
                     <p class="text-sm text-gray-600 mt-1"><span class="font-bold">Fecha:</span> <?= date('d/m/Y', strtotime($cotizacion['fecha_solicitud'])) ?></p>
-                    <div class="mt-4 inline-block px-3 py-1 text-xs font-bold rounded-full border <?= $estadoInfo['color'] ?>">
-                        <?= htmlspecialchars($estadoInfo['label']) ?>
-                    </div>
                 </div>
             </div>
 
@@ -323,7 +327,7 @@
                                         <?= !empty($item['producto_id']) ? 'Prod' : 'Serv' ?>
                                     </span>
                                 </td>
-                                <td class="py-4 text-center text-sm text-gray-700"><?= $item['cantidad'] ?></td>
+                                <td class="py-4 text-center text-sm text-gray-700"><?= !empty($item['producto_id']) ? (int)$item['cantidad'] : 'N/A' ?></td>
                                 <td class="py-4 text-right text-sm text-gray-700"><?= number_format((float)$item['precio_unitario'], 2) ?></td>
                                 <td class="py-4 text-right text-sm font-medium text-gray-900"><?= number_format((float)$lineTotal, 2) ?></td>
                             </tr>
@@ -348,8 +352,16 @@
                         <span class="font-medium text-gray-900">$<?= number_format($subtotal, 2) ?></span>
                     </div>
                     <div class="flex justify-between text-sm">
-                        <span class="font-medium text-gray-500">IVA / Impuestos:</span>
-                        <span class="font-medium text-gray-900">$<?= number_format($iva, 2) ?></span>
+                        <?php if (isset($cotizacion['aplica_iva']) && $cotizacion['aplica_iva'] == 1): ?>
+                            <span class="font-medium text-gray-500">IVA (<?= number_format((float)($cotizacion['tasa_iva'] ?? 16), 0) ?>%):</span>
+                            <span class="font-medium text-gray-900">$<?= number_format($iva, 2) ?></span>
+                        <?php elseif (isset($cotizacion['aplica_iva']) && $cotizacion['aplica_iva'] == 0): ?>
+                            <span class="font-medium text-gray-500">IVA / Impuestos:</span>
+                            <span class="font-medium text-gray-900">Exento ($0.00)</span>
+                        <?php else: ?>
+                            <span class="font-medium text-gray-500">IVA / Impuestos:</span>
+                            <span class="font-medium text-gray-900">$<?= number_format($iva, 2) ?></span>
+                        <?php endif; ?>
                     </div>
                     <?php if($descuento > 0): ?>
                     <div class="flex justify-between text-sm">
@@ -401,9 +413,12 @@
                 <p class="text-sm text-gray-600 whitespace-pre-line mb-6"><?= htmlspecialchars($cotizacion['notas_tecnicas'] ?? 'No se especificaron notas adicionales.') ?></p>                        <h4 class="text-sm font-bold text-gray-900 uppercase tracking-wider mb-2">Términos y Condiciones</h4>
                 <ul class="list-disc list-inside text-sm text-gray-600 space-y-1">
                     <li>Los precios están expresados en dólares americanos (USD).</li>
-                    <li>Formas de pago aceptadas: Transferencia bancaria, Pago Móvil, efectivo, divisas.</li>
-                    <li>La entrega se realizará en los plazos acordados tras la confirmación de pago.</li>
+                    <li>Formas de pago aceptadas: Transferencia bancaria y Pago Móvil.</li>
+                    <li>El monto total incluye impuestos aplicables y, cuando corresponda, costo de envío o domicilio.</li>
+                    <li>El costo de entrega a domicilio será determinado según la ubicación y coordinado previamente con el cliente.</li>
+                    <li>La ejecución de la entrega o servicio se realizará una vez confirmado el pago.</li>
                     <li>Garantía aplicable según especificaciones del fabricante.</li>
+                    <li>Para coordinar pagos en divisas, comuníquese con soporte vía WhatsApp: <?= \App\Core\Config::WHATSAPP_DISPLAY ?></li>
                 </ul>
 
                 <!-- Tasa BCV -->
