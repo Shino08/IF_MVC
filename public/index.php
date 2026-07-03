@@ -25,7 +25,7 @@ use App\Controllers\ProductoController;
 use App\Controllers\CategoriasController;
 use App\Controllers\ServicioController;
 use App\Controllers\CuentaController;
-use App\Controllers\CotizacionClienteController;
+use App\Controllers\CarritoClienteController;
 use App\Controllers\CatalogoController;
 
 Router::get('/login',    [AuthController::class, 'showLogin']);
@@ -53,14 +53,14 @@ Router::get('/dashboard/categorias',           [DashboardController::class, 'cat
 Router::post('/dashboard/categorias/store',    [App\Controllers\CategoriasController::class, 'store']);
 Router::post('/dashboard/categorias/delete',   [App\Controllers\CategoriasController::class, 'delete']);
 
-Router::get('/dashboard/cotizaciones',              [DashboardController::class, 'cotizaciones']);
+Router::get('/dashboard/carritos',              [DashboardController::class, 'carritos']);
 Router::get('/dashboard/detalle-solicitud/{id}',      [DashboardController::class, 'detalleSolicitud']);
-Router::post('/dashboard/cotizaciones/actualizar-logistica', [DashboardController::class, 'actualizarLogistica']);
-Router::post('/dashboard/cotizaciones/update-precio', [DashboardController::class, 'updateItemPrecio']);
-Router::post('/dashboard/cotizaciones/actualizar-comercial', [DashboardController::class, 'actualizarComercial']);
-Router::post('/dashboard/cotizaciones/emitir',        [DashboardController::class, 'emitirCotizacionAdmin']);
-Router::post('/dashboard/cotizaciones/rechazar',      [DashboardController::class, 'anularPedidoAdmin']);
-Router::post('/dashboard/cotizaciones/validar-pago',  [DashboardController::class, 'validarPago']);
+Router::post('/dashboard/carritos/actualizar-logistica', [DashboardController::class, 'actualizarLogistica']);
+Router::post('/dashboard/carritos/update-precio', [DashboardController::class, 'updateItemPrecio']);
+Router::post('/dashboard/carritos/actualizar-comercial', [DashboardController::class, 'actualizarComercial']);
+Router::post('/dashboard/carritos/emitir',        [DashboardController::class, 'emitirCarritoAdmin']);
+Router::post('/dashboard/carritos/rechazar',      [DashboardController::class, 'anularPedidoAdmin']);
+Router::post('/dashboard/carritos/validar-pago',  [DashboardController::class, 'validarPago']);
 
 Router::get('/dashboard/servicios',                      [DashboardController::class,  'servicios']);
 Router::get('/dashboard/servicios/agregar',              [DashboardController::class,  'agregarServicio']);
@@ -79,22 +79,22 @@ Router::post('/cuenta/perfil',           [CuentaController::class, 'updatePerfil
 Router::get('/cuenta/seguridad',         [CuentaController::class, 'seguridad']);
 Router::post('/cuenta/seguridad',        [CuentaController::class, 'updateSeguridad']);
 
-Router::get('/pedido/actual',             [CotizacionClienteController::class, 'actual']);
-Router::post('/pedido/agregar',           [CotizacionClienteController::class, 'agregar']);
-Router::post('/pedido/item/actualizar',   [CotizacionClienteController::class, 'actualizarItem']);
-Router::post('/pedido/item/eliminar',     [CotizacionClienteController::class, 'eliminarItem']);
-Router::post('/pedido/enviar',            [CotizacionClienteController::class, 'enviar']);
-Router::get('/pedido/exito',              [CotizacionClienteController::class, 'exito']);
-Router::get('/mis-pedidos',               [CotizacionClienteController::class, 'historial']);
-Router::get('/mis-pedidos/{id}',          [CotizacionClienteController::class, 'detalle']);
-Router::get('/pedido/detalle/{id}',       [CotizacionClienteController::class, 'detalle']);
-Router::get('/cotizacion/pdf/{id}',       [CotizacionClienteController::class, 'pdf']);
-Router::get('/factura/pdf/{id}',          [CotizacionClienteController::class, 'facturaPdf']);
-Router::post('/pedido/enviar_correo/{id}',[CotizacionClienteController::class, 'enviarCorreo']);
-Router::get('/pedido/pagar/{id}',         [CotizacionClienteController::class, 'pagar']);
-Router::post('/pedido/pagar/{id}',        [CotizacionClienteController::class, 'procesarPago']);
-Router::post('/pedido/aceptar/{id}',      [CotizacionClienteController::class, 'aceptar']);
-Router::post('/pedido/rechazar/{id}',     [CotizacionClienteController::class, 'rechazar']);
+Router::get('/pedido/actual',             [CarritoClienteController::class, 'actual']);
+Router::post('/pedido/agregar',           [CarritoClienteController::class, 'agregar']);
+Router::post('/pedido/item/actualizar',   [CarritoClienteController::class, 'actualizarItem']);
+Router::post('/pedido/item/eliminar',     [CarritoClienteController::class, 'eliminarItem']);
+Router::post('/pedido/enviar',            [CarritoClienteController::class, 'enviar']);
+Router::get('/pedido/exito',              [CarritoClienteController::class, 'exito']);
+Router::get('/mis-pedidos',               [CarritoClienteController::class, 'historial']);
+Router::get('/mis-pedidos/{id}',          [CarritoClienteController::class, 'detalle']);
+Router::get('/pedido/detalle/{id}',       [CarritoClienteController::class, 'detalle']);
+Router::get('/carrito/pdf/{id}',       [CarritoClienteController::class, 'pdf']);
+Router::get('/factura/pdf/{id}',          [CarritoClienteController::class, 'facturaPdf']);
+Router::post('/pedido/enviar_correo/{id}',[CarritoClienteController::class, 'enviarCorreo']);
+Router::get('/pedido/pagar/{id}',         [CarritoClienteController::class, 'pagar']);
+Router::post('/pedido/pagar/{id}',        [CarritoClienteController::class, 'procesarPago']);
+Router::post('/pedido/aceptar/{id}',      [CarritoClienteController::class, 'aceptar']);
+Router::post('/pedido/rechazar/{id}',     [CarritoClienteController::class, 'rechazar']);
 
 Router::get('/catalogo', [CatalogoController::class, 'index']);
 Router::get('/producto/{id}', [CatalogoController::class, 'producto']);

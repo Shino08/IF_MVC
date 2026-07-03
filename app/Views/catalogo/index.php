@@ -22,8 +22,8 @@ if (!empty($servicios)) {
 $agregadosProductos = [];
 $agregadosServicios = [];
 if (isset($_SESSION['user_id']) && (!isset($_SESSION['rol_id']) || $_SESSION['rol_id'] != 1)) {
-    if (class_exists('\App\Models\CotizacionesModel')) {
-        $cotModel = new \App\Models\CotizacionesModel();
+    if (class_exists('\App\Models\CarritosModel')) {
+        $cotModel = new \App\Models\CarritosModel();
         $borrador = $cotModel->getBorradorByUserId((int)$_SESSION['user_id']);
         if ($borrador) {
             $detalles = $cotModel->getDetalles((int)$borrador['id']);

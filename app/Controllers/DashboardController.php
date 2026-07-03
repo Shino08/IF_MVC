@@ -61,11 +61,11 @@ class DashboardController extends Router
         // Últimos 5 servicios agregados
         $ultimosServicios = array_slice($todosServicios, 0, 5);
 
-        // ── Cotizaciones stats ─────────────────────────────────────
+        // ── Carritos stats ─────────────────────────────────────
         $db = \App\Core\Database::getInstance();
         $cotTotal = 0; $cotPendientes = 0; $cotEnviadas = 0;
         try {
-            $stmt = $db->query("SELECT estado_id FROM cotizaciones WHERE estado_id != 1");
+            $stmt = $db->query("SELECT estado_id FROM carritos WHERE estado_id != 1");
             $all = $stmt->fetchAll(\PDO::FETCH_ASSOC);
             $cotTotal = count($all);
             foreach ($all as $r) {
@@ -73,7 +73,7 @@ class DashboardController extends Router
                 if ($r['estado_id'] == 3) $cotEnviadas++;
             }
         } catch (\Exception $e) {
-            error_log('Dashboard cotizaciones stats: ' . $e->getMessage());
+            error_log('Dashboard carritos stats: ' . $e->getMessage());
         }
 
         $this->view('dashboard/index', [
@@ -147,12 +147,12 @@ class DashboardController extends Router
         ]);
     }
 
-    public function cotizaciones(): void
+    public function carritos(): void
     {
         $this->requireAuth();
-        $cotizacionesModel = new \App\Models\CotizacionesModel();
-        $solicitudes = $cotizacionesModel->getAllAdmin();
-        $this->view('dashboard/soliCotizacion', [
+        $carritosModel = new \App\Models\CarritosModel();
+        $solicitudes = $carritosModel->getAllAdmin();
+        $this->view('dashboard/soliCarrito', [
             'title' => 'Solicitudes de Cotización',
             'solicitudes' => $solicitudes
         ]);
@@ -161,27 +161,27 @@ class DashboardController extends Router
     public function detalleSolicitud(int $id): void
     {
         $this->requireAuth();
-        $cotizacionesModel = new \App\Models\CotizacionesModel();
-        $cotizacion = $cotizacionesModel->getByIdAdmin($id);
+        $carritosModel = new \App\Models\CarritosModel();
+        $carrito = $carritosModel->getByIdAdmin($id);
 
-        if (!$cotizacion) {
-            header('Location: ' . $this->baseUrl() . '/dashboard/cotizaciones');
+        if (!$carrito) {
+            header('Location: ' . $this->baseUrl() . '/dashboard/carritos');
             exit;
         }
 
         // Si no está facturado todavía, usamos la tasa BCV en vivo
-        if ($cotizacion['estado_id'] < 4) {
+        if ($carrito['estado_id'] < 4) {
             $tasaData = \App\Core\TasaBCV::getTasa();
-            $cotizacion['tasabcv'] = $tasaData['tasa'];
+            $carrito['tasabcv'] = $tasaData['tasa'];
         }
 
-        $detalles = $cotizacionesModel->getDetalles($id);
-        $metodosPago = $cotizacionesModel->getMetodosPago();
+        $detalles = $carritosModel->getDetalles($id);
+        $metodosPago = $carritosModel->getMetodosPago();
         $productos = (new ProductsModel())->getAllProductsWithCategory();
         $servicios = (new ServiciosModel())->getAll();
         
         $pedidosModel = new \App\Models\PedidosModel();
-        $pedido = $pedidosModel->getByCotizacionId($id);
+        $pedido = $pedidosModel->getByCarritoId($id);
 
         $pagos = [];
         if ($pedido) {
@@ -191,7 +191,7 @@ class DashboardController extends Router
 
         $this->view('dashboard/detalle-solicitud', [
             'title'       => 'Detalle de Solicitud #' . $id,
-            'cotizacion'  => $cotizacion,
+            'carrito'  => $carrito,
             'pedido'      => $pedido,
             'detalles'    => $detalles,
             'metodosPago' => $metodosPago,
@@ -205,12 +205,12 @@ class DashboardController extends Router
     public function actualizarLogistica(): void
     {
         $this->requireAuth();
-        $cotizacionId = (int)($_POST['cotizacion_id'] ?? 0);
+        $carritoId = (int)($_POST['carrito_id'] ?? 0);
         $estadoPedido = strip_tags(trim($_POST['estado_pedido'] ?? ''));
 
         $allowed = ['procesando', 'despachado', 'entregado', 'cancelado'];
 
-        if ($cotizacionId > 0 && in_array($estadoPedido, $allowed)) {
+        if ($carritoId > 0 && in_array($estadoPedido, $allowed)) {
             $db = \App\Core\Database::getInstance();
 
             // Actualizar el estado en la tabla pedidos (fuente de verdad del timeline)
@@ -221,15 +221,15 @@ class DashboardController extends Router
                 $extra = ', fecha_entrega = CURRENT_TIMESTAMP';
             }
 
-            $stmt = $db->prepare("UPDATE pedidos SET estado_pedido = :estado{$extra} WHERE cotizacion_id = :cid");
-            $stmt->execute([':estado' => $estadoPedido, ':cid' => $cotizacionId]);
+            $stmt = $db->prepare("UPDATE pedidos SET estado_pedido = :estado{$extra} WHERE carrito_id = :cid");
+            $stmt->execute([':estado' => $estadoPedido, ':cid' => $carritoId]);
 
             $_SESSION['success_msg'] = 'Estado del pedido actualizado correctamente.';
         } else {
             $_SESSION['error_msg'] = 'Estado no válido.';
         }
 
-        header('Location: ' . $this->baseUrl() . '/dashboard/detalle-solicitud/' . $cotizacionId);
+        header('Location: ' . $this->baseUrl() . '/dashboard/detalle-solicitud/' . $carritoId);
         exit;
     }
 
@@ -240,7 +240,7 @@ class DashboardController extends Router
         $detalleId = (int)($_POST['detalle_id'] ?? 0);
         $precio = (float)($_POST['precio_unitario'] ?? 0);
 
-        $model = new \App\Models\CotizacionesModel();
+        $model = new \App\Models\CarritosModel();
         $res = $model->updateItemPrice($detalleId, $precio);
 
         header('Content-Type: application/json');
@@ -252,9 +252,9 @@ class DashboardController extends Router
     public function actualizarComercial(): void
     {
         $this->requireAuth();
-        $cotizacionId = (int)($_POST['cotizacion_id'] ?? 0);
+        $carritoId = (int)($_POST['carrito_id'] ?? 0);
 
-        if (!$cotizacionId) {
+        if (!$carritoId) {
             $_SESSION['error_msg'] = 'ID de cotización no válido.';
             header('Location: ' . $_SERVER['HTTP_REFERER']);
             exit;
@@ -297,8 +297,8 @@ class DashboardController extends Router
         if (isset($_POST['observaciones_tecnicas'])) 
             $data['observaciones_tecnicas'] = strip_tags(trim($_POST['observaciones_tecnicas']));
 
-        $model = new \App\Models\CotizacionesModel();
-        $res = $model->updateComercialFields($cotizacionId, $data);
+        $model = new \App\Models\CarritosModel();
+        $res = $model->updateComercialFields($carritoId, $data);
 
         if ($res) {
             $_SESSION['success_msg'] = 'Campos comerciales actualizados.';
@@ -307,7 +307,7 @@ class DashboardController extends Router
         }
 
         $paso = (int)($_POST['paso'] ?? 0);
-        $redirect = $this->baseUrl() . '/dashboard/detalle-solicitud/' . $cotizacionId;
+        $redirect = $this->baseUrl() . '/dashboard/detalle-solicitud/' . $carritoId;
         if ($paso >= 1 && $paso <= 3) {
             $redirect .= '?paso=' . $paso;
         }
@@ -315,13 +315,13 @@ class DashboardController extends Router
         exit;
     }
 
-    public function emitirCotizacionAdmin(): void
+    public function emitirCarritoAdmin(): void
     {
         $this->requireAuth();
-        $cotizacionId = (int)($_POST['cotizacion_id'] ?? 0);
+        $carritoId = (int)($_POST['carrito_id'] ?? 0);
         $notasCliente = strip_tags(trim($_POST['notas_cliente'] ?? ''));
 
-        if (!$cotizacionId) {
+        if (!$carritoId) {
             $_SESSION['error_msg'] = 'ID de cotización no válido.';
             header('Location: ' . $_SERVER['HTTP_REFERER']);
             exit;
@@ -333,8 +333,8 @@ class DashboardController extends Router
 
         // Calcular monto en USD a partir del total en Bs y validar envío e IVA
         $db = \App\Core\Database::getInstance();
-        $stmt = $db->prepare('SELECT total, tipo_entrega, costo_envio, aplica_iva FROM cotizaciones WHERE id = :id');
-        $stmt->execute([':id' => $cotizacionId]);
+        $stmt = $db->prepare('SELECT total, tipo_entrega, costo_envio, aplica_iva FROM carritos WHERE id = :id');
+        $stmt->execute([':id' => $carritoId]);
         $row = $stmt->fetch(\PDO::FETCH_ASSOC);
 
         if (!$row) {
@@ -361,8 +361,8 @@ class DashboardController extends Router
             $montoBs = round($totalUsd * $tasabcv, 2);
         }
 
-        $model = new \App\Models\CotizacionesModel();
-        $res = $model->emitirCotizacion($cotizacionId, $notasCliente, $tasabcv, $montoBs);
+        $model = new \App\Models\CarritosModel();
+        $res = $model->emitirCarrito($carritoId, $notasCliente, $tasabcv, $montoBs);
 
         if ($res) {
             $_SESSION['success_msg'] = 'Cotización emitida exitosamente. Estado cambiado a "Enviada".';
@@ -370,7 +370,7 @@ class DashboardController extends Router
             $_SESSION['error_msg'] = 'No se pudo emitir la cotización. Verifique que esté en estado Pendiente.';
         }
 
-        header('Location: ' . $this->baseUrl() . '/dashboard/detalle-solicitud/' . $cotizacionId);
+        header('Location: ' . $this->baseUrl() . '/dashboard/detalle-solicitud/' . $carritoId);
         exit;
     }
 
@@ -378,9 +378,9 @@ class DashboardController extends Router
     public function anularPedidoAdmin(): void
     {
         $this->requireAuth();
-        $cotizacionId = (int)($_POST['cotizacion_id'] ?? 0);
+        $carritoId = (int)($_POST['carrito_id'] ?? 0);
 
-        if (!$cotizacionId) {
+        if (!$carritoId) {
             $_SESSION['error_msg'] = 'ID de pedido no válido.';
             header('Location: ' . $_SERVER['HTTP_REFERER']);
             exit;
@@ -388,8 +388,8 @@ class DashboardController extends Router
 
         $db = \App\Core\Database::getInstance();
         // Puede anularse desde pendiente de revision (2) o listo para pago (3)
-        $stmt = $db->prepare("UPDATE cotizaciones SET estado_id = 5 WHERE id = :id AND estado_id IN (2, 3)");
-        $stmt->execute([':id' => $cotizacionId]);
+        $stmt = $db->prepare("UPDATE carritos SET estado_id = 5 WHERE id = :id AND estado_id IN (2, 3)");
+        $stmt->execute([':id' => $carritoId]);
 
         if ($stmt->rowCount() > 0) {
             $_SESSION['success_msg'] = 'Pedido anulado exitosamente.';
@@ -397,7 +397,7 @@ class DashboardController extends Router
             $_SESSION['error_msg'] = 'No se pudo anular. Verifique el estado actual.';
         }
 
-        header('Location: ' . $this->baseUrl() . '/dashboard/detalle-solicitud/' . $cotizacionId);
+        header('Location: ' . $this->baseUrl() . '/dashboard/detalle-solicitud/' . $carritoId);
         exit;
     }
 
@@ -405,11 +405,11 @@ class DashboardController extends Router
     {
         $this->requireAuth();
         $pagoId = (int)($_POST['pago_id'] ?? 0);
-        $cotizacionId = (int)($_POST['cotizacion_id'] ?? 0);
+        $carritoId = (int)($_POST['carrito_id'] ?? 0);
         $observacionesAdmin = strip_tags(trim($_POST['observaciones_admin'] ?? ''));
         $accion = $_POST['accion'] ?? ''; // 'validado' o 'rechazado'
 
-        if (!$pagoId || !$cotizacionId || !in_array($accion, ['validado', 'rechazado'])) {
+        if (!$pagoId || !$carritoId || !in_array($accion, ['validado', 'rechazado'])) {
             $_SESSION['error_msg'] = 'Parámetros no válidos.';
             header('Location: ' . $_SERVER['HTTP_REFERER']);
             exit;
@@ -441,7 +441,7 @@ class DashboardController extends Router
             $_SESSION['error_msg'] = 'Ocurrió un error al procesar el pago.';
         }
 
-        header('Location: ' . $this->baseUrl() . '/dashboard/detalle-solicitud/' . $cotizacionId);
+        header('Location: ' . $this->baseUrl() . '/dashboard/detalle-solicitud/' . $carritoId);
         exit;
     }
 
@@ -493,7 +493,7 @@ class DashboardController extends Router
         $this->requireAuth();
         
         $db = \App\Core\Database::getInstance();
-        $tipo = $_GET['tipo'] ?? 'cotizaciones';
+        $tipo = $_GET['tipo'] ?? 'carritos';
         $estado = $_GET['estado'] ?? '';
         $fechaInicio = $_GET['fecha_inicio'] ?? date('Y-m-01');
         $fechaFin = $_GET['fecha_fin'] ?? date('Y-m-t');
@@ -504,8 +504,8 @@ class DashboardController extends Router
             'estimado' => 0,
             'procesado' => 0,
             'pendiente' => 0,
-            'total_cotizaciones' => 0,
-            'cotizaciones_procesadas' => 0
+            'total_carritos' => 0,
+            'carritos_procesadas' => 0
         ];
 
         switch ($tipo) {
@@ -531,7 +531,7 @@ class DashboardController extends Router
 
                 foreach ($data as $row) {
                     $totales['estimado'] += $row['total'];
-                    $totales['total_cotizaciones']++;
+                    $totales['total_carritos']++;
                 }
                 break;
                 
@@ -548,7 +548,7 @@ class DashboardController extends Router
                 
                 foreach ($data as $row) {
                     $totales['estimado'] += $row['total'];
-                    $totales['total_cotizaciones']++;
+                    $totales['total_carritos']++;
                 }
                 break;
                 
@@ -566,15 +566,15 @@ class DashboardController extends Router
                 
                 foreach ($data as $row) {
                     $totales['estimado'] += $row['total'];
-                    $totales['total_cotizaciones']++;
+                    $totales['total_carritos']++;
                 }
                 break;
                 
             case 'productos_solicitados':
                 $sql = "SELECT 'Producto' as tipo_item, pr.nombre, SUM(cd.cantidad) as total_solicitado
-                        FROM cotizacion_detalles cd
+                        FROM carrito_detalles cd
                         JOIN productos pr ON cd.producto_id = pr.id
-                        JOIN pedidos p ON cd.cotizacion_id = p.cotizacion_id
+                        JOIN pedidos p ON cd.carrito_id = p.carrito_id
                         WHERE DATE(p.fecha_creacion) BETWEEN :inicio AND :fin
                         GROUP BY pr.id
                         ORDER BY total_solicitado DESC";
@@ -585,9 +585,9 @@ class DashboardController extends Router
                 
             case 'servicios_solicitados':
                 $sql = "SELECT 'Servicio' as tipo_item, s.nombre, SUM(cd.cantidad) as total_solicitado
-                        FROM cotizacion_detalles cd
+                        FROM carrito_detalles cd
                         JOIN servicios s ON cd.servicio_id = s.id
-                        JOIN pedidos p ON cd.cotizacion_id = p.cotizacion_id
+                        JOIN pedidos p ON cd.carrito_id = p.carrito_id
                         WHERE DATE(p.fecha_creacion) BETWEEN :inicio AND :fin
                         GROUP BY s.id
                         ORDER BY total_solicitado DESC";

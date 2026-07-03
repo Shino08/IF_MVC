@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Regístrate — InstalFuego</title>
-    <meta name="description" content="Crea tu cuenta empresarial en InstalFuego para solicitar cotizaciones.">
+    <meta name="description" content="Crea tu cuenta empresarial en InstalFuego para solicitar carritos.">
     <link rel="icon" type="image/png" href="<?= $base_url ?? '' ?>/favicon.png">
     <link rel="stylesheet" href="<?= $base_url ?? '' ?>/css/output.css">
     <link rel="stylesheet" href="<?= $base_url ?? '' ?>/css/styles.css">
@@ -27,7 +27,7 @@
 
                 <div class="text-center mb-8">
                     <h1 class="text-2xl font-bold text-gray-800 mb-2">Crear Cuenta</h1>
-                    <p class="text-gray-500 text-sm">Ingresa tus datos corporativos para acceder al catálogo técnico y solicitar cotizaciones.</p>
+                    <p class="text-gray-500 text-sm">Ingresa tus datos corporativos para acceder al catálogo técnico y solicitar carritos.</p>
                 </div>
 
                 <?php if (!empty($error)): ?>

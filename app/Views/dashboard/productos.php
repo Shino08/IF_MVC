@@ -50,7 +50,7 @@
                         </svg>
                     </div>
                     <p class="text-gray-900 font-bold text-lg mb-1">No hay productos registrados</p>
-                    <p class="text-gray-500 text-sm mb-6 max-w-sm">Comienza agregando tu primer producto para armar el catálogo de cotizaciones.</p>
+                    <p class="text-gray-500 text-sm mb-6 max-w-sm">Comienza agregando tu primer producto para armar el catálogo de carritos.</p>
                     <a href="<?= $base_url ?? '' ?>/dashboard/productos/agregar"
                        class="inline-flex items-center px-6 py-2.5 bg-red-700 text-white text-sm font-bold rounded-xl hover:bg-red-800 transition-colors shadow-md hover:shadow-lg">
                         Agregar mi primer producto

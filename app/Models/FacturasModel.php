@@ -24,13 +24,13 @@ class FacturasModel
                 return null; // Already exists
             }
 
-            // Get pedido and cotizacion details
+            // Get pedido and carrito details
             $sql = 'SELECT p.id as pedido_id, p.total, p.costo_envio, p.id_metodo_pago,
                            c.subtotal, c.impuestos, c.descuento, c.direccion_envio, c.tipo_entrega,
                            u.nombre, u.apellido, u.cedula as cliente_cedula, u.direccion as cliente_direccion, u.email,
                            m.metodo as metodo_pago_texto
                     FROM pedidos p
-                    JOIN cotizaciones c ON p.cotizacion_id = c.id
+                    JOIN carritos c ON p.carrito_id = c.id
                     LEFT JOIN usuarios u ON p.usuario_id = u.id
                     LEFT JOIN metodos_de_pagos m ON p.id_metodo_pago = m.id
                     WHERE p.id = :pid';
@@ -81,8 +81,8 @@ class FacturasModel
         }
     }
     
-    public function getByCotizacionId(int $cotId) {
-        $stmt = $this->db->prepare('SELECT f.* FROM facturas f JOIN pedidos p ON f.pedido_id = p.id WHERE p.cotizacion_id = :cid LIMIT 1');
+    public function getByCarritoId(int $cotId) {
+        $stmt = $this->db->prepare('SELECT f.* FROM facturas f JOIN pedidos p ON f.pedido_id = p.id WHERE p.carrito_id = :cid LIMIT 1');
         $stmt->execute([':cid' => $cotId]);
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }

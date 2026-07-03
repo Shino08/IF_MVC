@@ -66,14 +66,14 @@ INSERT INTO `tipos_cobro` (`id`, `nombre`) VALUES
 (3, 'Por metro lineal'), 
 (4, 'Por proyecto');
 
-CREATE TABLE `estados_cotizacion` (
+CREATE TABLE `estados_carrito` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `nombre` varchar(50) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `nombre` (`nombre`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-INSERT INTO `estados_cotizacion` (`id`, `nombre`) VALUES
+INSERT INTO `estados_carrito` (`id`, `nombre`) VALUES
 (4, 'facturado'),
 (1, 'borrador'),
 (3, 'listo_para_pago'),
@@ -179,7 +179,7 @@ INSERT INTO `producto_imagenes` (`id`, `producto_id`, `ruta_imagen`) VALUES
 -- 4. FLUJO DE COTIZACIONES
 -- --------------------------------------------------------
 
-CREATE TABLE `cotizaciones` (
+CREATE TABLE `carritos` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `usuario_id` int(11) DEFAULT NULL,
   `fecha_solicitud` timestamp NOT NULL DEFAULT current_timestamp(),
@@ -209,27 +209,27 @@ CREATE TABLE `cotizaciones` (
   `montousd` decimal(10,2) DEFAULT NULL,
   `tipo_flujo` enum('presupuesto','compra_directa') NOT NULL DEFAULT 'presupuesto',
   PRIMARY KEY (`id`),
-  CONSTRAINT `fk_cotizaciones_estado` FOREIGN KEY (`estado_id`) REFERENCES `estados_cotizacion` (`id`) ON DELETE RESTRICT,
-  CONSTRAINT `fk_cotizaciones_usuario` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`) ON DELETE SET NULL
+  CONSTRAINT `fk_carritos_estado` FOREIGN KEY (`estado_id`) REFERENCES `estados_carrito` (`id`) ON DELETE RESTRICT,
+  CONSTRAINT `fk_carritos_usuario` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE `cotizacion_detalles` (
+CREATE TABLE `carrito_detalles` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `cotizacion_id` int(11) NOT NULL,
+  `carrito_id` int(11) NOT NULL,
   `producto_id` int(11) DEFAULT NULL COMMENT 'NULL si es un servicio',
   `servicio_id` int(11) DEFAULT NULL COMMENT 'NULL si es un producto',
   `cantidad` decimal(10,2) NOT NULL COMMENT 'Decimal para aceptar ej: 1.5 horas',
   `precio_unitario` decimal(10,2) NOT NULL,
   `subtotal` decimal(10,2) GENERATED ALWAYS AS (`cantidad` * `precio_unitario`) STORED,
   PRIMARY KEY (`id`),
-  CONSTRAINT `fk_detalle_cotizacion` FOREIGN KEY (`cotizacion_id`) REFERENCES `cotizaciones` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_detalle_carrito` FOREIGN KEY (`carrito_id`) REFERENCES `carritos` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_detalle_producto` FOREIGN KEY (`producto_id`) REFERENCES `productos` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `fk_detalle_servicio` FOREIGN KEY (`servicio_id`) REFERENCES `servicios` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_item_tipo` CHECK ((`producto_id` IS NOT NULL AND `servicio_id` IS NULL) OR (`producto_id` IS NULL AND `servicio_id` IS NOT NULL))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 CREATE TABLE `pedidos` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `cotizacion_id` int(11) NOT NULL,
+  `carrito_id` int(11) NOT NULL,
   `usuario_id` int(11) NOT NULL,
   `fecha_creacion` timestamp NOT NULL DEFAULT current_timestamp(),
   `total` decimal(10,2) NOT NULL DEFAULT 0.00,
@@ -245,7 +245,7 @@ CREATE TABLE `pedidos` (
   `fecha_despacho` datetime DEFAULT NULL,
   `fecha_entrega` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
-  CONSTRAINT `fk_pedido_cotizacion` FOREIGN KEY (`cotizacion_id`) REFERENCES `cotizaciones` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_pedido_carrito` FOREIGN KEY (`carrito_id`) REFERENCES `carritos` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_pedido_usuario` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `fk_pedido_metodo_pago` FOREIGN KEY (`id_metodo_pago`) REFERENCES `metodos_de_pagos` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

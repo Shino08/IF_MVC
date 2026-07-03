@@ -1,20 +1,20 @@
 <?php
 // Template for PDF generation
-$subtotal = (float)$cotizacion['subtotal'];
-$iva = (float)$cotizacion['impuestos'];
-$descuento = (float)$cotizacion['descuento'];
-$costoEnvio = (float)$cotizacion['costo_envio'];
-$totalFinal = (float)$cotizacion['total'];
+$subtotal = (float)$carrito['subtotal'];
+$iva = (float)$carrito['impuestos'];
+$descuento = (float)$carrito['descuento'];
+$costoEnvio = (float)$carrito['costo_envio'];
+$totalFinal = (float)$carrito['total'];
 
-$cotizacionNum = str_pad((string)$cotizacion['id'], 4, '0', STR_PAD_LEFT);
-$year = date('Y', strtotime($cotizacion['fecha_solicitud']));
-$fecha = date('d/m/Y', strtotime($cotizacion['fecha_solicitud']));
+$carritoNum = str_pad((string)$carrito['id'], 4, '0', STR_PAD_LEFT);
+$year = date('Y', strtotime($carrito['fecha_solicitud']));
+$fecha = date('d/m/Y', strtotime($carrito['fecha_solicitud']));
 ?>
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Pedido #<?= $cotizacion['id'] ?></title>
+    <title>Pedido #<?= $carrito['id'] ?></title>
     <style>
         body { font-family: Arial, sans-serif; font-size: 12px; color: #333; }
         .header { width: 100%; border-bottom: 2px solid #eee; padding-bottom: 20px; margin-bottom: 20px; }
@@ -67,10 +67,10 @@ if (file_exists($logoFile)) {
             </td>
             <td class="quote-info">
                 <h1>Pedido</h1>
-                <p><strong>Nro:</strong> #PED-<?= $year ?>-<?= $cotizacionNum ?></p>
+                <p><strong>Nro:</strong> #PED-<?= $year ?>-<?= $carritoNum ?></p>
                 <p><strong>Fecha:</strong> <?= $fecha ?></p>
                 <p><strong>Validez:</strong> 15 días hábiles</p>
-                <p><strong>Estado:</strong> <?= strtoupper($cotizacion['estado_nombre']) ?></p>
+                <p><strong>Estado:</strong> <?= strtoupper($carrito['estado_nombre']) ?></p>
             </td>
         </tr>
     </table>
@@ -81,13 +81,13 @@ if (file_exists($logoFile)) {
     <table class="client-table">
         <tr>
             <td>
-                <strong><?= htmlspecialchars($cotizacion['cliente_nombre'] . ' ' . $cotizacion['cliente_apellido']) ?></strong><br>
-                <?= htmlspecialchars($cotizacion['cliente_empresa'] ?? 'Persona Natural') ?><br>
-                CI/RIF: <?= htmlspecialchars($cotizacion['cliente_cedula'] ?? 'N/A') ?>
+                <strong><?= htmlspecialchars($carrito['cliente_nombre'] . ' ' . $carrito['cliente_apellido']) ?></strong><br>
+                <?= htmlspecialchars($carrito['cliente_empresa'] ?? 'Persona Natural') ?><br>
+                CI/RIF: <?= htmlspecialchars($carrito['cliente_cedula'] ?? 'N/A') ?>
             </td>
             <td>
-                <?= htmlspecialchars($cotizacion['cliente_email']) ?><br>
-                <?= htmlspecialchars($cotizacion['cliente_telefono'] ?? 'Teléfono no provisto') ?>
+                <?= htmlspecialchars($carrito['cliente_email']) ?><br>
+                <?= htmlspecialchars($carrito['cliente_telefono'] ?? 'Teléfono no provisto') ?>
             </td>
         </tr>
     </table>
@@ -126,12 +126,12 @@ if (file_exists($logoFile)) {
             <td>Subtotal:</td>
             <td class="text-right">$<?= number_format($subtotal, 2) ?></td>
         </tr>
-        <?php if (isset($cotizacion['aplica_iva']) && $cotizacion['aplica_iva'] == 1): ?>
+        <?php if (isset($carrito['aplica_iva']) && $carrito['aplica_iva'] == 1): ?>
         <tr>
-            <td>IVA (<?= number_format((float)($cotizacion['tasa_iva'] ?? 16), 0) ?>%):</td>
+            <td>IVA (<?= number_format((float)($carrito['tasa_iva'] ?? 16), 0) ?>%):</td>
             <td class="text-right">$<?= number_format($iva, 2) ?></td>
         </tr>
-        <?php elseif (isset($cotizacion['aplica_iva']) && $cotizacion['aplica_iva'] == 0): ?>
+        <?php elseif (isset($carrito['aplica_iva']) && $carrito['aplica_iva'] == 0): ?>
         <tr>
             <td>IVA / Impuestos:</td>
             <td class="text-right">Exento ($0.00)</td>
@@ -148,10 +148,10 @@ if (file_exists($logoFile)) {
             <td class="text-right" style="color:red;">-$<?= number_format($descuento, 2) ?></td>
         </tr>
         <?php endif; ?>
-        <?php if (!empty($cotizacion['costo_envio']) && $cotizacion['costo_envio'] > 0): ?>
+        <?php if (!empty($carrito['costo_envio']) && $carrito['costo_envio'] > 0): ?>
         <tr>
             <td>Costo de Envío:</td>
-            <td class="text-right">$<?= number_format($cotizacion['costo_envio'], 2) ?></td>
+            <td class="text-right">$<?= number_format($carrito['costo_envio'], 2) ?></td>
         </tr>
         <?php endif; ?>
         <tr>
@@ -160,30 +160,30 @@ if (file_exists($logoFile)) {
         </tr>
     </table>
 </div>
-<div class="clear"></div>    <?php if (!empty($cotizacion['tasabcv'])): ?>
+<div class="clear"></div>    <?php if (!empty($carrito['tasabcv'])): ?>
     <div style="margin-top: 20px; padding: 10px; background: #fef9e7; border: 1px solid #f9e79f; border-radius: 4px; font-size: 10px;">
         <strong>Tasa de Cambio Referencial:</strong>
-        Bs. <?= number_format((float)$cotizacion['tasabcv'], 4, ',', '.') ?> / $1 USD
-        (al <?= date('d/m/Y', strtotime($cotizacion['fecha_solicitud'])) ?>)<br>
-        <?php if (!empty($cotizacion['montousd'])): ?>
-        <span style="color: #666;">Equivalente: <strong>$<?= number_format((float)$cotizacion['montousd'], 2) ?> USD</strong></span>
+        Bs. <?= number_format((float)$carrito['tasabcv'], 4, ',', '.') ?> / $1 USD
+        (al <?= date('d/m/Y', strtotime($carrito['fecha_solicitud'])) ?>)<br>
+        <?php if (!empty($carrito['montousd'])): ?>
+        <span style="color: #666;">Equivalente: <strong>$<?= number_format((float)$carrito['montousd'], 2) ?> USD</strong></span>
         <?php endif; ?>
     </div>
     <?php endif; ?>
 
-    <?php if (!empty($cotizacion['tipo_entrega'])): ?>
+    <?php if (!empty($carrito['tipo_entrega'])): ?>
     <div style="margin-top: 20px; padding: 10px; background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 4px; font-size: 11px;">
         <h4 style="margin-top:0; margin-bottom:5px;">Información de Logística</h4>
-        <strong>Método de Entrega:</strong> <?= $cotizacion['tipo_entrega'] === 'domicilio' ? 'Envío a Domicilio' : 'Retiro en Tienda' ?><br>
-        <?php if ($cotizacion['tipo_entrega'] === 'domicilio' && !empty($cotizacion['direccion_envio'])): ?>
-        <strong>Dirección:</strong> <?= htmlspecialchars($cotizacion['direccion_envio']) ?>
+        <strong>Método de Entrega:</strong> <?= $carrito['tipo_entrega'] === 'domicilio' ? 'Envío a Domicilio' : 'Retiro en Tienda' ?><br>
+        <?php if ($carrito['tipo_entrega'] === 'domicilio' && !empty($carrito['direccion_envio'])): ?>
+        <strong>Dirección:</strong> <?= htmlspecialchars($carrito['direccion_envio']) ?>
         <?php endif; ?>
     </div>
     <?php endif; ?>
 
     <div class="notes">
         <h4>Notas Técnicas y Comerciales</h4>
-        <p><?= nl2br(htmlspecialchars($cotizacion['notas_tecnicas'] ?? 'No se especificaron notas adicionales.')) ?></p>
+        <p><?= nl2br(htmlspecialchars($carrito['notas_tecnicas'] ?? 'No se especificaron notas adicionales.')) ?></p>
 
         <h4>Términos y Condiciones</h4>
         <ul>

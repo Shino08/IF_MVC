@@ -62,7 +62,7 @@ class MailerService
             $mail->isHTML(true);
             $mail->Subject = 'Pago validado - Pedido InstalFuego';
 
-            $pedidoNum = 'PED-' . date('Y') . '-' . str_pad((string)($pedido['cotizacion_id'] ?? 0), 4, '0', STR_PAD_LEFT);
+            $pedidoNum = 'PED-' . date('Y') . '-' . str_pad((string)($pedido['carrito_id'] ?? 0), 4, '0', STR_PAD_LEFT);
 
             $mail->Body = "
                 <div style='font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-top: 4px solid #dc2626; border-radius: 8px; padding: 20px;'>

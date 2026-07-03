@@ -5,7 +5,7 @@ namespace App\Controllers;
 
 use App\Core\Router;
 use App\Core\Database;
-use App\Models\CotizacionesModel;
+use App\Models\CarritosModel;
 use App\Models\PagosModel;
 use App\Core\TasaBCV;
 use Dompdf\Dompdf;
@@ -14,9 +14,9 @@ use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception as PHPMailerException;
 use App\Core\Config;
 
-class CotizacionClienteController extends Router
+class CarritoClienteController extends Router
 {
-    private CotizacionesModel $cotizacionesModel;
+    private CarritosModel $carritosModel;
     private PagosModel $pagosModel;
 
     public function __construct()
@@ -30,23 +30,23 @@ class CotizacionClienteController extends Router
             exit;
         }
 
-        $this->cotizacionesModel = new CotizacionesModel();
+        $this->carritosModel = new CarritosModel();
         $this->pagosModel = new \App\Models\PagosModel();
     }
 
     public function actual(): void
     {
         $userId = (int)$_SESSION['user_id'];
-        $borrador = $this->cotizacionesModel->getBorradorByUserId($userId);
+        $borrador = $this->carritosModel->getBorradorByUserId($userId);
         
         $detalles = [];
         if ($borrador) {
-            $detalles = $this->cotizacionesModel->getDetalles((int)$borrador['id']);
+            $detalles = $this->carritosModel->getDetalles((int)$borrador['id']);
         }
 
-        $this->view('cotizacion/actual', [
+        $this->view('carrito/actual', [
             'title' => 'Lista de Cotización',
-            'cotizacion' => $borrador,
+            'carrito' => $borrador,
             'detalles' => $detalles
         ]);
     }
@@ -81,14 +81,14 @@ class CotizacionClienteController extends Router
         }
 
         // Obtener o crear borrador
-        $borrador = $this->cotizacionesModel->getBorradorByUserId($userId);
+        $borrador = $this->carritosModel->getBorradorByUserId($userId);
         if (!$borrador) {
-            $cotizacionId = $this->cotizacionesModel->createBorrador($userId);
+            $carritoId = $this->carritosModel->createBorrador($userId);
         } else {
-            $cotizacionId = (int)$borrador['id'];
+            $carritoId = (int)$borrador['id'];
         }
 
-        $res = $this->cotizacionesModel->addItem($cotizacionId, $productoId, $servicioId, $cantidad, $precio);
+        $res = $this->carritosModel->addItem($carritoId, $productoId, $servicioId, $cantidad, $precio);
 
         if ($res) {
             if ($isAjax) {
@@ -109,7 +109,7 @@ class CotizacionClienteController extends Router
         $detalleId = (int)$_POST['detalle_id'];
         $cantidad = (float)$_POST['cantidad'];
 
-        $res = $this->cotizacionesModel->updateItemQuantity($detalleId, $cantidad);
+        $res = $this->carritosModel->updateItemQuantity($detalleId, $cantidad);
 
         header('Content-Type: application/json');
         if ($res) {
@@ -124,7 +124,7 @@ class CotizacionClienteController extends Router
     {
         $detalleId = (int)$_POST['detalle_id'];
 
-        $res = $this->cotizacionesModel->removeItem($detalleId);
+        $res = $this->carritosModel->removeItem($detalleId);
 
         header('Content-Type: application/json');
         if ($res) {
@@ -157,7 +157,7 @@ class CotizacionClienteController extends Router
             $direccion_envio = '';
         }
 
-        $borrador = $this->cotizacionesModel->getBorradorByUserId($userId);
+        $borrador = $this->carritosModel->getBorradorByUserId($userId);
 
         if (!$borrador) {
             $_SESSION['error_msg'] = 'No hay solicitud actual.';
@@ -165,18 +165,18 @@ class CotizacionClienteController extends Router
             exit;
         }
 
-        $detalles = $this->cotizacionesModel->getDetalles((int)$borrador['id']);
+        $detalles = $this->carritosModel->getDetalles((int)$borrador['id']);
         if (empty($detalles)) {
             $_SESSION['error_msg'] = 'No puede enviar una solicitud vacía.';
             header('Location: ' . $this->baseUrl() . '/pedido/actual');
             exit;
         }
 
-        $res = $this->cotizacionesModel->sendCotizacion((int)$borrador['id'], $notas, $tipo_entrega, $direccion_envio);
+        $res = $this->carritosModel->sendCarrito((int)$borrador['id'], $notas, $tipo_entrega, $direccion_envio);
 
         if ($res) {
-            $_SESSION['success_msg'] = '¡Compra procesada correctamente! Por favor, reporte su pago.';
-            header('Location: ' . $this->baseUrl() . '/pedido/pagar/' . $borrador['id']);
+            $_SESSION['success_msg'] = '¡Solicitud enviada correctamente! Por favor, espere a que sea revisada.';
+            header('Location: ' . $this->baseUrl() . '/mis-pedidos/' . $borrador['id']);
             exit;
         }
 
@@ -188,7 +188,7 @@ class CotizacionClienteController extends Router
 
     public function exito(): void
     {
-        $this->view('cotizacion/exito', [
+        $this->view('carrito/exito', [
             'title' => '¡Compra Exitosa!'
         ]);
     }
@@ -196,11 +196,11 @@ class CotizacionClienteController extends Router
     public function historial(): void
     {
         $userId = (int)$_SESSION['user_id'];
-        $cotizaciones = $this->cotizacionesModel->getHistoryByUserId($userId);
+        $carritos = $this->carritosModel->getHistoryByUserId($userId);
 
-        $this->view('cotizacion/historial', [
-            'title' => 'Mis Cotizaciones',
-            'cotizaciones' => $cotizaciones
+        $this->view('carrito/historial', [
+            'title' => 'Mis Carritos',
+            'carritos' => $carritos
         ]);
     }
 
@@ -208,34 +208,34 @@ class CotizacionClienteController extends Router
     {
         $userId = (int)$_SESSION['user_id'];
         $userRol = (int)($_SESSION['rol_id'] ?? 2);
-        $cotizacionId = (int)$id;
+        $carritoId = (int)$id;
 
         if ($userRol === 1) {
-            $cotizacion = $this->cotizacionesModel->getByIdAdmin($cotizacionId);
+            $carrito = $this->carritosModel->getByIdAdmin($carritoId);
         } else {
-            $cotizacion = $this->cotizacionesModel->getById($cotizacionId, $userId);
+            $carrito = $this->carritosModel->getById($carritoId, $userId);
         }
 
-        if (!$cotizacion) {
+        if (!$carrito) {
             $_SESSION['error_msg'] = 'Pedido/Presupuesto no encontrado o no tiene permisos.';
             header('Location: ' . $this->baseUrl() . '/mis-pedidos');
             exit;
         }
 
-        $detalles = $this->cotizacionesModel->getDetalles($cotizacionId);
+        $detalles = $this->carritosModel->getDetalles($carritoId);
 
         // Si no está facturado todavía, usamos la tasa BCV en vivo
-        if ($cotizacion['estado_id'] < 4) {
+        if ($carrito['estado_id'] < 4) {
             $tasaData = \App\Core\TasaBCV::getTasa();
-            $cotizacion['tasabcv'] = $tasaData['tasa'];
+            $carrito['tasabcv'] = $tasaData['tasa'];
         }
 
         $pedidosModel = new \App\Models\PedidosModel();
-        $pedido = $pedidosModel->getByCotizacionId($cotizacionId);
+        $pedido = $pedidosModel->getByCarritoId($carritoId);
 
-        $this->view('cotizacion/detalle', [
-            'title'      => 'Detalle de Pedido #' . $cotizacionId,
-            'cotizacion' => $cotizacion,
+        $this->view('carrito/detalle', [
+            'title'      => 'Detalle de Pedido #' . $carritoId,
+            'carrito' => $carrito,
             'pedido'     => $pedido,
             'detalles'   => $detalles
         ]);
@@ -254,22 +254,22 @@ class CotizacionClienteController extends Router
         exit;
     }
 
-    private function generatePdfContent(int $cotizacionId, int $userId, int $userRol): ?string
+    private function generatePdfContent(int $carritoId, int $userId, int $userRol): ?string
     {
         if ($userRol === 1) {
-            $cotizacion = $this->cotizacionesModel->getByIdAdmin($cotizacionId);
+            $carrito = $this->carritosModel->getByIdAdmin($carritoId);
         } else {
-            $cotizacion = $this->cotizacionesModel->getById($cotizacionId, $userId);
+            $carrito = $this->carritosModel->getById($carritoId, $userId);
         }
 
-        if (!$cotizacion) {
+        if (!$carrito) {
             return null;
         }
 
-        $detalles = $this->cotizacionesModel->getDetalles($cotizacionId);
+        $detalles = $this->carritosModel->getDetalles($carritoId);
 
         ob_start();
-        require dirname(__DIR__) . '/Views/cotizacion/pdf_template.php';
+        require dirname(__DIR__) . '/Views/carrito/pdf_template.php';
         $html = ob_get_clean();
 
         $options = new Options();
@@ -286,9 +286,9 @@ class CotizacionClienteController extends Router
     {
         $userId = (int)$_SESSION['user_id'];
         $userRol = (int)($_SESSION['rol_id'] ?? 2);
-        $cotizacionId = (int)$id;
+        $carritoId = (int)$id;
 
-        $pdfContent = $this->generatePdfContent($cotizacionId, $userId, $userRol);
+        $pdfContent = $this->generatePdfContent($carritoId, $userId, $userRol);
 
         if (!$pdfContent) {
             $_SESSION['error_msg'] = 'Pedido/Presupuesto no encontrado o no tiene permisos.';
@@ -297,36 +297,36 @@ class CotizacionClienteController extends Router
         }
 
         header('Content-Type: application/pdf');
-        header('Content-Disposition: inline; filename="Cotizacion_' . $cotizacionId . '.pdf"');
+        header('Content-Disposition: inline; filename="Carrito_' . $carritoId . '.pdf"');
         header('Cache-Control: private, max-age=0, must-revalidate');
         header('Pragma: public');
         echo $pdfContent;
         exit;
     }
 
-    private function generateFacturaPdfContent(int $cotizacionId, int $userId, int $userRol): ?string
+    private function generateFacturaPdfContent(int $carritoId, int $userId, int $userRol): ?string
     {
         if ($userRol === 1) {
-            $cotizacion = $this->cotizacionesModel->getByIdAdmin($cotizacionId);
+            $carrito = $this->carritosModel->getByIdAdmin($carritoId);
         } else {
-            $cotizacion = $this->cotizacionesModel->getById($cotizacionId, $userId);
+            $carrito = $this->carritosModel->getById($carritoId, $userId);
         }
 
-        if (!$cotizacion) {
+        if (!$carrito) {
             return null;
         }
 
         $facturasModel = new \App\Models\FacturasModel();
-        $factura = $facturasModel->getByCotizacionId($cotizacionId);
+        $factura = $facturasModel->getByCarritoId($carritoId);
 
         if (!$factura) {
             return null; // No invoice generated yet
         }
 
-        $detalles = $this->cotizacionesModel->getDetalles($cotizacionId);
+        $detalles = $this->carritosModel->getDetalles($carritoId);
 
         ob_start();
-        require dirname(__DIR__) . '/Views/cotizacion/factura_pdf.php';
+        require dirname(__DIR__) . '/Views/carrito/factura_pdf.php';
         $html = ob_get_clean();
 
         $options = new \Dompdf\Options();
@@ -343,9 +343,9 @@ class CotizacionClienteController extends Router
     {
         $userId = (int)$_SESSION['user_id'];
         $userRol = (int)($_SESSION['rol_id'] ?? 2);
-        $cotizacionId = (int)$id;
+        $carritoId = (int)$id;
 
-        $pdfContent = $this->generateFacturaPdfContent($cotizacionId, $userId, $userRol);
+        $pdfContent = $this->generateFacturaPdfContent($carritoId, $userId, $userRol);
 
         if (!$pdfContent) {
             $_SESSION['error_msg'] = 'Factura no encontrada o no generada aún.';
@@ -354,7 +354,7 @@ class CotizacionClienteController extends Router
         }
 
         header('Content-Type: application/pdf');
-        header('Content-Disposition: inline; filename="factura_' . $cotizacionId . '.pdf"');
+        header('Content-Disposition: inline; filename="factura_' . $carritoId . '.pdf"');
         echo $pdfContent;
         exit;
     }
@@ -364,7 +364,7 @@ class CotizacionClienteController extends Router
     {
         $userId = (int)$_SESSION['user_id'];
         $userRol = (int)($_SESSION['rol_id'] ?? 2);
-        $cotizacionId = (int)$id;
+        $carritoId = (int)$id;
 
         // Sólo admins
         if ($userRol !== 1) {
@@ -373,27 +373,27 @@ class CotizacionClienteController extends Router
             exit;
         }
 
-        $cotizacion = $this->cotizacionesModel->getByIdAdmin($cotizacionId);
-        if (!$cotizacion) {
+        $carrito = $this->carritosModel->getByIdAdmin($carritoId);
+        if (!$carrito) {
             $_SESSION['error_msg'] = 'Pedido/Presupuesto no encontrado.';
             header('Location: ' . $this->baseUrl() . '/mis-pedidos');
             exit;
         }
 
-        $pdfContent = $this->generatePdfContent($cotizacionId, $userId, $userRol);
+        $pdfContent = $this->generatePdfContent($carritoId, $userId, $userRol);
 
         try {
             $mail = \App\Core\MailerService::make();
 
-            $mail->addAddress($cotizacion['cliente_email'], $cotizacion['cliente_nombre']);
+            $mail->addAddress($carrito['cliente_email'], $carrito['cliente_nombre']);
 
             $mail->isHTML(true);
-            $mail->Subject = 'Cotización InstalFuego #' . str_pad((string)$cotizacion['id'], 4, '0', STR_PAD_LEFT);
-            $mail->Body    = '<p>Estimado(a) ' . htmlspecialchars($cotizacion['cliente_nombre']) . ',</p>'
+            $mail->Subject = 'Cotización InstalFuego #' . str_pad((string)$carrito['id'], 4, '0', STR_PAD_LEFT);
+            $mail->Body    = '<p>Estimado(a) ' . htmlspecialchars($carrito['cliente_nombre']) . ',</p>'
                            . '<p>Adjunto a este correo encontrará la cotización solicitada.</p>'
                            . '<p>Saludos cordiales,<br>El equipo de InstalFuego C.A.</p>';
 
-            $mail->addStringAttachment($pdfContent, 'Cotizacion_' . $cotizacionId . '.pdf');
+            $mail->addStringAttachment($pdfContent, 'Carrito_' . $carritoId . '.pdf');
 
             $mail->send();
             $_SESSION['success_msg'] = 'Presupuesto/Pedido enviado por correo exitosamente.';
@@ -415,56 +415,56 @@ class CotizacionClienteController extends Router
     public function pagar(string $id): void
     {
         $userId = (int)$_SESSION['user_id'];
-        $cotizacionId = (int)$id;
+        $carritoId = (int)$id;
 
-        $cotizacion = $this->cotizacionesModel->getById($cotizacionId, $userId);
+        $carrito = $this->carritosModel->getById($carritoId, $userId);
         
-        if (!$cotizacion || $cotizacion['usuario_id'] != $userId) {
+        if (!$carrito || $carrito['usuario_id'] != $userId) {
             $_SESSION['error_msg'] = 'Presupuesto no encontrado.';
             header('Location: ' . $this->baseUrl() . '/mis-pedidos');
             exit;
         }
 
         // Permitir pago si estado es listo_para_pago (3) o facturado (4)
-        if (!in_array($cotizacion['estado_id'], [3, 4])) {
+        if (!in_array($carrito['estado_id'], [3, 4])) {
             $_SESSION['error_msg'] = 'Este presupuesto no está disponible para pago.';
-            header('Location: ' . $this->baseUrl() . '/mis-pedidos/' . $cotizacionId);
+            header('Location: ' . $this->baseUrl() . '/mis-pedidos/' . $carritoId);
             exit;
         }
 
         // Si no está facturado todavía, usamos la tasa BCV en vivo
-        if ($cotizacion['estado_id'] < 4) {
+        if ($carrito['estado_id'] < 4) {
             $tasaData = \App\Core\TasaBCV::getTasa();
-            $cotizacion['tasabcv'] = $tasaData['tasa'];
+            $carrito['tasabcv'] = $tasaData['tasa'];
         }
 
         $pedidosModel = new \App\Models\PedidosModel();
-        $pedido = $pedidosModel->getByCotizacionId($cotizacionId);
+        $pedido = $pedidosModel->getByCarritoId($carritoId);
 
         if (!$pedido) {
             // Crear pedido automáticamente al intentar pagar
-            $pedidoId = $pedidosModel->createFromCotizacion(
-                $cotizacionId, 
+            $pedidoId = $pedidosModel->createFromCarrito(
+                $carritoId, 
                 $userId, 
-                (float)$cotizacion['total'], 
-                (float)$cotizacion['subtotal'], 
-                (float)$cotizacion['impuestos'], 
-                (float)$cotizacion['descuento']
+                (float)$carrito['total'], 
+                (float)$carrito['subtotal'], 
+                (float)$carrito['impuestos'], 
+                (float)$carrito['descuento']
             );
             $pedido = $pedidosModel->getById($pedidoId);
         }
 
-        $detalles = $this->cotizacionesModel->getDetalles($cotizacionId);
-        $metodos = $this->cotizacionesModel->getMetodosPago();
+        $detalles = $this->carritosModel->getDetalles($carritoId);
+        $metodos = $this->carritosModel->getMetodosPago();
 
-        $this->view('cotizacion/pagar', [
-            'cotizacion' => $cotizacion,
+        $this->view('carrito/pagar', [
+            'carrito' => $carrito,
             'pedido'     => $pedido,
             'detalles'   => $detalles,
-            'subtotal'   => $cotizacion['subtotal'],
-            'descuento'  => $cotizacion['descuento'],
-            'iva'        => $cotizacion['impuestos'],
-            'totalFinal' => $cotizacion['total'],
+            'subtotal'   => $carrito['subtotal'],
+            'descuento'  => $carrito['descuento'],
+            'iva'        => $carrito['impuestos'],
+            'totalFinal' => $carrito['total'],
             'metodos'    => $metodos
         ]);
     }
@@ -472,21 +472,21 @@ class CotizacionClienteController extends Router
     public function procesarPago(string $id): void
     {
         $userId = (int)$_SESSION['user_id'];
-        $cotizacionId = (int)$id;
+        $carritoId = (int)$id;
 
-        $cotizacion = $this->cotizacionesModel->getById($cotizacionId, $userId);
-        if (!$cotizacion || $cotizacion['usuario_id'] != $userId) {
+        $carrito = $this->carritosModel->getById($carritoId, $userId);
+        if (!$carrito || $carrito['usuario_id'] != $userId) {
             $_SESSION['error_msg'] = 'Presupuesto no encontrado.';
             header('Location: ' . $this->baseUrl() . '/mis-pedidos');
             exit;
         }
 
         $pedidosModel = new \App\Models\PedidosModel();
-        $pedido = $pedidosModel->getByCotizacionId($cotizacionId);
+        $pedido = $pedidosModel->getByCarritoId($carritoId);
 
         if (!$pedido) {
             $_SESSION['error_msg'] = 'El pedido no ha sido inicializado. Visite la página de pago primero.';
-            header('Location: ' . $this->baseUrl() . '/pedido/pagar/' . $cotizacionId);
+            header('Location: ' . $this->baseUrl() . '/pedido/pagar/' . $carritoId);
             exit;
         }
 
@@ -514,13 +514,13 @@ class CotizacionClienteController extends Router
 
         if (!$isCash && !$comprobante_url) {
             $_SESSION['error_msg'] = 'Debe subir un comprobante válido (JPG, PNG o PDF).';
-            header('Location: ' . $this->baseUrl() . '/pedido/pagar/' . $cotizacionId);
+            header('Location: ' . $this->baseUrl() . '/pedido/pagar/' . $carritoId);
             exit;
         }
 
         $referencia = $isCash ? 'EFECTIVO_PRESENCIAL' : strip_tags(trim($_POST['referencia'] ?? ''));
 
-        $montoEsperado = isset($cotizacion['tasabcv']) ? round($cotizacion['total'] * $cotizacion['tasabcv'], 2) : 0;
+        $montoEsperado = isset($carrito['tasabcv']) ? round($carrito['total'] * $carrito['tasabcv'], 2) : 0;
 
         $data = [
             'pedido_id'        => $pedido['id'],
@@ -539,17 +539,17 @@ class CotizacionClienteController extends Router
             $_SESSION['error_msg'] = 'Ocurrió un error al reportar el pago.';
         }
 
-        header('Location: ' . $this->baseUrl() . '/mis-pedidos/' . $cotizacionId);
+        header('Location: ' . $this->baseUrl() . '/mis-pedidos/' . $carritoId);
         exit;
     }
 
     public function aceptar(string $id): void
     {
         $userId = (int)$_SESSION['user_id'];
-        $cotizacionId = (int)$id;
+        $carritoId = (int)$id;
 
-        $cotizacion = $this->cotizacionesModel->getById($cotizacionId, $userId);
-        if (!$cotizacion || $cotizacion['estado_id'] != 3) {
+        $carrito = $this->carritosModel->getById($carritoId, $userId);
+        if (!$carrito || $carrito['estado_id'] != 3) {
             $_SESSION['error_msg'] = 'Presupuesto no encontrado o no está en estado emitido.';
             header('Location: ' . $this->baseUrl() . '/mis-pedidos');
             exit;
@@ -559,23 +559,23 @@ class CotizacionClienteController extends Router
         try {
             $db->beginTransaction();
 
-            $stmt = $db->prepare("UPDATE cotizaciones SET estado_id = 4 WHERE id = :id AND estado_id = 3");
-            $stmt->execute([':id' => $cotizacionId]);
+            $stmt = $db->prepare("UPDATE carritos SET estado_id = 4 WHERE id = :id AND estado_id = 3");
+            $stmt->execute([':id' => $carritoId]);
 
             // Crear el pedido asociado
-            $stmtCheck = $db->prepare('SELECT id FROM pedidos WHERE cotizacion_id = :id');
-            $stmtCheck->execute([':id' => $cotizacionId]);
+            $stmtCheck = $db->prepare('SELECT id FROM pedidos WHERE carrito_id = :id');
+            $stmtCheck->execute([':id' => $carritoId]);
             if (!$stmtCheck->fetch()) {
-                $sqlPed = "INSERT INTO pedidos (cotizacion_id, usuario_id, total, costo_envio, estado_pedido, direccion_envio, tipo_entrega) 
+                $sqlPed = "INSERT INTO pedidos (carrito_id, usuario_id, total, costo_envio, estado_pedido, direccion_envio, tipo_entrega) 
                            VALUES (:cot_id, :usr_id, :tot, :envio, 'pendiente_pago', :dir, :tipo)";
                 $stmtPed = $db->prepare($sqlPed);
                 $stmtPed->execute([
-                    ':cot_id' => $cotizacionId,
-                    ':usr_id' => $cotizacion['usuario_id'],
-                    ':tot'    => $cotizacion['total'],
-                    ':envio'  => $cotizacion['costo_envio'],
-                    ':dir'    => $cotizacion['direccion_envio'],
-                    ':tipo'   => $cotizacion['tipo_entrega']
+                    ':cot_id' => $carritoId,
+                    ':usr_id' => $carrito['usuario_id'],
+                    ':tot'    => $carrito['total'],
+                    ':envio'  => $carrito['costo_envio'],
+                    ':dir'    => $carrito['direccion_envio'],
+                    ':tipo'   => $carrito['tipo_entrega']
                 ]);
             }
 
@@ -587,25 +587,25 @@ class CotizacionClienteController extends Router
             $_SESSION['error_msg'] = 'Ocurrió un error al aceptar el presupuesto.';
         }
 
-        header('Location: ' . $this->baseUrl() . '/mis-pedidos/' . $cotizacionId);
+        header('Location: ' . $this->baseUrl() . '/mis-pedidos/' . $carritoId);
         exit;
     }
 
     public function rechazar(string $id): void
     {
         $userId = (int)$_SESSION['user_id'];
-        $cotizacionId = (int)$id;
+        $carritoId = (int)$id;
 
-        $cotizacion = $this->cotizacionesModel->getById($cotizacionId, $userId);
-        if (!$cotizacion || $cotizacion['estado_id'] != 3) {
+        $carrito = $this->carritosModel->getById($carritoId, $userId);
+        if (!$carrito || $carrito['estado_id'] != 3) {
             $_SESSION['error_msg'] = 'Presupuesto no encontrado o no está en estado emitido.';
             header('Location: ' . $this->baseUrl() . '/mis-pedidos');
             exit;
         }
 
         $db = Database::getInstance();
-        $stmt = $db->prepare("UPDATE cotizaciones SET estado_id = 5 WHERE id = :id AND estado_id = 3");
-        $stmt->execute([':id' => $cotizacionId]);
+        $stmt = $db->prepare("UPDATE carritos SET estado_id = 5 WHERE id = :id AND estado_id = 3");
+        $stmt->execute([':id' => $carritoId]);
 
         if ($stmt->rowCount() > 0) {
             $_SESSION['success_msg'] = 'Presupuesto rechazado correctamente.';
@@ -613,7 +613,7 @@ class CotizacionClienteController extends Router
             $_SESSION['error_msg'] = 'No se pudo rechazar el presupuesto.';
         }
 
-        header('Location: ' . $this->baseUrl() . '/mis-pedidos/' . $cotizacionId);
+        header('Location: ' . $this->baseUrl() . '/mis-pedidos/' . $carritoId);
         exit;
     }
 }

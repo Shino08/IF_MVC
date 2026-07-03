@@ -100,8 +100,8 @@ class PagosModel
 
                         // Descontar stock de productos (los servicios NO descuentan stock)
                         $sqlDetalles = 'SELECT cd.producto_id, cd.cantidad
-                                        FROM cotizacion_detalles cd
-                                        JOIN pedidos p ON p.cotizacion_id = cd.cotizacion_id
+                                        FROM carrito_detalles cd
+                                        JOIN pedidos p ON p.carrito_id = cd.carrito_id
                                         WHERE p.id = :pedido_id AND cd.producto_id IS NOT NULL';
                         $stmtDetalles = $this->db->prepare($sqlDetalles);
                         $stmtDetalles->execute([':pedido_id' => $pedidoId]);

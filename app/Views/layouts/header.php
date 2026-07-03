@@ -1,12 +1,12 @@
 <?php
-$cotizacionCount = 0;
+$carritoCount = 0;
 if (isset($_SESSION['user_id']) && (!isset($_SESSION['rol_id']) || $_SESSION['rol_id'] != 1)) {
-    if (class_exists('\App\Models\CotizacionesModel')) {
-        $cotModel = new \App\Models\CotizacionesModel();
+    if (class_exists('\App\Models\CarritosModel')) {
+        $cotModel = new \App\Models\CarritosModel();
         $borrador = $cotModel->getBorradorByUserId((int)$_SESSION['user_id']);
         if ($borrador) {
             $detalles = $cotModel->getDetalles((int)$borrador['id']);
-            $cotizacionCount = count($detalles);
+            $carritoCount = count($detalles);
         }
     }
 }
@@ -60,9 +60,9 @@ if (class_exists('\App\Models\CategoriasModel')) {
                         <div class="flex items-center space-x-6">
                             <a href="<?= $base_url ?? '' ?>/pedido/actual" class="relative hover:text-red-600 transition-colors">
                                 <svg class="w-6 h-6 text-gray-600 hover:text-red-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                                <?php if ($cotizacionCount > 0): ?>
+                                <?php if ($carritoCount > 0): ?>
                                 <span class="absolute -top-2 -right-2 bg-red-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold shadow-sm">
-                                    <?= $cotizacionCount ?>
+                                    <?= $carritoCount ?>
                                 </span>
                                 <?php endif; ?>
                             </a>

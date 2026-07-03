@@ -71,7 +71,7 @@ if ($esPdf):
     <table>
         <thead>
             <tr>
-                <?php if ($tipo === 'cotizaciones'): ?>
+                <?php if ($tipo === 'carritos'): ?>
                 <th>ID</th>
                 <th>Fecha</th>
                 <th>Cliente</th>
@@ -90,7 +90,7 @@ if ($esPdf):
             <?php else: ?>
                 <?php foreach ($data as $row): ?>
                 <tr>
-                    <?php if ($tipo === 'cotizaciones'): ?>
+                    <?php if ($tipo === 'carritos'): ?>
                     <td><strong>COT-<?= str_pad((string)$row['id'], 3, '0', STR_PAD_LEFT) ?></strong></td>
                     <td><?= date('d/m/Y', strtotime($row['fecha_solicitud'])) ?></td>
                     <td><?= htmlspecialchars($row['cliente']) ?></td>
@@ -125,11 +125,11 @@ if ($esPdf):
 
     <?php if (!in_array($tipo, ['productos_solicitados', 'servicios_solicitados'])): ?>
     <div class="totals-box">
-        <div class="row"><span>Total Registros:</span><strong><?= $totales['total_cotizaciones'] ?></strong></div>
+        <div class="row"><span>Total Registros:</span><strong><?= $totales['total_carritos'] ?></strong></div>
         <div class="row"><span>Monto Total Estimado:</span><strong>$<?= number_format($totales['estimado'], 2, ',', '.') ?></strong></div>
         <div class="row"><span>Monto Procesado:</span><strong style="color:#28a745;">$<?= number_format($totales['procesado'], 2, ',', '.') ?></strong></div>
         <div class="row"><span>Monto Pendiente:</span><strong style="color:#ffc107;">$<?= number_format($totales['pendiente'], 2, ',', '.') ?></strong></div>
-        <div class="row total-final"><span>Tasa de Conversión:</span><?= $totales['total_cotizaciones'] > 0 ? round(($totales['cotizaciones_procesadas'] / $totales['total_cotizaciones']) * 100) : 0 ?>%</div>
+        <div class="row total-final"><span>Tasa de Conversión:</span><?= $totales['total_carritos'] > 0 ? round(($totales['carritos_procesadas'] / $totales['total_carritos']) * 100) : 0 ?>%</div>
     </div>
     <?php endif; ?>
 
@@ -258,7 +258,7 @@ require_once __DIR__ . '/../layouts/_head.php'; ?>
               <table class="w-full">
                 <thead class="bg-gray-100">
                   <tr>
-                    <?php if ($tipo === 'cotizaciones'): ?>
+                    <?php if ($tipo === 'carritos'): ?>
                     <th class="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">ID</th>
                     <th class="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Fecha</th>
                     <th class="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Cliente</th>
@@ -277,7 +277,7 @@ require_once __DIR__ . '/../layouts/_head.php'; ?>
                   <?php else: ?>
                     <?php foreach ($data as $row): ?>
                       <tr>
-                        <?php if ($tipo === 'cotizaciones'): ?>
+                        <?php if ($tipo === 'carritos'): ?>
                         <td class="px-4 py-3 text-sm font-semibold text-gray-900">COT-<?= str_pad((string)$row['id'], 3, '0', STR_PAD_LEFT) ?></td>
                         <td class="px-4 py-3 text-sm text-gray-600"><?= date('d/m/Y', strtotime($row['fecha_solicitud'])) ?></td>
                         <td class="px-4 py-3 text-sm text-gray-900"><?= htmlspecialchars($row['cliente']) ?></td>
@@ -319,7 +319,7 @@ require_once __DIR__ . '/../layouts/_head.php'; ?>
                 <div class="bg-gray-50 rounded-lg p-4">
                   <div class="flex justify-between py-2 text-sm border-b border-gray-200">
                     <span class="text-gray-600">Total Registros:</span>
-                    <span class="font-bold text-gray-900"><?= $totales['total_cotizaciones'] ?></span>
+                    <span class="font-bold text-gray-900"><?= $totales['total_carritos'] ?></span>
                   </div>
                   <div class="flex justify-between py-2 text-sm border-b border-gray-200">
                     <span class="text-gray-600">Monto Total Estimado:</span>
@@ -336,7 +336,7 @@ require_once __DIR__ . '/../layouts/_head.php'; ?>
                   <div class="flex justify-between py-3 border-t-2 border-gray-300 mt-2">
                     <span class="text-base font-bold text-gray-900">Tasa de Conversión:</span>
                     <span class="text-xl font-bold text-red-700">
-                      <?= $totales['total_cotizaciones'] > 0 ? round(($totales['cotizaciones_procesadas'] / $totales['total_cotizaciones']) * 100) : 0 ?>%
+                      <?= $totales['total_carritos'] > 0 ? round(($totales['carritos_procesadas'] / $totales['total_carritos']) * 100) : 0 ?>%
                     </span>
                   </div>
                 </div>

@@ -1,4 +1,4 @@
-<?php $title = 'Pedidos y Cotizaciones'; $active_nav = 'cotizaciones'; ?>
+<?php $title = 'Pedidos y Carritos'; $active_nav = 'carritos'; ?>
 <?php require_once __DIR__ . '/../layouts/_head.php'; ?>
 <body class="bg-gray-50">
 <div class="flex h-screen overflow-hidden">
@@ -8,7 +8,7 @@
         <header class="bg-white border-b border-gray-200 px-8 py-5 flex-shrink-0">
             <div class="flex justify-between items-center">
                 <div>
-                    <h1 class="text-2xl font-bold text-gray-900">Pedidos y Cotizaciones</h1>
+                    <h1 class="text-2xl font-bold text-gray-900">Pedidos y Carritos</h1>
                     <p class="text-gray-500 text-sm mt-0.5">Gestiona todas las solicitudes de clientes</p>
                 </div>
             </div>
@@ -21,10 +21,10 @@
   <div class="flex flex-wrap items-center gap-4">
     
     <div class="flex-1 min-w-[200px]">
-      <input type="text" id="buscador-cotizaciones" placeholder="Buscar por cliente o ID..." class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500">
+      <input type="text" id="buscador-carritos" placeholder="Buscar por cliente o ID..." class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500">
     </div>
 
-    <select id="filtro-estado-cotizaciones" class="px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 bg-white text-gray-700">
+    <select id="filtro-estado-carritos" class="px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 bg-white text-gray-700">
       <option value="">Todos los estados</option>
       <?php
       $estados = array_unique(array_map(fn($s) => $s['estado_nombre'] ?? '', $solicitudes ?? []));
@@ -34,7 +34,7 @@
       <?php endforeach; ?>
     </select>
 
-    <input type="date" id="filtro-fecha-cotizaciones" class="px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 text-gray-700">
+    <input type="date" id="filtro-fecha-carritos" class="px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 text-gray-700">
 
     <button type="button" id="btn-limpiar-filtros" class="px-4 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center font-semibold text-gray-700 shadow-sm">
       <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
@@ -130,9 +130,9 @@
 </div>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const buscador = document.getElementById('buscador-cotizaciones');
-    const filtroEst = document.getElementById('filtro-estado-cotizaciones');
-    const filtroFecha = document.getElementById('filtro-fecha-cotizaciones');
+    const buscador = document.getElementById('buscador-carritos');
+    const filtroEst = document.getElementById('filtro-estado-carritos');
+    const filtroFecha = document.getElementById('filtro-fecha-carritos');
     const btnLimpiar = document.getElementById('btn-limpiar-filtros');
     const rows = document.querySelectorAll('tbody tr');
     const infoEl = document.getElementById('mostrando-desde');

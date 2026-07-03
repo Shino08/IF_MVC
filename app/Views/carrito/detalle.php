@@ -22,18 +22,18 @@
                 Volver
             </a>
             <div class="flex flex-wrap items-center gap-3">
-                <a href="<?= $base_url ?? '' ?>/cotizacion/pdf/<?= $cotizacion['id'] ?>" target="_blank" class="inline-flex items-center px-5 py-2.5 border border-transparent shadow-md text-sm font-bold rounded-lg text-white bg-red-600 hover:bg-red-700 transition-colors shadow-lg hover:shadow-xl ring-1 ring-red-400/20">
+                <a href="<?= $base_url ?? '' ?>/carrito/pdf/<?= $carrito['id'] ?>" target="_blank" class="inline-flex items-center px-5 py-2.5 border border-transparent shadow-md text-sm font-bold rounded-lg text-white bg-red-600 hover:bg-red-700 transition-colors shadow-lg hover:shadow-xl ring-1 ring-red-400/20">
                     <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
                     Descargar PDF
                 </a>
-                <?php if ($cotizacion['estado_id'] == 4): ?>
-                <a href="<?= $base_url ?? '' ?>/factura/pdf/<?= $cotizacion['id'] ?>" target="_blank" class="inline-flex items-center px-5 py-2.5 border border-transparent shadow-md text-sm font-bold rounded-lg text-white bg-green-600 hover:bg-green-700 transition-colors shadow-lg hover:shadow-xl ring-1 ring-green-400/20">
+                <?php if ($carrito['estado_id'] == 4): ?>
+                <a href="<?= $base_url ?? '' ?>/factura/pdf/<?= $carrito['id'] ?>" target="_blank" class="inline-flex items-center px-5 py-2.5 border border-transparent shadow-md text-sm font-bold rounded-lg text-white bg-green-600 hover:bg-green-700 transition-colors shadow-lg hover:shadow-xl ring-1 ring-green-400/20">
                     <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                     Descargar Factura
                 </a>
                 <?php endif; ?>
                 <?php if(isset($_SESSION['rol_id']) && $_SESSION['rol_id'] == 1): ?>
-                <form action="<?= $base_url ?? '' ?>/pedido/enviar_correo/<?= $cotizacion['id'] ?>" method="POST" class="inline">
+                <form action="<?= $base_url ?? '' ?>/pedido/enviar_correo/<?= $carrito['id'] ?>" method="POST" class="inline">
                     <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-green-600 hover:bg-green-700 transition-colors">
                         <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
                         Enviar por Correo
@@ -44,21 +44,21 @@
                     <svg class="w-4 h-4 mr-1.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
                     Imprimir
                 </button>
-                <?php if($cotizacion['estado_id'] == 3): ?>
-                    <form action="<?= $base_url ?? '' ?>/pedido/aceptar/<?= $cotizacion['id'] ?>" method="POST" class="inline">
+                <?php if($carrito['estado_id'] == 3): ?>
+                    <form action="<?= $base_url ?? '' ?>/pedido/aceptar/<?= $carrito['id'] ?>" method="POST" class="inline">
                         <button type="submit" class="inline-flex items-center px-5 py-2.5 border border-transparent shadow-md text-sm font-bold rounded-lg text-white bg-green-600 hover:bg-green-700 transition-colors">
                             <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                             Confirmar Pedido
                         </button>
                     </form>
-                    <form action="<?= $base_url ?? '' ?>/pedido/rechazar/<?= $cotizacion['id'] ?>" method="POST" class="inline">
+                    <form action="<?= $base_url ?? '' ?>/pedido/rechazar/<?= $carrito['id'] ?>" method="POST" class="inline">
                         <button type="submit" class="inline-flex items-center px-5 py-2.5 border border-red-300 shadow-sm text-sm font-bold rounded-lg text-red-600 bg-white hover:bg-red-50 transition-colors">
                             <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                             Cancelar Pedido
                         </button>
                     </form>
                 <?php endif; ?>
-                <?php if($cotizacion['estado_id'] == 4): ?>
+                <?php if($carrito['estado_id'] == 4): ?>
                     <?php if(isset($pedido) && $pedido['estado_pedido'] === 'pago_por_validar'): ?>
                         <span class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-yellow-800 bg-yellow-100">
                             <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
@@ -70,7 +70,7 @@
                             Pago Completado
                         </span>
                     <?php else: ?>
-                        <a href="<?= $base_url ?? '' ?>/pedido/pagar/<?= $cotizacion['id'] ?>" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-red-600 hover:bg-red-700 transition-colors shadow-md hover:shadow-lg">
+                        <a href="<?= $base_url ?? '' ?>/pedido/pagar/<?= $carrito['id'] ?>" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-red-600 hover:bg-red-700 transition-colors shadow-md hover:shadow-lg">
                             <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
                             Reportar Pago
                         </a>
@@ -88,7 +88,7 @@
     $currentStepIndex = array_search($currentStep, $stepOrder);
     if ($currentStepIndex === false) $currentStepIndex = 0;
 
-    $esDomicilio = ($cotizacion['tipo_entrega'] ?? '') === 'domicilio';
+    $esDomicilio = ($carrito['tipo_entrega'] ?? '') === 'domicilio';
 
     $steps = [
         [
@@ -97,7 +97,7 @@
             'sub'   => 'Pedido confirmado en el sistema',
             'date'  => !empty($pedido['fecha_creacion'])
                         ? date('d/m/Y H:i', strtotime($pedido['fecha_creacion']))
-                        : date('d/m/Y H:i', strtotime($cotizacion['fecha_solicitud'])),
+                        : date('d/m/Y H:i', strtotime($carrito['fecha_solicitud'])),
             'icon'  => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>',
         ],
         [
@@ -252,7 +252,7 @@
     if ($estadoPedido && isset($estadoPedidoLabels[$estadoPedido])) {
         $estadoInfo = $estadoPedidoLabels[$estadoPedido];
     } else {
-        $key = strtolower($cotizacion['estado_nombre'] ?? '');
+        $key = strtolower($carrito['estado_nombre'] ?? '');
         $estadoInfo = $estadoLabels[$key] ?? ['label' => strtoupper($key), 'color' => 'border-gray-200 bg-gray-50 text-gray-800'];
     }
     ?>
@@ -278,8 +278,8 @@
                 </div>
                 <div class="text-left md:text-right">
                     <h1 class="text-3xl font-black text-gray-900 uppercase tracking-wider mb-2">Pedido</h1>
-                    <p class="text-sm text-gray-600"><span class="font-bold">Nro:</span> #PED-<?= date('Y', strtotime($cotizacion['fecha_solicitud'])) ?>-<?= str_pad((string)$cotizacion['id'], 4, '0', STR_PAD_LEFT) ?></p>
-                    <p class="text-sm text-gray-600 mt-1"><span class="font-bold">Fecha:</span> <?= date('d/m/Y', strtotime($cotizacion['fecha_solicitud'])) ?></p>
+                    <p class="text-sm text-gray-600"><span class="font-bold">Nro:</span> #PED-<?= date('Y', strtotime($carrito['fecha_solicitud'])) ?>-<?= str_pad((string)$carrito['id'], 4, '0', STR_PAD_LEFT) ?></p>
+                    <p class="text-sm text-gray-600 mt-1"><span class="font-bold">Fecha:</span> <?= date('d/m/Y', strtotime($carrito['fecha_solicitud'])) ?></p>
                 </div>
             </div>
 
@@ -288,13 +288,13 @@
                 <h3 class="text-sm font-bold text-gray-900 uppercase tracking-wider mb-4">Facturado a:</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <p class="text-sm font-bold text-gray-900"><?= htmlspecialchars($cotizacion['cliente_nombre'] . ' ' . $cotizacion['cliente_apellido']) ?></p>
-                        <p class="text-sm text-gray-600 mt-1"><?= htmlspecialchars($cotizacion['cliente_empresa'] ?? 'Persona Natural') ?></p>
-                        <p class="text-sm text-gray-600">CI/RIF: <?= htmlspecialchars($cotizacion['cliente_cedula'] ?? 'N/A') ?></p>
+                        <p class="text-sm font-bold text-gray-900"><?= htmlspecialchars($carrito['cliente_nombre'] . ' ' . $carrito['cliente_apellido']) ?></p>
+                        <p class="text-sm text-gray-600 mt-1"><?= htmlspecialchars($carrito['cliente_empresa'] ?? 'Persona Natural') ?></p>
+                        <p class="text-sm text-gray-600">CI/RIF: <?= htmlspecialchars($carrito['cliente_cedula'] ?? 'N/A') ?></p>
                     </div>
                     <div>
-                        <p class="text-sm text-gray-600"><?= htmlspecialchars($cotizacion['cliente_email']) ?></p>
-                        <p class="text-sm text-gray-600 mt-1"><?= htmlspecialchars($cotizacion['cliente_telefono'] ?? 'Teléfono no provisto') ?></p>
+                        <p class="text-sm text-gray-600"><?= htmlspecialchars($carrito['cliente_email']) ?></p>
+                        <p class="text-sm text-gray-600 mt-1"><?= htmlspecialchars($carrito['cliente_telefono'] ?? 'Teléfono no provisto') ?></p>
                     </div>
                 </div>
             </div>
@@ -339,11 +339,11 @@
             <!-- Totals -->
             <?php
                 // Usar valores guardados de la base de datos
-                $subtotal = (float)$cotizacion['subtotal'];
-                $iva = (float)$cotizacion['impuestos'];
-                $descuento = (float)$cotizacion['descuento'];
-                $costoEnvio = (float)($cotizacion['costo_envio'] ?? 0);
-                $totalFinal = (float)$cotizacion['total'];
+                $subtotal = (float)$carrito['subtotal'];
+                $iva = (float)$carrito['impuestos'];
+                $descuento = (float)$carrito['descuento'];
+                $costoEnvio = (float)($carrito['costo_envio'] ?? 0);
+                $totalFinal = (float)$carrito['total'];
             ?>
             <div class="px-8 flex justify-end">
                 <div class="w-full md:w-1/2 lg:w-1/3 space-y-3">
@@ -352,10 +352,10 @@
                         <span class="font-medium text-gray-900">$<?= number_format($subtotal, 2) ?></span>
                     </div>
                     <div class="flex justify-between text-sm">
-                        <?php if (isset($cotizacion['aplica_iva']) && $cotizacion['aplica_iva'] == 1): ?>
-                            <span class="font-medium text-gray-500">IVA (<?= number_format((float)($cotizacion['tasa_iva'] ?? 16), 0) ?>%):</span>
+                        <?php if (isset($carrito['aplica_iva']) && $carrito['aplica_iva'] == 1): ?>
+                            <span class="font-medium text-gray-500">IVA (<?= number_format((float)($carrito['tasa_iva'] ?? 16), 0) ?>%):</span>
                             <span class="font-medium text-gray-900">$<?= number_format($iva, 2) ?></span>
-                        <?php elseif (isset($cotizacion['aplica_iva']) && $cotizacion['aplica_iva'] == 0): ?>
+                        <?php elseif (isset($carrito['aplica_iva']) && $carrito['aplica_iva'] == 0): ?>
                             <span class="font-medium text-gray-500">IVA / Impuestos:</span>
                             <span class="font-medium text-gray-900">Exento ($0.00)</span>
                         <?php else: ?>
@@ -379,28 +379,28 @@
                         <span class="text-gray-900">Total USD:</span>
                         <span class="text-red-600">$<?= number_format($totalFinal, 2) ?></span>
                     </div>
-                    <?php if (!empty($cotizacion['montousd'])): ?>
+                    <?php if (!empty($carrito['montousd'])): ?>
                     <div class="flex justify-between text-sm pt-1">
                         <span class="text-gray-500">En Bs. (tasa BCV):</span>
-                        <span class="font-semibold text-gray-700">Bs. <?= number_format((float)$cotizacion['montousd'], 2, ',', '.') ?></span>
+                        <span class="font-semibold text-gray-700">Bs. <?= number_format((float)$carrito['montousd'], 2, ',', '.') ?></span>
                     </div>
                     <?php endif; ?>
                 </div>
             </div>
 
             <!-- Logistics -->
-            <?php if (!empty($cotizacion['tipo_entrega'])): ?>
+            <?php if (!empty($carrito['tipo_entrega'])): ?>
             <div class="px-8 py-6 bg-gray-50 border-t border-gray-200 mt-8 rounded-b-xl">
                 <h3 class="text-sm font-bold text-gray-900 uppercase tracking-wider mb-4">Información de Entrega</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <p class="text-xs text-gray-500 uppercase tracking-wider font-semibold">Tipo de Entrega</p>
-                        <span class="block text-sm text-gray-900 mt-1"><?= $cotizacion['tipo_entrega'] === 'domicilio' ? 'Envío a Domicilio' : 'Retiro en Tienda' ?></span>
+                        <span class="block text-sm text-gray-900 mt-1"><?= $carrito['tipo_entrega'] === 'domicilio' ? 'Envío a Domicilio' : 'Retiro en Tienda' ?></span>
                     </div>
-                    <?php if ($cotizacion['tipo_entrega'] === 'domicilio' && !empty($cotizacion['direccion_envio'])): ?>
+                    <?php if ($carrito['tipo_entrega'] === 'domicilio' && !empty($carrito['direccion_envio'])): ?>
                     <div>
                         <p class="text-xs text-gray-500 uppercase tracking-wider font-semibold">Dirección</p>
-                        <span class="block text-sm text-gray-900 mt-1"><?= htmlspecialchars($cotizacion['direccion_envio']) ?></span>
+                        <span class="block text-sm text-gray-900 mt-1"><?= htmlspecialchars($carrito['direccion_envio']) ?></span>
                     </div>
                     <?php endif; ?>
                 </div>
@@ -410,7 +410,7 @@
             <!-- Notes -->
             <div class="px-8 py-8 border-t border-gray-200">
                 <h4 class="text-sm font-bold text-gray-900 uppercase tracking-wider mb-2">Notas Técnicas y Comerciales</h4>
-                <p class="text-sm text-gray-600 whitespace-pre-line mb-6"><?= htmlspecialchars($cotizacion['notas_tecnicas'] ?? 'No se especificaron notas adicionales.') ?></p>                        <h4 class="text-sm font-bold text-gray-900 uppercase tracking-wider mb-2">Términos y Condiciones</h4>
+                <p class="text-sm text-gray-600 whitespace-pre-line mb-6"><?= htmlspecialchars($carrito['notas_tecnicas'] ?? 'No se especificaron notas adicionales.') ?></p>                        <h4 class="text-sm font-bold text-gray-900 uppercase tracking-wider mb-2">Términos y Condiciones</h4>
                 <ul class="list-disc list-inside text-sm text-gray-600 space-y-1">
                     <li>Los precios están expresados en dólares americanos (USD).</li>
                     <li>Formas de pago aceptadas: Transferencia bancaria y Pago Móvil.</li>
@@ -425,14 +425,14 @@
                 <div class="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg print:bg-yellow-50">
                     <div>
                         <p class="text-xs font-bold text-yellow-800 uppercase tracking-wider mb-0.5">Tasa de Cambio Referencial</p>
-                        <?php if (!empty($cotizacion['tasabcv'])): ?>
+                        <?php if (!empty($carrito['tasabcv'])): ?>
                         <p class="text-sm text-yellow-900">
-                            <strong>Bs. <?= number_format((float)$cotizacion['tasabcv'], 4, ',', '.') ?></strong> / $1 USD
-                            <span class="text-yellow-700 text-xs">(al <?= date('d/m/Y', strtotime($cotizacion['fecha_solicitud'])) ?>)</span>
+                            <strong>Bs. <?= number_format((float)$carrito['tasabcv'], 4, ',', '.') ?></strong> / $1 USD
+                            <span class="text-yellow-700 text-xs">(al <?= date('d/m/Y', strtotime($carrito['fecha_solicitud'])) ?>)</span>
                         </p>
-                        <?php if (!empty($cotizacion['montousd'])): ?>
+                        <?php if (!empty($carrito['montousd'])): ?>
                         <p class="text-xs text-yellow-700 mt-0.5">
-                            Equivale a ≈ <strong>Bs. <?= number_format((float)$cotizacion['montousd'], 2, ',', '.') ?></strong>
+                            Equivale a ≈ <strong>Bs. <?= number_format((float)$carrito['montousd'], 2, ',', '.') ?></strong>
                         </p>
                         <?php endif; ?>
                         <?php else: ?>

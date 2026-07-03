@@ -93,7 +93,7 @@
                 </a>
 
                 <!-- Presupuestos (datos reales) -->
-                <a href="<?= $base_url ?>/dashboard/cotizaciones"
+                <a href="<?= $base_url ?>/dashboard/carritos"
                    class="bg-gradient-to-br from-red-700 to-red-900 rounded-2xl shadow-sm p-6 hover:shadow-md transition-shadow group text-white">
                     <div class="flex justify-between items-start mb-4">
                         <div class="w-11 h-11 bg-white/20 rounded-xl flex items-center justify-center">
@@ -112,7 +112,7 @@
                         <?php if ($cotEnviadas > 0): ?>
                             <?= $cotEnviadas ?> enviada<?= $cotEnviadas > 1 ? 's' : '' ?> — <?= $cotPendientes ?> por revisar
                         <?php else: ?>
-                            Sistema de cotizaciones activo
+                            Sistema de carritos activo
                         <?php endif; ?>
                     </p>
                 </a>
